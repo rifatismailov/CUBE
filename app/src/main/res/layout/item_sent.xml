@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="60dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginRight="10dp">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:background="@drawable/animation_click_send"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="2dp"
+            android:elevation="10dp"
+            app:cardCornerRadius="19dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:background="@color/demo_light_transparent"
+                android:maxHeight="400dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:paddingTop="5dp"
+            android:paddingRight="15dp"
+            android:paddingBottom="5dp"
+            android:layout_gravity="left|center"
+            android:text="TextView"
+            android:textColor="#191919"
+            android:textSize="13dp"
+            android:fontFamily="@font/opensans_medium" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="2dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/feel"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/emoji_style"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="invisible">
+
+                <TextView
+                    android:id="@+id/person_feel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Feel"
+                    android:textColor="#191919"
+                    android:textSize="15dp"
+                    android:fontFamily="@font/opensans_medium" />
+
+                <ImageView
+                    android:id="@+id/feeling"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_gravity="left|center"
+                    android:layout_marginRight="10dp"
+                    android:visibility="invisible" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView2"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="right"
+                android:layout_marginLeft="40dp"
+                android:orientation="horizontal" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

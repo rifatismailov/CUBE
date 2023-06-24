@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    >
+
+    <LinearLayout
+        android:layout_width="290dp"
+        android:layout_height="40dp"
+        android:background="@drawable/dialog_emoji_style"
+        android:gravity="left|center"
+        android:orientation="horizontal">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:elevation="10dp"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="0dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerEmoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" />
+
+        </androidx.cardview.widget.CardView>
+
+        <View
+            android:id="@+id/show_emoji"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/rounded" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="60dp"
+
+
+            android:background="@drawable/dialog_emoji_do"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_duplicate"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Копировать"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_report"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Ответить"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_reply"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Переслать"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_change"
+
+                    />
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Измеить"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_download"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Сохранить"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginBottom="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/icon_a_trash"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:fastScrollEnabled="true"
+                    android:fillViewport="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="5dp"
+                    android:scrollbars="vertical"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:text="Удалить"
+                    android:textColor="#2d2d2d"
+                    android:textSize="17dp"
+                    android:typeface="monospace" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="right"
+            android:background="@drawable/dialog_emoji_style" />
+    </LinearLayout>
+
+
+</LinearLayout>
