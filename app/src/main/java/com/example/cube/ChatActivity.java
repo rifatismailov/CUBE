@@ -11,18 +11,11 @@ import com.example.cube.models.Message;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.View;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.example.cube.databinding.ActivityChatBinding;
-
 import java.util.ArrayList;
-import java.util.Date;
 
 public class ChatActivity extends AppCompatActivity {
 

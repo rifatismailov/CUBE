@@ -43,7 +43,6 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     boolean show = false;
 
 
-
     public MessagesAdapter(ChatActivity context, ArrayList<Message> messages) {
         this.context = context;
         this.messages = messages;
@@ -86,15 +85,15 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
             /***/
-            if (message.getImageUrl().length()>0&&message.getMessage().isEmpty()) {
+            if (message.getImageUrl().length() > 0 && message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
-            }else   if (message.getImageUrl().length()>0&&!message.getMessage().isEmpty()) {
+            } else if (message.getImageUrl().length() > 0 && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
-            }else {
+            } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
             }
@@ -116,7 +115,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context,x, y, message, holder);
+                    new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
             viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
@@ -126,7 +125,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context,x, y, message, holder);
+                    new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
         } else {
@@ -158,7 +157,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context,x, y, message, holder);
+                    new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
 

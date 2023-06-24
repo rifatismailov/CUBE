@@ -5,7 +5,7 @@ import android.net.Uri;
 import com.example.cube.control.Side;
 
 public class Message {
-    private String messageId, message = "", senderId, imageUrl = "";
+    private String messageId, message, senderId, imageUrl = "";
     private long timestamp;
     private int feeling = -1;
     private int emojisPosition = 0;
@@ -25,24 +25,11 @@ public class Message {
         this.imageUrl = selectedUrl.toString();
     }
 
-    public String getUrlString() {
-        return selectedUrl.toString();
-    }
-
-    public Uri getSelectedUrl() {
-        return selectedUrl;
-    }
-
-    public void setSelectedUrl(Uri selectedUrl) {
-        this.selectedUrl = selectedUrl;
-        this.imageUrl = selectedUrl.toString();
-    }
-
     public Side getSide() {
         return side;
     }
 
-    public void setMSide(Side side) {
+    public void setSide(Side side) {
         this.side = side;
     }
 
