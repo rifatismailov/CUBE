@@ -1,6 +1,7 @@
 package com.example.cube.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
@@ -21,6 +22,7 @@ import com.example.cube.R;
 import com.example.cube.emoji.MyEmoji;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
+import com.example.cube.visualization.Watcher;
 
 
 import java.util.ArrayList;
@@ -82,6 +84,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
+            viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
             /***/
@@ -131,7 +134,10 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         } else {
 
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
+            viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
+
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
+
             if (message.getMessage().equals("photo")) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
