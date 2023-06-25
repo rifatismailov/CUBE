@@ -26,7 +26,11 @@ public class Visualization {
             Pattern.compile("\\B(\\#[a-zA-Z]+\\b)(?!;)"),
             Color.parseColor("#00b2ff")
     );
-    final private TextColor HASHDOG = new TextColor(
+    final private TextColor HASHTAG_UA = new TextColor(
+            Pattern.compile("\\B(\\#[а-яєiА-ЯЄІ]+\\b)(?!;)"),
+            Color.parseColor("#00b2ff")
+    );
+    final private TextColor HASH_DOG = new TextColor(
             Pattern.compile("\\B(\\@[a-zA-Z]+\\b)(?!;)"),
             Color.parseColor("#00b2ff")
     );
@@ -51,6 +55,13 @@ public class Visualization {
             Color.parseColor("#00b2ff")
     );
     /**
+     * Регулятор для трех и менее ковычек
+     */
+    final private TextColor HTML_UA = new TextColor(
+            Pattern.compile("\\b(https?|ftp|file)://[-а-яєiА-ЯЄІ0-9+&@#/%?=~_|!:,.;]*[-а-яєiА-ЯЄІ0-9+&@#/%=~_|]"),
+            Color.parseColor("#00b2ff")
+    );
+    /**
      * регулятор для подсвтеки одиночных букв
      */
     private TextColor LETTERS = new TextColor(
@@ -64,8 +75,10 @@ public class Visualization {
             visualization.LETTERS,
             visualization.WORKING_METHODS_FIRST,
             visualization.HASHTAG,
+            visualization.HASHTAG_UA,
             visualization.HTML_ENG,
-            visualization.HASHDOG,
+            visualization.HTML_UA,
+            visualization.HASH_DOG,
             visualization.BRACKETS,
             visualization.SQUARE_BRACKETS,
             visualization.BRACES
