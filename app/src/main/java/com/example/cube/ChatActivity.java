@@ -116,34 +116,30 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void receiver(String message) {
-        messages.add(new Message(message,Check.Other, Side.Receiver));
+        messages.add(new Message(message, Check.Other, Side.Receiver));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
     }
 
     private void sender(String message) {
-        messages.add(new Message(message,Check.Other, Side.Sender));
+        messages.add(new Message(message, Check.Other, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
         receiver(message);
-
-    }
-
-    private void sendFile(String message, Uri selectedUrl, Check fFile) {
-        //message.setImageUrl(filePath);
-        messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
-        //binding.messageBox.setText("");
-        binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        adapter.notifyDataSetChanged();
     }
 
     private void receiverFile(String message, Uri selectedUrl, Check fFile) {
-        //message.setImageUrl(filePath);
         messages.add(new Message(message, selectedUrl, fFile, Side.Receiver));
-        //binding.messageBox.setText("");
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
     }
+
+    private void sendFile(String message, Uri selectedUrl, Check fFile) {
+        messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
+        binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
+        adapter.notifyDataSetChanged();
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

@@ -82,7 +82,6 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         Message message = messages.get(position);
         int[] reaction = manyReaction.get(message.getEmojisPosition()).getManySubject();
 
-
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
             viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
