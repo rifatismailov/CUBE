@@ -2,6 +2,7 @@ package com.example.cube.models;
 
 import android.net.Uri;
 
+import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
 public class Message {
@@ -10,19 +11,30 @@ public class Message {
     private int feeling = -1;
     private int emojisPosition = 0;
     Uri selectedUrl;
+    Check check;
     Side side;
 
 
-    public Message(String message, Side side) {
+    public Message(String message, Check check, Side side) {
         this.message = message;
+        this.check =check;
         this.side = side;
     }
 
-    public Message(String message, Uri selectedUrl, Side side) {
+    public Message(String message, Uri selectedUrl, Check check, Side side) {
         this.message = message;
         this.selectedUrl = selectedUrl;
+        this.check =check;
         this.side = side;
         this.imageUrl = selectedUrl.toString();
+    }
+
+    public Check getCheck() {
+        return check;
+    }
+
+    public void setCheck(Check check) {
+        this.check = check;
     }
 
     public Side getSide() {

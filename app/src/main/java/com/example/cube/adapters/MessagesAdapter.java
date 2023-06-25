@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cube.ChatActivity;
+import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 import com.example.cube.dialog.Dialog_Show;
 import com.example.cube.models.EmojiMany;
@@ -88,11 +89,11 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
             /***/
-            if (message.getImageUrl().length() > 0 && message.getMessage().isEmpty()) {
+            if (message.getCheck().equals(Check.Image)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
-            } else if (message.getImageUrl().length() > 0 && !message.getMessage().isEmpty()) {
+            } else if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));

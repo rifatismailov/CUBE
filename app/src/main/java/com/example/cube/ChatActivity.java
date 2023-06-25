@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.cube.adapters.MessagesAdapter;
+import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 import com.example.cube.models.Message;
 
@@ -13,8 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.Menu;
 import android.view.View;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.cube.databinding.ActivityChatBinding;
+
 import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
@@ -56,8 +60,6 @@ public class ChatActivity extends AppCompatActivity {
                 "on Kryvyi Rih. Tonight, there was another terrorist attack – and again three dead, this time in #Odesa. " +
                 "All the missiles fired by #Russia were produced in the spring of 2023. In all of them, " +
                 "without… https://t.co/InqQMPl3xr https://t.co/ByK8CN1dyA");
-
-
 
 
         binding.sendBtn.setOnClickListener(new View.OnClickListener() {
@@ -114,17 +116,33 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void receiver(String message) {
-        messages.add(new Message(message, Side.Receiver));
+        messages.add(new Message(message,Check.Other, Side.Receiver));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
     }
 
     private void sender(String message) {
-        messages.add(new Message(message, Side.Sender));
+        messages.add(new Message(message,Check.Other, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
         receiver(message);
 
+    }
+
+    private void sendFile(String message, Uri selectedUrl, Check fFile) {
+        //message.setImageUrl(filePath);
+        messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
+        //binding.messageBox.setText("");
+        binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
+        adapter.notifyDataSetChanged();
+    }
+
+    private void receiverFile(String message, Uri selectedUrl, Check fFile) {
+        //message.setImageUrl(filePath);
+        messages.add(new Message(message, selectedUrl, fFile, Side.Receiver));
+        //binding.messageBox.setText("");
+        binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -136,12 +154,8 @@ public class ChatActivity extends AppCompatActivity {
                     try {
                         Uri selectedUrl = data.getData();
                         String filePath = selectedUrl.toString();
-                        Message message = new Message("",selectedUrl, Side.Sender);
-                        //message.setImageUrl(filePath);
-                        messages.add(message);
-                        //binding.messageBox.setText("");
-                        binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-                        adapter.notifyDataSetChanged();
+                        sendFile("Hello my friend", selectedUrl, Check.Image);
+
 
                     } catch (Exception e) {
                     }
