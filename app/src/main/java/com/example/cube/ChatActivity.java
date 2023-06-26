@@ -138,6 +138,8 @@ public class ChatActivity extends AppCompatActivity {
         messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
+        receiverFile("Hello my friend", selectedUrl, Check.Image);
+
     }
 
 

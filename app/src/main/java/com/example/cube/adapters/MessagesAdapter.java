@@ -138,10 +138,17 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
-            if (message.getMessage().equals("photo")) {
+            if (message.getCheck().equals(Check.Image)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+            } else if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
+                viewHolder.binding.image.setVisibility(View.VISIBLE);
+                viewHolder.binding.message.setVisibility(View.VISIBLE);
+                viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+            } else {
+                viewHolder.binding.image.setVisibility(View.GONE);
+                viewHolder.binding.message.setVisibility(View.VISIBLE);
             }
 
             if (!show) viewHolder.binding.recyclerView2.setVisibility(View.GONE);
@@ -166,7 +173,16 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
-
+            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int[] location = new int[2];
+                    viewHolder.binding.message.getLocationOnScreen(location);
+                    int x = location[0];
+                    int y = location[1];
+                    new Dialog_Show().DialogOn(context, x, y, message, holder);
+                }
+            });
         }
     }
 
