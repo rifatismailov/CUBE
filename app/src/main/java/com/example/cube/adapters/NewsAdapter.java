@@ -75,7 +75,6 @@ public class NewsAdapter extends RecyclerView.Adapter {
         NewsViewHolder viewHolder = (NewsViewHolder) holder;
         viewHolder.binding.news.addTextChangedListener(new Watcher((Activity) context));
 
-        viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
         if (news_Person.getCheck().equals(Check.Image) && news_Person.getNews().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
@@ -90,17 +89,9 @@ public class NewsAdapter extends RecyclerView.Adapter {
             viewHolder.binding.news.setVisibility(View.VISIBLE);
         }
 
-        if (!show) viewHolder.binding.recyclerView2.setVisibility(View.GONE);
         viewHolder.binding.news.setText(news_Person.getNews());
 
-        if (news_Person.getFeeling() >= 0) {
-            viewHolder.binding.feel.setVisibility(View.VISIBLE);
-            viewHolder.binding.feeling.setImageResource(reaction[news_Person.getFeeling()]);
-            viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-        } else {
-            viewHolder.binding.feel.setVisibility(View.GONE);
-            viewHolder.binding.feeling.setVisibility(View.GONE);
-        }
+
 
     }
 
