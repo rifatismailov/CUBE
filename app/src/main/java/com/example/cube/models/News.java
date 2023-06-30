@@ -7,8 +7,6 @@ import com.example.cube.control.Side;
 
 public class News {
     private String personId, news, imageUrl = "";
-    private int feeling = -1;
-    private int emojisPosition = 0;
     Uri selectedUrl;
     Check check;
     Side side;
@@ -59,23 +57,6 @@ public class News {
 
     public void setNews(String news) {
         this.news = news;
-    }
-
-
-    public int getFeeling() {
-        return feeling;
-    }
-
-    public void setFeeling(int feeling) {
-        this.feeling = feeling;
-    }
-
-    public int getEmojisPosition() {
-        return emojisPosition;
-    }
-
-    public void setEmojisPosition(int emojisPosition) {
-        this.emojisPosition = emojisPosition;
     }
 
     public String getImageUrl() {

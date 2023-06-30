@@ -29,6 +29,12 @@ public class MainActivity extends AppCompatActivity {
                 startNews(view);
             }
         });
+        binding.btInstruction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startInstruction(view);
+            }
+        });
 
     }
     public void startChat(View view) {
@@ -38,6 +44,11 @@ public class MainActivity extends AppCompatActivity {
     }
     public void startNews(View view) {
         Intent intent = new Intent(this, NewsActivity.class);
+        intent.putExtra("name", "Vasia Pupkin");
+        startActivity(intent);
+    }
+    public void startInstruction(View view) {
+        Intent intent = new Intent(this, Instruction_Activity.class);
         intent.putExtra("name", "Vasia Pupkin");
         startActivity(intent);
     }

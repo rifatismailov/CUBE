@@ -32,14 +32,12 @@ public class NewsAdapter extends RecyclerView.Adapter {
 
     Context context;
     ArrayList<News> news;
-    List<EmojiMany> manyReaction = MyEmoji.getManyReaction();
 
     final int ITEM_SENT = 1;
     final int ITEM_RECEIVE = 2;
-    boolean show = false;
 
 
-    public NewsAdapter(NewsActivity context, ArrayList<News> news) {
+    public NewsAdapter(Context context, ArrayList<News> news) {
         this.context = context;
         this.news = news;
 
@@ -69,8 +67,6 @@ public class NewsAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
         News news_Person = news.get(position);
-        int[] reaction = manyReaction.get(news_Person.getEmojisPosition()).getManySubject();
-
 
         NewsViewHolder viewHolder = (NewsViewHolder) holder;
         viewHolder.binding.news.addTextChangedListener(new Watcher((Activity) context));
