@@ -88,11 +88,11 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
             /***/
-            if (message.getCheck().equals(Check.Image)&& message.getMessage().isEmpty()) {
+            if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
-            } else if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
+            } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
@@ -138,11 +138,11 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
-            if (message.getCheck().equals(Check.Image)&& message.getMessage().isEmpty()) {
+            if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
-            } else if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
+            } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));

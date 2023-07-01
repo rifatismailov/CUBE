@@ -14,12 +14,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.Menu;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
+import com.example.cube.socket.Exchange;
+import com.example.cube.socket.FileRWByte;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -28,6 +33,8 @@ public class ChatActivity extends AppCompatActivity {
     MessagesAdapter adapter;
     ArrayList<Message> messages;
     String receiverUid;
+    List<Exchange> exchanges = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +145,7 @@ public class ChatActivity extends AppCompatActivity {
         messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         adapter.notifyDataSetChanged();
-        receiverFile("Hello my friend", selectedUrl, Check.Image);
+        receiverFile("Hello my friend", selectedUrl, Check.ImageAndText);
 
     }
 
@@ -150,9 +157,14 @@ public class ChatActivity extends AppCompatActivity {
             if (data != null) {
                 if (data.getData() != null) {
                     try {
+
                         Uri selectedUrl = data.getData();
-                        String filePath = selectedUrl.toString();
-                        sendFile("Hello my friend", selectedUrl, Check.Image);
+                        File file = new File(selectedUrl.getPath());//create path from uri
+
+                        Toast.makeText(this, ""+ file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                        //exchanges.add(new Exchange("Hello My fried",Check.FileAndText, new FileRWByte().fileByte(selectedUrl.toString()),"budanov.jpg"));
+
+                        sendFile("Hello my friend", selectedUrl, Check.ImageAndText);
 
 
                     } catch (Exception e) {
