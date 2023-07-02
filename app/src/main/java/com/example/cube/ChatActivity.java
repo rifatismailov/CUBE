@@ -2,6 +2,7 @@ package com.example.cube;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.example.cube.adapters.MessagesAdapter;
@@ -12,6 +13,7 @@ import com.example.cube.models.Message;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Environment;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
@@ -20,13 +22,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.cube.socket.Exchange;
-import com.example.cube.socket.FileRWByte;
+import com.example.folder.Folder;
+import com.example.folder.dialogwindows.Open;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements Folder {
 
     private ActivityChatBinding binding;
 
@@ -79,14 +82,18 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
-
+        final String DIR = Environment.getExternalStorageDirectory().toString();
         binding.attachment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(intent, 25);
+                //Intent intent = new Intent();
+                //  intent.setAction(Intent.ACTION_GET_CONTENT);
+                // intent.setType("image/*");
+                //  startActivityForResult(intent, 25);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    new Open(ChatActivity.this, DIR);
+                }
+
             }
         });
 
@@ -149,36 +156,16 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 25) {
-            if (data != null) {
-                if (data.getData() != null) {
-                    try {
-
-                        Uri selectedUrl = data.getData();
-                        File file = new File(selectedUrl.getPath());//create path from uri
-
-                        Toast.makeText(this, ""+ file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                        //exchanges.add(new Exchange("Hello My fried",Check.FileAndText, new FileRWByte().fileByte(selectedUrl.toString()),"budanov.jpg"));
-
-                        sendFile("Hello my friend", selectedUrl, Check.ImageAndText);
-
-
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-    }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.chat_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public void openFile(String url) {
+        sendFile("Hello my friend", Uri.parse(url), Check.ImageAndText);
+
+        Toast.makeText(this, "" + url, Toast.LENGTH_SHORT).show();
+    }
 }

@@ -9,12 +9,15 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.cube.databinding.ActivityMainBinding;
+import com.example.cube.permission.Permission;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new Permission(this);
+
         binding= DataBindingUtil.setContentView(this,R.layout.activity_main);
         //startNews(binding.getRoot().getRootView());
         binding.btChat.setOnClickListener(new View.OnClickListener() {
