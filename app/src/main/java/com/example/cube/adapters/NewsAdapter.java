@@ -13,19 +13,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.cube.ChatActivity;
-import com.example.cube.NewsActivity;
 import com.example.cube.R;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
-import com.example.cube.emoji.MyEmoji;
 import com.example.cube.holder.NewsViewHolder;
-import com.example.cube.models.EmojiMany;
 import com.example.cube.models.News;
-import com.example.cube.visualization.Watcher;
+import com.example.textvisualization.visualization.Watcher;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class NewsAdapter extends RecyclerView.Adapter {
 

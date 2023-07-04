@@ -12,10 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.R;
-import com.example.cube.holder.NewsViewHolder;
 import com.example.cube.holder.instructionViewHolder;
 import com.example.cube.models.Instruction;
-import com.example.cube.visualization.Watcher;
+import com.example.textvisualization.visualization.Watcher;
+
 import java.util.ArrayList;
 
 public class InstructionAdapter extends RecyclerView.Adapter {

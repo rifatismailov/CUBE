@@ -1,4 +1,4 @@
-package com.example.cube.visualization;
+package com.example.textvisualization.visualization;
 
 import android.graphics.Color;
 

@@ -1,31 +1,26 @@
 package com.example.cube;
 
-import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.bumptech.glide.Glide;
 import com.example.cube.adapters.MessagesAdapter;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 import com.example.cube.models.Message;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Environment;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Toast;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
-
+import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.cube.socket.Exchange;
 import com.example.folder.Folder;
 import com.example.folder.dialogwindows.Open;
-
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,10 +56,16 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         binding.status.setText("Online");
         binding.name.setText(receiverUid);
         adapter = new MessagesAdapter(this, messages);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
+        binding.recyclerView.setHasFixedSize(true);
+        binding.recyclerView.setItemViewCacheSize(20);
+        binding.recyclerView.setDrawingCacheEnabled(true);
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
+
+
         receiver("Hello my friend American English varieties");
         receiver("This is a photo of just one young family killed by a Russian missile attack " +
                 "on Kryvyi Rih. Tonight, there was another terrorist attack – and again three dead, this time in #Odesa. " +
@@ -78,22 +79,18 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 String messageTxt = binding.messageBox.getText().toString();
                 if (!binding.messageBox.getText().toString().isEmpty()) {
                     sender(messageTxt);
+                    //adapter.notifyDataSetChanged();
+
                     binding.messageBox.setText("");
                 }
             }
         });
-        final String DIR = Environment.getExternalStorageDirectory().toString();
         binding.attachment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent intent = new Intent();
-                //  intent.setAction(Intent.ACTION_GET_CONTENT);
-                // intent.setType("image/*");
-                //  startActivityForResult(intent, 25);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    new Open(ChatActivity.this, DIR);
+                    new Open(ChatActivity.this);
                 }
-
             }
         });
 
@@ -132,27 +129,40 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private void receiver(String message) {
         messages.add(new Message(message, Check.Other, Side.Receiver));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
     }
 
     private void sender(String message) {
         messages.add(new Message(message, Check.Other, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
         receiver(message);
     }
 
-    private void receiverFile(String message, Uri selectedUrl, Check fFile) {
-        messages.add(new Message(message, selectedUrl, fFile, Side.Receiver));
+     private void receiverFile(String message, Uri selectedUrl, Check fFile) {
+          messages.add(new Message(message, selectedUrl, fFile, Side.Receiver));
+          binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
+          //adapter.notifyDataSetChanged();
+      }
+
+      private void sendFile(String message, Uri selectedUrl, Check fFile) {
+          messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
+          binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
+          //adapter.notifyDataSetChanged();
+          receiverFile("Hello my friend", selectedUrl, Check.ImageAndText);
+      }
+
+    private void receiverFileBit(String message, byte[] image, int width, int height, Check fFile) {
+        messages.add(new Message(message, image, width, height, fFile, Side.Receiver));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
     }
 
-    private void sendFile(String message, Uri selectedUrl, Check fFile) {
-        messages.add(new Message(message, selectedUrl, fFile, Side.Sender));
+    private void sendFileBit(String message, byte[] image, int width, int height, Check fFile) {
+        messages.add(new Message(message, image, width, height, fFile, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        adapter.notifyDataSetChanged();
-        receiverFile("Hello my friend", selectedUrl, Check.ImageAndText);
+        //adapter.notifyDataSetChanged();
+        receiverFileBit("Hello my friend", image, width, height, Check.ImageAndText);
 
     }
 
@@ -163,9 +173,17 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     }
 
     @Override
+    public void openFile(byte[] image, int width, int height) {
+        sendFileBit("Hello my friend", image, width, height, Check.ImageAndText);
+       binding.recyclerView.getAdapter().notifyItemInserted(messages.size() - 1);
+
+        //adapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void openFile(String url) {
         sendFile("Hello my friend", Uri.parse(url), Check.ImageAndText);
+        //adapter.notifyDataSetChanged();
 
-        Toast.makeText(this, "" + url, Toast.LENGTH_SHORT).show();
     }
 }

@@ -3,6 +3,8 @@ package com.example.folder.dialogwindows;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -20,6 +22,7 @@ import com.example.folder.Folder;
 import com.example.folder.R;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,6 @@ import java.util.List;
 public class Open implements AdapterView.OnItemClickListener {
     AlertDialog alertDialog;
     Context context;
-    //MainInterface mainInterface;
     private List<Search> arrayList = new ArrayList<>();
     private SearchAdapter searchAdapter;
     private ListView listView;
@@ -38,16 +40,32 @@ public class Open implements AdapterView.OnItemClickListener {
     ImageButton cancel;
     Folder folder;
     public final String DIR = Environment.getExternalStorageDirectory().toString();
-
+    Activity activity;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Open(Activity context, String directory) {
+    public Open(Context context) {
+        this.directory = DIR;
+        this.context = context;
+      activity = (Activity) context;
+
+        folder = (Folder) context;
+        DialogShow();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public Open(Context context, String directory) {
         this.directory = directory;
         this.context = context;
-        folder = (Folder) context;
+       activity = (Activity) context;
 
+        folder = (Folder) context;
+        DialogShow();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void DialogShow() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-        final View linearlayout = context.getLayoutInflater().inflate(R.layout.dialog_open, null);
+        final View linearlayout = activity.getLayoutInflater().inflate(R.layout.dialog_open, null);
         dialog.setView(linearlayout);
         alertDialog = dialog.show();
         alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -133,21 +151,25 @@ public class Open implements AdapterView.OnItemClickListener {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void back() {
-        String newDirectory = "";
-        String[] parts = directory.split("/");
-        for (int i = 0; i < parts.length - 1; i++) {
-            newDirectory = newDirectory + "/" + parts[i];
-        }
-        Toast.makeText(context, DIR.length()+" "+newDirectory.length(), Toast.LENGTH_SHORT).show();
-        directory = newDirectory;
-        if (directory.length() < DIR.length()+1)
-            showDirectory(DIR);
-        if (newDirectory.equals(DIR))
-            showDirectory(DIR);
-        else {
-            showDirectory(newDirectory);
-        }
+        try {
+            String newDirectory = "";
+            String[] parts = directory.split("/");
+            for (int i = 0; i < parts.length - 1; i++) {
+                newDirectory = newDirectory + "/" + parts[i];
+            }
+            if (newDirectory.length() < DIR.length()) {
+                showDirectory(DIR);
+                directory = DIR;
+            } else {
+                if (newDirectory.length() > DIR.length()) {
+                    showDirectory(newDirectory);
+                    directory = newDirectory;
+                } else showDirectory(DIR);
+            }
+        } catch (Exception e) {
+            directory = DIR;
 
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -155,14 +177,28 @@ public class Open implements AdapterView.OnItemClickListener {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         directory = directory + "/" + searchAdapter.getItem(position).getNumber();
         if (checkFile(directory)) {
-            // mainInterface.setEditText(readFile(directory + searchAdapter.getItem(position).getNumber()));
-            // mainInterface.setFileName(searchAdapter.getItem(position).getNumber());
-            // mainInterface.setDIRECTORY(directory);
-            folder.openFile(directory);
             alertDialog.cancel();
+
+            activity.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    Bitmap bMap = BitmapFactory.decodeFile(directory);
+                    int width = bMap.getWidth();
+                    int height = bMap.getHeight();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bMap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    folder.openFile(byteArray, width, height);
+
+                    //folder.openFile(directory);
+
+                }
+            });
+
+
         } else {
-            // project_Name = mAdapter.getItem(position).getNomber();
-            // Toast.makeText(context, "" + directory, Toast.LENGTH_SHORT).show();
             showDirectory(directory + "/");
         }
     }

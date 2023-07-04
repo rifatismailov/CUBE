@@ -3,7 +3,8 @@ package com.example.cube.adapters;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +24,8 @@ import com.example.cube.R;
 import com.example.cube.emoji.MyEmoji;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
-import com.example.cube.visualization.Watcher;
+import com.example.textvisualization.visualization.Watcher;
+import com.squareup.picasso.Picasso;
 
 
 import java.util.ArrayList;
@@ -57,11 +59,13 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ITEM_SENT) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_sent, parent, false);
+
             return new SentViewHolder(view);
         } else {
             View view = LayoutInflater.from(context).inflate(R.layout.item_receive, parent, false);
             return new ReceiverViewHolder(view);
         }
+
     }
 
     @Override
@@ -78,10 +82,9 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-
         Message message = messages.get(position);
-        int[] reaction = manyReaction.get(message.getEmojisPosition()).getManySubject();
 
+        int[] reaction = manyReaction.get(message.getEmojisPosition()).getManySubject();
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
             viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
@@ -91,11 +94,17 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
-                viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
-                viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -111,7 +120,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                 viewHolder.binding.feeling.setVisibility(View.GONE);
             }
 
-            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+           viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int[] location = new int[2];
@@ -131,6 +140,8 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
+
+
         } else {
 
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
@@ -141,11 +152,21 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
-                viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
+                Picasso.with(context).cancelRequest(viewHolder.binding.image);
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
-                viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
+                //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
+                Picasso.with(context).cancelRequest(viewHolder.binding.image);
+
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
+
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -163,7 +184,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                 viewHolder.binding.feeling.setVisibility(View.GONE);
             }
 
-            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+           viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int[] location = new int[2];
@@ -183,6 +204,8 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     new Dialog_Show().DialogOn(context, x, y, message, holder);
                 }
             });
+
+
         }
     }
 
