@@ -1,8 +1,9 @@
-package com.example.cube.emoji;
+package com.example.emoji.emoji;
 
-import com.example.cube.models.EmojiMany;
-import com.example.cube.R;
 
+
+import com.example.emoji.R;
+import com.example.emoji.models.EmojiMany;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,6 +138,6 @@ public class MyEmoji {
             R.drawable.flaga1f1fc, R.drawable.flagb1f1f2, R.drawable.flagc1f1f1, R.drawable.flage1f1e6, R.drawable.flagf1fa, R.drawable.flagg1f1fe, R.drawable.flagk1f1f2, R.drawable.flago1f1ea, R.drawable.flagp1f1e8, R.drawable.flagq1f1f7, R.drawable.flags1f1f2, R.drawable.flagt1f1f4,
             R.drawable.flaga1f1fd, R.drawable.flagb1f1f3, R.drawable.flagc1f1f2, R.drawable.flage1f1e8, R.drawable.flagf1fb, R.drawable.flagh1f1f0, R.drawable.flagk1f1f3, R.drawable.flago1f1eb, R.drawable.flagp1f1ea, R.drawable.flagq1f1f8, R.drawable.flags1f1f3, R.drawable.flagt1f1f7,
             R.drawable.flaga1f1ff, R.drawable.flagb1f1f4, R.drawable.flagc1f1f3, R.drawable.flage1f1ea, R.drawable.flagf1fe, R.drawable.flagh1f1f2, R.drawable.flagk1f1f4, R.drawable.flago1f1ec, R.drawable.flagp1f1eb, R.drawable.flagq1f1f9, R.drawable.flags1f1f4, R.drawable.flagt1f1f9,
-            R.drawable.flaga1f308, R.drawable.flagb1f1f6, R.drawable.flagc1f1f4, R.drawable.flage1f1ec, R.drawable.flagg1f1e6, R.drawable.flagh1f1f3, R.drawable.flagk1f1f6, R.drawable.flago1f1ed, R.drawable.flagp1f1ec, R.drawable.flagq1f1fc, R.drawable.flags1f1f7, R.drawable.flagt1f1fb
+            R.drawable.flagb1f1f6, R.drawable.flagc1f1f4, R.drawable.flage1f1ec, R.drawable.flagg1f1e6, R.drawable.flagh1f1f3, R.drawable.flagk1f1f6, R.drawable.flago1f1ed, R.drawable.flagp1f1ec, R.drawable.flagq1f1fc, R.drawable.flags1f1f7, R.drawable.flagt1f1fb
     };
 }

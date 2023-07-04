@@ -17,13 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.ChatActivity;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
-import com.example.cube.dialog.Dialog_Show;
-import com.example.cube.models.EmojiMany;
+import com.example.cube.emoji.DialogEmojiOne;
 import com.example.cube.models.Message;
 import com.example.cube.R;
-import com.example.cube.emoji.MyEmoji;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
+import com.example.emoji.emoji.MyEmoji;
+import com.example.emoji.models.EmojiMany;
 import com.example.textvisualization.visualization.Watcher;
 import com.squareup.picasso.Picasso;
 
@@ -31,13 +31,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessagesAdapter extends RecyclerView.Adapter {
-    //https://icon-icons.com/ru/pack/Fluent-solid-(20px)/3249&page=1
-    ///https://icon-icons.com/ru/pack/Heroicons-(Outline)/2551
-    //https://icon-icons.com/ru/users/G0p1UTxX8cVjHAiG0VWCQ/icon-sets/
-    //https://icon-icons.com/ru/users/gX1mWoxgWPZP2J3536YS4/icon-sets/
-    //https://icon-icons.com/ru/users/yt6qUYDYtOMSe2XAcbw0m/icon-sets/
-
+public class MessagesAdapter extends RecyclerView.Adapter  {
 
     Context context;
     ArrayList<Message> messages;
@@ -46,7 +40,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     final int ITEM_SENT = 1;
     final int ITEM_RECEIVE = 2;
     boolean show = false;
-
+    RecyclerView.ViewHolder holder;
 
     public MessagesAdapter(ChatActivity context, ArrayList<Message> messages) {
         this.context = context;
@@ -84,6 +78,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
 
+        this.holder=holder;
         int[] reaction = manyReaction.get(message.getEmojisPosition()).getManySubject();
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
@@ -91,20 +86,20 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
             /***/
-            if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
+            if (message.getCheck().equals(Check.ImageNoText) && message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -120,14 +115,15 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                 viewHolder.binding.feeling.setVisibility(View.GONE);
             }
 
-           viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int[] location = new int[2];
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context, x, y, message, holder);
+                    new DialogEmojiOne(context, x, y, message, holder);
+
                 }
             });
             viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +133,8 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context, x, y, message, holder);
+                    new DialogEmojiOne(context, x, y, message, holder);
+
                 }
             });
 
@@ -149,14 +146,14 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             viewHolder.binding.recyclerView2.setVisibility(View.GONE);
 
-            if (message.getCheck().equals(Check.ImageNoText)&& message.getMessage().isEmpty()) {
+            if (message.getCheck().equals(Check.ImageNoText) && message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.GONE);
                 //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Picasso.with(context).cancelRequest(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -165,7 +162,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                 Picasso.with(context).cancelRequest(viewHolder.binding.image);
 
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth()/3, message.getImageHeight()/3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
 
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
@@ -184,14 +181,15 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                 viewHolder.binding.feeling.setVisibility(View.GONE);
             }
 
-           viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int[] location = new int[2];
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context, x, y, message, holder);
+                    new DialogEmojiOne(context,x, y, message, holder);
+
                 }
             });
             viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
@@ -201,13 +199,15 @@ public class MessagesAdapter extends RecyclerView.Adapter {
                     viewHolder.binding.message.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    new Dialog_Show().DialogOn(context, x, y, message, holder);
+                    new DialogEmojiOne(context,x, y, message, holder);
+
                 }
             });
 
 
         }
     }
+
 
 
     @Override
@@ -215,46 +215,5 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         return messages.size();
     }
 
-    //public class SentViewHolder
 
-
-   /* public class Dialog_Show {
-        public void DialogOn(int x, int y, Message message, RecyclerView.ViewHolder holder) {
-            Dialog dialog = new Dialog(context, R.layout.dialog_emoji, R.style.DialogAnimation, x, y);
-            View show_emoji = dialog.getLinearlayout().findViewById(R.id.show_emoji);
-            RecyclerView Emoji = dialog.getLinearlayout().findViewById(R.id.recyclerEmoji);
-            ArrayList<EmojiOn> subjectArrayList = new ArrayList<>();
-            for (int reaction : manyReaction.get(0).getManySubject()) {
-                subjectArrayList.add(new EmojiOn(reaction));
-            }
-
-            Emoji.setAdapter(new EmojiAdapter(message, holder, subjectArrayList, dialog.getAlertDialog(), 0));
-            Emoji.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
-
-            show_emoji.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.getAlertDialog().cancel();
-                    new Dialog_Show().Dialog_Many(x, y, message, holder);
-                }
-            });
-        }
-
-
-            Many_Emoji.setAdapter(new ManyEmojiAdapter(context, message, holder, manyReaction, dialog.getAlertDialog()));
-            Many_Emoji.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
-
-            close_emoji.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.getAlertDialog().cancel();
-                    new Dialog_Show().DialogOn(x, y, message, holder);
-                }
-            });
-        }
     }
-    */
-
-
-    //  class ManyEmojiAdapter
-}

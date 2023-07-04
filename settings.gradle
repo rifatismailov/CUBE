@@ -16,3 +16,4 @@ rootProject.name = "CUBE"
 include ':app'
 include ':folder'
 include ':textvisualization'
+include ':myemoji'

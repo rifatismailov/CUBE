@@ -1,4 +1,4 @@
-package com.example.cube.models;
+package com.example.emoji.models;
 
 public class EmojiOn {
     private int imageId;

@@ -5,7 +5,7 @@ import android.net.Uri;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
-public class Message {
+public class Message  {
     private String messageId, message, senderId, imageUrl = "";
     private long timestamp;
     private int feeling = -1;

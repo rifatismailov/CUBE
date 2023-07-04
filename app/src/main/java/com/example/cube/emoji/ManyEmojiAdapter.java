@@ -1,4 +1,4 @@
-package com.example.cube.adapters;
+package com.example.cube.emoji;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,15 +11,16 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.cube.models.EmojiMany;
-import com.example.cube.models.EmojiOn;
-import com.example.cube.models.Message;
+
 import com.example.cube.R;
+import com.example.cube.models.Message;
+import com.example.emoji.models.EmojiMany;
+import com.example.emoji.models.EmojiOn;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ManyEmojiAdapter extends RecyclerView.Adapter<ManyEmojiAdapter.ViewHolder> {
+public     class ManyEmojiAdapter extends RecyclerView.Adapter<ManyEmojiAdapter.ViewHolder> {
     List<EmojiMany> manySubjects;
     RecyclerView.ViewHolder OnHolder;
     Message message;
@@ -36,14 +37,14 @@ public class ManyEmojiAdapter extends RecyclerView.Adapter<ManyEmojiAdapter.View
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ManyEmojiAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View contactView = LayoutInflater.from(parent.getContext()).inflate(R.layout.iteam_many_emoji, parent, false);
-        ViewHolder OnHolder = new ViewHolder(contactView);
+        ManyEmojiAdapter.ViewHolder OnHolder = new ManyEmojiAdapter.ViewHolder(contactView);
         return OnHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ManyEmojiAdapter.ViewHolder holder, int position) {
 
         int[] array = manySubjects.get(position).getManySubject();
         RecyclerView Emoji = holder.recyclerView;

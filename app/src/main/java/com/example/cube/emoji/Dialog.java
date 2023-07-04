@@ -1,4 +1,4 @@
-package com.example.cube.models;
+package com.example.cube.emoji;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -47,11 +47,4 @@ public class Dialog {
         return alertDialog;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
 }
