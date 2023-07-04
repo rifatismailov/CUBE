@@ -28,11 +28,12 @@ public     class ManyEmojiAdapter extends RecyclerView.Adapter<ManyEmojiAdapter.
     Context context;
 
     public ManyEmojiAdapter(Context context, Message message, RecyclerView.ViewHolder OnHolder, List<EmojiMany> manySubjects, AlertDialog alertDialog) {
-        this.manySubjects = manySubjects;
+        this.context=context;
         this.message = message;
         this.OnHolder = OnHolder;
+        this.manySubjects = manySubjects;
         this.alertDialog = alertDialog;
-        this.context=context;
+
     }
 
     @NonNull

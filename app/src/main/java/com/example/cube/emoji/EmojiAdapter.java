@@ -81,7 +81,6 @@ public class EmojiAdapter extends RecyclerView.Adapter<EmojiAdapter.ViewHolder> 
     public int getItemCount() {
         return list.size();
     }
-
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView ImageView;
 
