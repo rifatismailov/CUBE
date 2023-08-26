@@ -14,10 +14,13 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.folder.Conversion;
+import com.example.folder.FileConversion;
 import com.example.folder.Folder;
 import com.example.folder.R;
 
@@ -27,18 +30,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Open implements AdapterView.OnItemClickListener {
+public class Open implements AdapterView.OnItemClickListener, Conversion {
     AlertDialog alertDialog;
     Context context;
     private List<Search> arrayList = new ArrayList<>();
     private SearchAdapter searchAdapter;
     private ListView listView;
     String directory;
-    ImageButton sendFile;
-    ImageButton delete;
     ImageButton back;
-    ImageButton cancel;
     Folder folder;
+    TextView infoFile;
     public final String DIR = Environment.getExternalStorageDirectory().toString();
     Activity activity;
 
@@ -72,52 +73,12 @@ public class Open implements AdapterView.OnItemClickListener {
         dialog.create();
         listView = linearlayout.findViewById(R.id.OpenListView);
         listView.setOnItemClickListener(this);
-        sendFile = linearlayout.findViewById(R.id.SendFile);
-        delete = linearlayout.findViewById(R.id.deleteFile);
         back = linearlayout.findViewById(R.id.back);
-        cancel = linearlayout.findViewById(R.id.cancel);
-        sendFile.setVisibility(View.GONE);
-        delete.setVisibility(View.GONE);
-        cancel.setOnClickListener(v -> {
-            /**Закрываем Диалог*/
-            alertDialog.cancel();
-        });
-        sendFile.setOnClickListener(v -> {
-            /**Отпровляем фаилы и скрываем кнопки*/
-            sendFile.setVisibility(View.GONE);
-            delete.setVisibility(View.GONE);
-            alertDialog.cancel();
-        });
-        delete.setOnClickListener(v -> {
-            sendFile.setVisibility(View.GONE);
-            delete.setVisibility(View.GONE);
-
-        });
         back.setOnClickListener(v -> back());
+        infoFile=linearlayout.findViewById(R.id.infoFile);
         showDirectory(directory);
-        listView.setOnItemLongClickListener((parent, view, position, id) -> {
-            final CheckBox checkBox = view.findViewById(R.id.check);
-            /**разблокировка checkBox*/
-            checkBox.setVisibility(view.VISIBLE);
-            if (searchAdapter.getItem(position).getCheck() == false) {
-                checkBox.setChecked(true);
-                searchAdapter.getItem(position).setCheck(true);
-                /**При выделении проверяем на состояния checkBox ListView
-                 * если оно ложное меняем его состояние на истинное
-                 * потом меняем состояние кнопок*/
-                sendFile.setVisibility(View.VISIBLE);
-                delete.setVisibility(View.VISIBLE);
-            } else {
-                checkBox.setChecked(false);
-                searchAdapter.getItem(position).setCheck(false);
-                sendFile.setVisibility(View.GONE);
-                delete.setVisibility(View.GONE);
-            }
-            return true;
-        });
         dialog.create();
     }
-
 
     public String[] arrayDir(String directory) {
         File dir = new File(directory);
@@ -171,18 +132,22 @@ public class Open implements AdapterView.OnItemClickListener {
 
         }
     }
-
+    public void openFile(byte[] byteArray, int width, int height){
+        folder.openFile(byteArray, width, height);
+        alertDialog.cancel();
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         directory = directory + "/" + searchAdapter.getItem(position).getNumber();
         if (checkFile(directory)) {
-
-            activity.runOnUiThread(new Runnable() {
+            infoFile.setText("Please waite some time");
+            FileConversion fileConversion=new FileConversion(this,directory);
+            fileConversion.start();
+         /*   activity.runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-
                     Bitmap bMap = BitmapFactory.decodeFile(directory);
                     int width = bMap.getWidth();
                     int height = bMap.getHeight();
@@ -196,7 +161,7 @@ public class Open implements AdapterView.OnItemClickListener {
 
                 }
             });
-
+*/
 
         } else {
             showDirectory(directory + "/");
