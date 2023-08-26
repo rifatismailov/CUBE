@@ -177,7 +177,6 @@ public class Open implements AdapterView.OnItemClickListener {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         directory = directory + "/" + searchAdapter.getItem(position).getNumber();
         if (checkFile(directory)) {
-            alertDialog.cancel();
 
             activity.runOnUiThread(new Runnable() {
 
@@ -191,6 +190,7 @@ public class Open implements AdapterView.OnItemClickListener {
                     bMap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byte[] byteArray = stream.toByteArray();
                     folder.openFile(byteArray, width, height);
+                    alertDialog.cancel();
 
                     //folder.openFile(directory);
 

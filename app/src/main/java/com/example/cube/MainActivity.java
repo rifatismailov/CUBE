@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         new Permission(this);
 
         binding= DataBindingUtil.setContentView(this,R.layout.activity_main);
-        //startNews(binding.getRoot().getRootView());
+        startChat(binding.getRoot().getRootView());
         binding.btChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
