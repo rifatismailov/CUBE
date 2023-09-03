@@ -2,16 +2,18 @@ package com.example.folder.dialogwindows;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,8 +21,8 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
-import com.example.folder.Conversion;
-import com.example.folder.FileConversion;
+import com.example.folder.ConvertImage;
+import com.example.folder.ReturnOpen;
 import com.example.folder.Folder;
 import com.example.folder.R;
 
@@ -30,7 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Open implements AdapterView.OnItemClickListener, Conversion {
+public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
     AlertDialog alertDialog;
     Context context;
     private List<Search> arrayList = new ArrayList<>();
@@ -47,7 +49,7 @@ public class Open implements AdapterView.OnItemClickListener, Conversion {
     public Open(Context context) {
         this.directory = DIR;
         this.context = context;
-      activity = (Activity) context;
+        activity = (Activity) context;
 
         folder = (Folder) context;
         DialogShow();
@@ -57,11 +59,13 @@ public class Open implements AdapterView.OnItemClickListener, Conversion {
     public Open(Context context, String directory) {
         this.directory = directory;
         this.context = context;
-       activity = (Activity) context;
+        activity = (Activity) context;
 
         folder = (Folder) context;
         DialogShow();
     }
+
+    private ProgressDialog progressDialog;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void DialogShow() {
@@ -71,11 +75,13 @@ public class Open implements AdapterView.OnItemClickListener, Conversion {
         alertDialog = dialog.show();
         alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.create();
+
+
         listView = linearlayout.findViewById(R.id.OpenListView);
         listView.setOnItemClickListener(this);
         back = linearlayout.findViewById(R.id.back);
         back.setOnClickListener(v -> back());
-        infoFile=linearlayout.findViewById(R.id.infoFile);
+        infoFile = linearlayout.findViewById(R.id.infoFile);
         showDirectory(directory);
         dialog.create();
     }
@@ -132,39 +138,36 @@ public class Open implements AdapterView.OnItemClickListener, Conversion {
 
         }
     }
-    public void openFile(byte[] byteArray, int width, int height){
+
+    public void openFile(byte[] byteArray, int width, int height) {
         folder.openFile(byteArray, width, height);
-        alertDialog.cancel();
     }
+
+    @Override
+    public void showInfo(String info) {
+
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         directory = directory + "/" + searchAdapter.getItem(position).getNumber();
         if (checkFile(directory)) {
             infoFile.setText("Please waite some time");
-            FileConversion fileConversion=new FileConversion(this,directory);
-            fileConversion.start();
-         /*   activity.runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    Bitmap bMap = BitmapFactory.decodeFile(directory);
-                    int width = bMap.getWidth();
-                    int height = bMap.getHeight();
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bMap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
-                    folder.openFile(byteArray, width, height);
-                    alertDialog.cancel();
+            // FileConversion  fileConversion=new FileConversion(Open.this,directory);
+            //     fileConversion.start();
+            Bitmap yourBitmap = BitmapFactory.decodeFile(directory);
 
-                    //folder.openFile(directory);
-
-                }
-            });
-*/
+            // Запуск AsyncTask для конвертации
+            ConvertImage task = new ConvertImage(context,this,directory);
+            task.execute(yourBitmap);
+            alertDialog.cancel();
 
         } else {
             showDirectory(directory + "/");
         }
     }
+
+
 }

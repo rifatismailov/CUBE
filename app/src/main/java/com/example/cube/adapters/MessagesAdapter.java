@@ -39,6 +39,7 @@ public class MessagesAdapter extends RecyclerView.Adapter  {
 
     final int ITEM_SENT = 1;
     final int ITEM_RECEIVE = 2;
+    final int DELETE=3;//влияет на скорлинг сообшения если менше 3 то начинает тормозит
     boolean show = false;
     RecyclerView.ViewHolder holder;
 
@@ -92,14 +93,14 @@ public class MessagesAdapter extends RecyclerView.Adapter  {
                 //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
                 //viewHolder.binding.image.setImageURI(Uri.parse(message.getImageUrl()));
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -153,7 +154,7 @@ public class MessagesAdapter extends RecyclerView.Adapter  {
                 //Picasso.with(context).load(new File(message.getImageUrl())).into(viewHolder.binding.image);
                 Picasso.with(context).cancelRequest(viewHolder.binding.image);
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
             } else if (message.getCheck().equals(Check.ImageAndText) && !message.getMessage().isEmpty()) {
                 viewHolder.binding.image.setVisibility(View.VISIBLE);
                 viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -162,7 +163,7 @@ public class MessagesAdapter extends RecyclerView.Adapter  {
                 Picasso.with(context).cancelRequest(viewHolder.binding.image);
 
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 3, message.getImageHeight() / 3, false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
 
             } else {
                 viewHolder.binding.image.setVisibility(View.GONE);
