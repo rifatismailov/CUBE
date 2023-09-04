@@ -129,13 +129,13 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private void receiver(String message) {
         messages.add(new Message(message, Check.Other, Side.Receiver));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        //adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
     }
 
     private void sender(String message) {
         messages.add(new Message(message, Check.Other, Side.Sender));
         binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
-        //adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
         receiver(message);
     }
 

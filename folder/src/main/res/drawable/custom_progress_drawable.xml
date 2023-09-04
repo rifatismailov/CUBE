@@ -2,14 +2,14 @@
     <item android:id="@android:id/background">
         <shape>
             <corners android:radius="5dp" />
-            <solid android:color="#E0E0E0" /> <!-- Цвет фона -->
+            <solid android:color="#5f5f5f" /> <!-- Цвет фона -->
         </shape>
     </item>
     <item android:id="@android:id/progress">
         <clip>
             <shape>
                 <corners android:radius="5dp" />
-                <solid android:color="#1d2124" /> <!-- Цвет линии прогресса -->
+                <solid android:color="#44cdff" /> <!-- Цвет линии прогресса -->
             </shape>
         </clip>
     </item>

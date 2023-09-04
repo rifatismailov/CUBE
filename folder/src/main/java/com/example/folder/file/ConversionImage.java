@@ -1,27 +1,25 @@
-package com.example.folder;
+package com.example.folder.file;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.folder.ReturnOpen;
+
 import java.io.ByteArrayOutputStream;
 
-public class ConvertImage extends AsyncTask<Bitmap, Integer, byte[]> {
+public class ConversionImage extends AsyncTask<Bitmap, Integer, byte[]> {
 
     private Context context;
-
     private ReturnOpen returnOpen;
     String directory;
-    // private ProgressDialog progressDialog;
     private ProgressFile progressFile;
-
     int width;
     int height;
 
-    public ConvertImage(Context context, ReturnOpen returnOpen, String directory) {
+    public ConversionImage(Context context, ReturnOpen returnOpen, String directory) {
         this.context = context;
         this.returnOpen = returnOpen;
         this.directory = directory;
@@ -37,7 +35,7 @@ public class ConvertImage extends AsyncTask<Bitmap, Integer, byte[]> {
     @Override
     protected byte[] doInBackground(Bitmap... bitmaps) {
         byte[] byteArray = new byte[0];
-        progressFile.setMessage("Конвертация изображения...");
+        progressFile.setMessage("Конвертація зображення...");
 
         try {
 
@@ -95,11 +93,11 @@ public class ConvertImage extends AsyncTask<Bitmap, Integer, byte[]> {
 
         if (byteArray != null) {
             returnOpen.openFile(byteArray, width, height);
-            Log.d("ImageConversion", "Конвертация завершена. Размер массива байтов: " + byteArray.length + " байт");
+            Log.d("ImageConversion", "Конвертація зображення. розмір массива байтів: " + byteArray.length + " байт");
             Toast.makeText(context, "Конвертация завершена", Toast.LENGTH_SHORT).show();
         } else {
-            Log.e("ImageConversion", "Ошибка при конвертации изображения.");
-            Toast.makeText(context, "Ошибка при конвертации изображения", Toast.LENGTH_SHORT).show();
+            Log.e("ImageConversion", "Помилка при конвертації зображення.");
+            Toast.makeText(context, "Помилка при конвертації зображення", Toast.LENGTH_SHORT).show();
         }
     }
 }

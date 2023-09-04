@@ -2,21 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="60dp"
+    android:layout_height="70dp"
     android:layout_gravity="center"
+    android:background="@drawable/curved_style"
     android:orientation="horizontal"
+
     tools:ignore="MissingDefaultResource">
 
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/ic_file_hex" />
+
 
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
-        android:layout_marginTop="5dp"
         android:layout_marginRight="10dp"
         android:orientation="vertical">
 
@@ -25,16 +23,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textColor="#fff"
             android:text="Загрузка..." />
 
         <ProgressBar
             android:id="@+id/customProgressBar"
             style="@style/CustomProgressBarStyle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
+            android:layout_height="wrap_content" />
 
 
     </LinearLayout>
-
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/ic_file_hex" />
 </LinearLayout>

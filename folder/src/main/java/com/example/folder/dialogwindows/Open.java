@@ -8,30 +8,35 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
-import com.example.folder.ConvertImage;
+import com.example.folder.file.ConversionImage;
 import com.example.folder.ReturnOpen;
 import com.example.folder.Folder;
 import com.example.folder.R;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Даний  @AlertDialog відображає папки та файли
+ * при натисканні на які фалй конвертується в массив байтів
+ * за допомогою методів @convertImage
+ *
+ * @convertVideo
+ * @convertFile За задумкою всі ці методи мають окремі класи  як @ConvertImage
+ * @ConvertFile яка будуть конвертуавти файли
+ */
 public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
     AlertDialog alertDialog;
     Context context;
@@ -76,7 +81,6 @@ public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
         alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.create();
 
-
         listView = linearlayout.findViewById(R.id.OpenListView);
         listView.setOnItemClickListener(this);
         back = linearlayout.findViewById(R.id.back);
@@ -95,12 +99,20 @@ public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
         return new File(file).isFile();
     }
 
+    public void openFile(byte[] byteArray, int width, int height) {
+        folder.openFile(byteArray, width, height);
+    }
+
+    @Override
+    public void showInfo(String info) {
+
+    }
+
     /**
      * Проводник
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void showDirectory(String analogDir) {
-        // Toast.makeText(context, "" + analogDir, Toast.LENGTH_LONG).show();
 
         arrayList.clear();
         final String[] sDirList = arrayDir(analogDir);
@@ -139,14 +151,6 @@ public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
         }
     }
 
-    public void openFile(byte[] byteArray, int width, int height) {
-        folder.openFile(byteArray, width, height);
-    }
-
-    @Override
-    public void showInfo(String info) {
-
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -154,19 +158,19 @@ public class Open implements AdapterView.OnItemClickListener, ReturnOpen {
         directory = directory + "/" + searchAdapter.getItem(position).getNumber();
         if (checkFile(directory)) {
             infoFile.setText("Please waite some time");
-
-            // FileConversion  fileConversion=new FileConversion(Open.this,directory);
-            //     fileConversion.start();
-            Bitmap yourBitmap = BitmapFactory.decodeFile(directory);
-
-            // Запуск AsyncTask для конвертации
-            ConvertImage task = new ConvertImage(context,this,directory);
-            task.execute(yourBitmap);
+            convertImage(directory);
             alertDialog.cancel();
 
         } else {
             showDirectory(directory + "/");
         }
+    }
+
+    private void convertImage(String directory) {
+        Bitmap yourBitmap = BitmapFactory.decodeFile(directory);
+        // Запуск AsyncTask для конвертации
+        ConversionImage task = new ConversionImage(context, this, directory);
+        task.execute(yourBitmap);
     }
 
 
