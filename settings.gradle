@@ -12,8 +12,12 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+
 rootProject.name = "CUBE"
 include ':app'
 include ':folder'
 include ':textvisualization'
 include ':myemoji'
+include ':fileexchange'
+include ':qrcode'

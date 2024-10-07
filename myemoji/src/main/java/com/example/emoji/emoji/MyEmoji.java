@@ -3,7 +3,6 @@ package com.example.emoji.emoji;
 
 
 import com.example.emoji.R;
-import com.example.emoji.models.EmojiMany;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +10,7 @@ import java.util.List;
 public class MyEmoji {
     //site where convert svg files to xml vector file https://svg2vector.com/
     static List<int[]> list = new ArrayList<>();
-    static List<EmojiMany> manyReaction = new ArrayList<>();
 
-    static public List<EmojiMany> getManyReaction() {
-        manyReaction.clear();
-        manyReaction.add(new EmojiMany(emoji));
-        manyReaction.add(new EmojiMany(emoji_blue));
-        manyReaction.add(new EmojiMany(flag));
-        manyReaction.add(new EmojiMany(animals));
-        return manyReaction;
-    }
 
     public static List<int[]> getInstance() {
         list.add(emoji);

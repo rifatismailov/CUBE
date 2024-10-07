@@ -94,7 +94,7 @@
 
 
                 <LinearLayout
-                    android:id="@+id/feel"
+                    android:id="@+id/feel_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="5dp"

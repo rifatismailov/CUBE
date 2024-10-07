@@ -3,13 +3,10 @@ package com.example.cube;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import com.example.cube.adapters.MessagesAdapter;
-import com.example.cube.adapters.NewsAdapter;
+import com.example.cube.news.NewsAdapter;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
-import com.example.cube.models.Message;
 import com.example.cube.models.News;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -83,7 +80,7 @@ public class NewsActivity extends AppCompatActivity {
     int k=0;
     private void setNews(String news_message){
         k++;
-        new_news.add(new News(news_message, Check.Other, Side.News));
+        new_news.add(new News(news_message, Check.Message, Side.Sender));
         Toast.makeText(this, k+" new news", Toast.LENGTH_SHORT).show();
     }
     private void newNewsShow(){
@@ -95,7 +92,7 @@ public class NewsActivity extends AppCompatActivity {
         }
     }
     private void showNews(String news_message) {
-        news.add(new News(news_message, Check.Other, Side.News));
+        news.add(new News(news_message, Check.Message, Side.Sender));
         //binding.recyclerView.smoothScrollToPosition(adapter.getItemCount());
         binding.recyclerView.setLayoutManager(reverseLayout());
         adapter.notifyDataSetChanged();

@@ -11,7 +11,7 @@
         android:title="Audio Call"
         app:showAsAction="always" />
     <item android:title="Profile"
-        android:icon="@drawable/writing"
+        android:icon="@drawable/settings"
         app:showAsAction="always" />
 
 </menu>

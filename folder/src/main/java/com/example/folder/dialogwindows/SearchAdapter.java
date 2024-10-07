@@ -1,5 +1,6 @@
 package com.example.folder.dialogwindows;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,8 @@ public class SearchAdapter extends ArrayAdapter<Search> {
         this.resourceLayout =resource;
 
     }
+    @NonNull
+    @SuppressLint("SuspiciousIndentation")
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
         View view=convertView;

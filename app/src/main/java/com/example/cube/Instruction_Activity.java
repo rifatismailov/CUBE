@@ -2,14 +2,8 @@ package com.example.cube;
 
 import android.os.Bundle;
 
-import com.example.cube.adapters.InstructionAdapter;
-import com.example.cube.adapters.MessagesAdapter;
-import com.example.cube.control.Check;
-import com.example.cube.control.Side;
+import com.example.cube.instruction.InstructionAdapter;
 import com.example.cube.models.Instruction;
-import com.example.cube.models.Message;
-import com.example.cube.models.News;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
