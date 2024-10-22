@@ -1,11 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+
+    </style>
 
     <style name="DialogAnimation">
         <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
+    <style name="HintTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">14sp</item> <!-- Змінюємо розмір шрифту -->
+        <item name="android:textColor">@color/grey</item>
+    </style>
 
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxBackgroundMode">outline</item> <!-- Тільки рамка -->
+        <item name="boxStrokeColor">@color/box_stroke_color_selector</item> <!-- Колір рамки -->
+        <item name="boxStrokeWidth">1dp</item> <!-- Ширина рамки без фокусу -->
+        <item name="boxStrokeWidthFocused">2dp</item> <!-- Ширина рамки при фокусі -->
+        <item name="hintTextColor">@color/blue</item> <!-- Колір тексту підказки -->
+        <item name="endIconMode">clear_text</item> <!-- Кнопка очищення тексту -->
+        <item name="boxCornerRadiusTopStart">10dp</item> <!-- Округлення кутів -->
+        <item name="boxCornerRadiusTopEnd">10dp</item>
+        <item name="boxCornerRadiusBottomStart">10dp</item>
+        <item name="boxCornerRadiusBottomEnd">10dp</item>
+        <item name="boxBackgroundColor">@android:color/white</item> <!-- Білий фон поля вводу -->
+
+    </style>
+
+    <style name="CustomTextInputEditText">
+        <item name="android:background">@null</item>
+        <item name="android:gravity">center_vertical|left</item>
+        <item name="android:inputType">text</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColorHint">@color/grey</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="CustomSaveAccount" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/qr_save_account_place_style</item>
+        <item name="android:textColor">@android:color/black
+        </item> <!-- Змініть текст на чорний для кращої видимості -->
+        <item name="android:gravity">center</item>
+        <item name="android:elevation">0dp</item> <!-- Скасовує тінь -->
+        <item name="android:stateListAnimator">@null</item> <!-- Вимикає анімацію станів -->
+        <item name="android:padding">1dp</item> <!-- Задає внутрішній відступ -->
+    </style>
+
+    <style name="CustomButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/button_style</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:elevation">0dp</item> <!-- Скасовує тінь -->
+        <item name="android:stateListAnimator">@null</item> <!-- Вимикає анімацію станів -->
+        <item name="android:padding">10dp</item> <!-- Задає внутрішній відступ -->
+    </style>
+
+    <style name="buttonStartStyle" parent="Theme.AppCompat.Light">
+        <item name="android:background">@drawable/button_style</item>
+        <item name="android:layout_margin">20dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

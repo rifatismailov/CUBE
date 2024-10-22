@@ -7,16 +7,77 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 public class FileDetect {
+    private static final String ALGORITHM = "AES";
 
+    // Метод для серіалізації та шифрування
+    public void saveToFile(Object o,String fileName, SecretKey secretKey) throws Exception {
+        // Спочатку серіалізуємо об'єкт в байти
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(byteOut)) {
+            oos.writeObject(o);
+        }
 
+        // Шифруємо байти
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedBytes = cipher.doFinal(byteOut.toByteArray());
+
+        // Записуємо зашифровані байти у файл
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
+            fos.write(encryptedBytes);
+        }
+    }
+
+    // Метод для генерації секретного ключа AES
+    public static SecretKey generateKey() throws Exception {
+        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+        keyGen.init(128);  // AES-128
+        return keyGen.generateKey();
+    }
+    // Метод для розшифрування та десеріалізації
+    @SuppressWarnings("unchecked")
+    public Object loadFromFile(String fileName, SecretKey secretKey) throws Exception {
+        byte[] encryptedBytes;
+
+        // Зчитуємо байти з файлу
+        try (FileInputStream fis = new FileInputStream(fileName);
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+            byte[] data = new byte[1024];  // Буфер для зчитування
+            int bytesRead;
+            while ((bytesRead = fis.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, bytesRead);
+            }
+            encryptedBytes = buffer.toByteArray();  // Отримуємо всі зашифровані байти
+        }
+
+        // Розшифровуємо байти
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+
+        // Десеріалізуємо об'єкт з розшифрованих байтів
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(decryptedBytes);
+        try (ObjectInputStream ois = new ObjectInputStream(byteIn)) {
+            return ois.readObject();
+        }
+    }
     public String getFileHash(String file, String algorithm) {
         try {
             // Створюємо об'єкт MessageDigest для вказаного алгоритму (наприклад, SHA-256)

@@ -3,7 +3,6 @@ package com.example.cube;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -15,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.example.cube.databinding.ActivityMainBinding;
 import com.example.cube.permission.Permission;
+import com.example.cube.socket.ServerConnection;
 import com.example.folder.file.FileDetect;
 import com.example.qrcode.QR;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -31,253 +32,167 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * Основний клас активності MainActivity, що відповідає за обробку даних користувача, підключення до сервера та взаємодію з контактами.
+ * Реалізує кілька інтерфейсів для обробки кліків та отримання повідомлень від сервера.
+ */
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener, ServerConnection.ConnectionListener, Add_Client.Add_Client_Interface {
+
     private ActivityMainBinding binding;
-    private List<UserData> userList = new ArrayList<>();
-    private UserAdapter userAdapter;
+    private List<UserData> userList = new ArrayList<>();  // Список користувачів
+    private UserAdapter userAdapter;  // Адаптер для відображення користувачів
+    private ServerConnection serverConnection;  // З'єднання з сервером
 
+    private String userId;  // ID користувача
+    private String receiverId;  // ID отримувача
+    private String name;  // Ім'я користувача
+    private String lastName;  // Прізвище користувача
+    private String password = "1234567890123456";  // Пароль
+    private byte[] keyBytes = password.getBytes();  // Генерація байт ключа
+    private final SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+    private HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
+    private int numMessage = 0;  // Лічильник повідомлень
+    private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
 
-    private static final String SERVER_IP = "192.168.193.183";  // IP сервера
-    private static final int SERVER_PORT = 8080;  // Порт сервера
-
-    private Socket socket;
-    private BufferedReader input;
-    private PrintWriter output;
-    private String userId;
-    private String receiverId;
-    private String name;
-    private String lastName;
-    private String password;
-    private HashMap<Integer, Envelope> saveMessage = new HashMap<>();
-    private int numMessage = 0;
-
-    private ScheduledExecutorService scheduler;
-
-    public void startConnection() {
-        connectToServer();
-        startConnectionChecker();
-    }
-
-    // Метод підключення до сервера
-    private void connectToServer() {
-        try {
-            socket = new Socket(SERVER_IP, SERVER_PORT);
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            registerUser();
-            sendDataToChatActivity(); // Запускаємо прослуховування після підключення
-        } catch (Exception e) {
-            Log.e("MainActivity", "Помилка підключення до сервера", e);
-        }
-    }
-
-    // Метод для перевірки підключення
-    private void startConnectionChecker() {
-        scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleWithFixedDelay(() -> {
-            if (socket == null || socket.isClosed() || !socket.isConnected()) {
-                reconnectToServer(); // Перепідключення до сервера
-            }
-        }, 0, 5, TimeUnit.SECONDS); // Перевірка кожні 5 секунд
-    }
-
-
-    // Метод для перепідключення до сервера
-    private void reconnectToServer() {
-        try {
-            if (socket != null && !socket.isClosed()) {
-                socket.close(); // Закриваємо старий сокет
-            }
-            connectToServer(); // Спробуйте підключитися знову
-        } catch (IOException e) {
-        }
-    }
-
-    // Метод для зупинки перевірки підключення
-    public void stopConnectionChecker() {
-        if (scheduler != null && !scheduler.isShutdown()) {
-            scheduler.shutdown();
-        }
-        try {
-            if (socket != null) {
-                socket.close(); // Закриваємо сокет
-            }
-        } catch (IOException e) {
-            Log.e("MainActivity", "Помилка закриття сокета", e);
-        }
-    }
-
+    /**
+     * Метод для зчитування даних з JSON-файлу та їх обробки.
+     * @param jsonObject JSON-об'єкт, що містить дані користувача.
+     */
     private void readJson(JSONObject jsonObject) {
         if (jsonObject == null) {
-            // Файл не знайдено або порожній, показуємо повідомлення
             Toast.makeText(this, "Не вдалося завантажити файл JSON.", Toast.LENGTH_SHORT).show();
-            return;
+        } else {
+            String userId = jsonObject.optString("userId", "");
+            String name = jsonObject.optString("name", "");
+            String lastName = jsonObject.optString("lastName", "");
+            String password = jsonObject.optString("password", "");
+
+            if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(name) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(password)) {
+                Toast.makeText(this, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();
+            } else {
+                this.userId = userId;
+                this.name = name;
+                this.lastName = lastName;
+                this.password = password;
+                binding.id.setText(this.userId);
+                binding.name.setText(this.name + " " + this.lastName);
+            }
         }
-
-        // Отримуємо дані з JSON з перевіркою на існування ключів
-        String userId = jsonObject.optString("userId", null);
-        String name = jsonObject.optString("name", null);
-        String lastName = jsonObject.optString("lastName", null);
-        String password = jsonObject.optString("password", null);
-        Toast.makeText(this, "Name " + userId, Toast.LENGTH_SHORT).show();
-
-        // Перевіряємо, чи всі дані присутні
-        if (userId == null || name == null || lastName == null || password == null) {
-            Toast.makeText(this, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Зберігаємо дані в поля класу
-        this.userId = userId;
-        this.name = name;
-        this.lastName = lastName;
-        this.password = password;
-
-        // Встановлюємо дані у відповідні поля на екрані
-        binding.id.setText(this.userId);
-        binding.name.setText(this.name + " " + this.lastName);
     }
 
-    // Метод для реєстрації користувача
-    @SuppressLint("SetTextI18n")
-    private void registerUser() {
-        // Формуємо повідомлення для реєстрації
-        String registerMessage = "{\"userId\":\"" + this.userId + "\"}";
-
-        // Надсилаємо повідомлення на сервер для реєстрації в
-        new Thread(() -> output.println(registerMessage)).start();  // Надсилаємо повідомлення на сервер для реєстрації
-    }
-
+    /**
+     * BroadcastReceiver для отримання даних з ChatActivity через broadcast.
+     */
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Отримання даних від ChatActivity
             String dataFromChat = intent.getStringExtra("data_from_chat");
             if (dataFromChat != null) {
-                // Обробляємо дані або зберігаємо їх
                 receivingData(dataFromChat);
             }
         }
     };
 
+    /**
+     * Метод onCreate викликається при створенні активності.
+     * @param savedInstanceState Збережений стан активності.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new Permission(this);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         JSONObject jsonObject = new FileDetect().readJsonFromFile(this, "cube.json");
         if (jsonObject != null) {
-            // Файл не знайдено або порожній, показуємо повідомлення
             readJson(jsonObject);
         }
         binding.setting.setOnClickListener(this);
-        new Thread(this::startConnection).start();
-        initUserList();
+        binding.fab.setOnClickListener(this);
 
+        // Створення підключення до сервера
+        serverConnection = new ServerConnection(this);
+        serverConnection.connectToServer();
+        serverConnection.setUserId(userId);
+        initUserList();
     }
 
 
+
+    /**
+     * Ініціалізація списку користувачів та його заповнення з файлу.
+     */
     private void initUserList() {
         userList.clear();
-        userList.add(new UserData("H652882301", "yt23HSGFD634FFD", "Rifat Ismailov", "12"));
-        userList.add(new UserData("H652882302", "yt23HSGFD634FFD", "Rifat Ismailov", "2"));
-        userList.add(new UserData("H652882303", "yt23HSGFD634FFD", "Rifat Ismailov", "4"));
-        userList.add(new UserData("H652882304", "yt23HSGFD634FFD", "Rifat Ismailov", "22"));
-        userList.add(new UserData("H652882305", "yt23HSGFD634FFD", "Rifat Ismailov", "31"));
-        userList.add(new UserData("H652882306", "yt23HSGFD634FFD", "Rifat Ismailov", "34"));
-        userList.add(new UserData("H652882307", "yt23HSGFD634FFD", "Rifat Ismailov", "4"));
-        userList.add(new UserData("H652882308", "yt23HSGFD634FFD", "Rifat Ismailov", "1"));
-        userList.add(new UserData("H652882309", "yt23HSGFD634FFD", "Rifat Ismailov", "6"));
-        userList.add(new UserData("H652882310", "yt23HSGFD634FFD", "Rifat Ismailov", "2"));
-        userList.add(new UserData("H652882311", "yt23HSGFD634FFD", "Rifat Ismailov", "7"));
-        userList.add(new UserData("H652882312", "yt23HSGFD634FFD", "Rifat Ismailov", "13"));
-        userAdapter = new UserAdapter(this, R.layout.iteam_user, userList);
-        binding.userList.setAdapter(userAdapter);
-        binding.userList.setOnItemClickListener(this);
-    }
 
+        try {
+            File externalDir = new File(getExternalFilesDir(null), "cube");
+            contacts = (Map<String, UserData>) new FileDetect().loadFromFile(externalDir + "/contacts.cube", secretKey);
 
-    private void sendDataToChatActivity() {
-        new Thread(() -> {
-            try {
-                String message;
-                while ((message = input.readLine()) != null) {
-                    //Log.d("ChatActivity", "Отримано повідомлення: " + message);
-                    // Перевірка, що message не null перед відправленням
-                    Log.d("MainActivity", "Message " + message);
-
-                    if (message != null) {
-                        JSONObject object = new JSONObject(message);
-                        Envelope envelope = new Envelope(object);
-
-                        if (userId.equals(envelope.getSenderId()) && receiverId.equals(envelope.getReceiverId())) {
-                            addMessage(message);
-                            Thread.sleep(100); // 100 мс
-                        } else if (receiverId != null && receiverId.equals(envelope.getSenderId())) {
-                            addMessage(message);
-                            Thread.sleep(100); // 100 мс
-                        } else {
-                            saveMessage.put(numMessage, envelope);
-                            Log.d("MainActivity", "Збережено повідомлення " + numMessage);
-                            numMessage++;
-                        }
-
-                    } else {
-                        Log.e("MainActivity", "Отримано null повідомлення");
-                    }
-                }
-            } catch (IOException e) {
-                Log.e("MainActivity", "Помилка при отриманні повідомлень", e);
-            } catch (InterruptedException | JSONException e) {
-                throw new RuntimeException(e);
+            for (Map.Entry<String, UserData> entry : contacts.entrySet()) {
+                userList.add(entry.getValue());
             }
-        }).start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        userAdapter = new UserAdapter(this, R.layout.iteam_user, userList);
+        binding.contentMain.userList.setAdapter(userAdapter);
+        binding.contentMain.userList.setOnItemClickListener(this);
     }
 
+    /**
+     * Додає повідомлення до broadcast для передачі його в ChatActivity.
+     * @param message Текст повідомлення.
+     */
     private void addMessage(String message) {
         Intent intent = new Intent("com.example.cube.DATA_TO_CHAT");
         intent.putExtra("data_from_MainActivity", message);
         sendBroadcast(intent);
     }
 
-
-    // Метод для отримання даних з ChatActivity
+    /**
+     * Отримує дані з активності чату та передає їх на сервер.
+     * @param data Отримані дані.
+     */
     private void receivingData(String data) {
-        // Збереження даних або робота з ними
-        //Log.d("MainActivity", "Збережено дані: " + data);
-        new Thread(() -> output.println(data)).start();  // Надсилаємо повідомлення на сервер
-
-        //sendMessage(data);
+        if (data.equals("endUser")) {
+            serverConnection.setReceiverId(null);
+        } else {
+            serverConnection.sendData(data);
+        }
     }
 
+    /**
+     * Видалення ресивера при знищенні активності.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Від'єднання ресивера, коли активність знищується
         unregisterReceiver(dataReceiver);
     }
 
+    /**
+     * Метод для запуску ChatActivity з передачею даних про користувача.
+     * @param view Поточний елемент View.
+     * @param userData Дані користувача для чату.
+     */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void startChat(View view, UserData userData) {
-        // Реєструємо ресивер для отримання даних від ChatActivity
         IntentFilter filter = new IntentFilter("com.example.cube.REPLY_FROM_CHAT");
         registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        // Запускаємо ChatActivity
+
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("senderId", userId);
         intent.putExtra("name", userData.getName());
@@ -285,25 +200,49 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra("status", "online");
         intent.putExtra("publicKey", userData.getPublicKey());
         startActivity(intent);
-        // Відправляємо дані в ChatActivity через broadcast
-        sendDataToChatActivity();
     }
 
-
+    /**
+     * Обробка натискання на елемент списку користувачів.
+     * @param adapterView Віджет-список.
+     * @param view Об'єкт View.
+     * @param i Позиція вибраного елемента.
+     * @param l Ідентифікатор вибраного елемента.
+     */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         UserData userData = userList.get(i);
         receiverId = userData.getId();
-        startChat(binding.getRoot().getRootView(), userData);
-        openSameMessage();
+        Toast.makeText(this, "" + userId, Toast.LENGTH_SHORT).show();
+        serverConnection.setReceiverId(receiverId);
+
+        if (userData.getReceiverPublicKey() == null || userData.getReceiverPublicKey().isEmpty()) {
+            sendKey(receiverId);
+        } else {
+            startChat(binding.getRoot().getRootView(), userData);
+            openSaveMessage();
+            userData.setMessageSize("");
+            userAdapter.notifyDataSetChanged();
+        }
     }
 
-    //Для безпечного видалення елементів під час ітерації використовуйте Iterator. Ось як ви можете це зробити:
-    //Iterator.remove(): Використовується для безпечного видалення елементів під час ітерації через колекцію, не викликаючи помилок.
-    //Використовуйте метод Handler для відтермінованої відправки: Проблема полягає в тому, що нова активність ще не готова до прийому повідомлень,
-    // і ми використовуємо Handler щоб відтермінувати відправку повідомлення:
-    private void openSameMessage() {
+    /**
+     * Відправка ключа шифрування для безпечного з'єднання.
+     * @param receiverId Ідентифікатор отримувача.
+     */
+    public void sendKey(String receiverId) {
+        byte[] keyBytes = password.getBytes();  // 16-байтний ключ
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+
+        String publicKey = "{\"publicKey\":\"" + password + "\"}";
+        receivingData(new Envelope(userId, receiverId, publicKey).toJson().toString());
+    }
+
+    /**
+     * Відправка збережених повідомлень після затримки, щоб активність чату встигла ініціалізуватися.
+     */
+    private void openSaveMessage() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             Iterator<Map.Entry<Integer, Envelope>> iterator = saveMessage.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -312,20 +251,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (envelope.getSenderId().equals(receiverId)) {
                     addMessage(envelope.toJson().toString());
                     Log.d("MainActivity", "Збережено повідомлення " + numMessage + " " + envelope.toJson().toString());
-                    iterator.remove();  // Безпечно видаляємо елемент під час ітерації
+                    iterator.remove();
                 }
             }
-        }, 1000);  // Відкладення на 1 секунду для того, щоб активність встигла ініціалізуватися
+        }, 1000);  // Відкладення на 1 секунду
     }
-
-
+    /**
+     * Лаунчер для сканування QR-коду для додавання аккаунту користувача.
+     * Використовує ActivityResultLauncher для сканування та обробки результату.
+     * Якщо вміст QR-коду не порожній, додається новий аккаунту користувача.
+     */
     @SuppressLint("SetTextI18n")
     ActivityResultLauncher<ScanOptions> qrCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
         try {
             if (result.getContents() != null) {
                 // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
                 JSONObject jsonObject = new JSONObject(result.getContents());
+                // Зберігаємо JSON-дані в файл "cube.json"
                 new FileDetect().saveJsonToFile(this, "cube.json", jsonObject);
+                // Читаємо дані з JSON-об'єкта
                 readJson(jsonObject);
             }
         } catch (JSONException e) {
@@ -334,11 +278,135 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     });
 
+    /**
+     * Лаунчер для сканування QR-коду для додавання контакту.
+     * Використовує ActivityResultLauncher для сканування та обробки результату.
+     * Якщо вміст QR-коду не порожній, додається новий контакт.
+     */
+    @SuppressLint("SetTextI18n")
+    ActivityResultLauncher<ScanOptions> qrCodeAddContact = registerForActivityResult(new ScanContract(), result -> {
+        if (result.getContents() != null) {
+            // Додає новий контакт із QR-коду
+            addContact(result.getContents());
+        }
+    });
 
     @Override
     public void onClick(View view) {
+        // Визначаємо дії при натисканні на різні елементи інтерфейсу
         if (view == binding.setting) {
+            // Запуск сканера QR-коду для отримання налаштувань
             new QR(qrCodeLauncher);
+        } else if (view == binding.fab) {
+            // Відкриваємо вікно для додавання нового клієнта
+            new Add_Client(MainActivity.this);
         }
     }
+
+    @Override
+    public void onConnected() {
+        // Викликається при підключенні до сервера
+        serverConnection.listenForMessages();
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        // Обробка отриманих повідомлень
+        addMessage(message);
+    }
+
+    /**
+     * Зберігає отримане повідомлення в системі.
+     * @param envelope дані повідомлення, яке зберігається.
+     */
+    @Override
+    public void saveMessage(Envelope envelope) {
+        saveMessage.put(numMessage, envelope);
+        numMessage++;
+        // Оновлення інтерфейсу користувача на основі нових повідомлень
+        runOnUiThread(() -> {
+            for (UserData user : userList) {
+                // Знайдіть користувача за його id та оновіть кількість повідомлень
+                if (user.getId().equals(envelope.getSenderId())) {
+                    user.setMessageSize("" + numMessage);  // Оновлюємо messageSize
+                    break;  // Вихід після оновлення користувача
+                }
+            }
+            // Оновлюємо адаптер для відображення змін у списку користувачів
+            userAdapter.notifyDataSetChanged();
+        });
+    }
+
+    /**
+     * Обробляє процедуру рукостискання (handshake) з клієнтом.
+     * @param senderId ідентифікатор відправника.
+     * @param publicKey публічний ключ відправника.
+     */
+    @Override
+    public void clientHandshake(String senderId, String publicKey) {
+        for (UserData user : userList) {
+            // Знайдіть користувача за його id
+            if (user.getId().equals(senderId)) {
+                // Якщо у користувача ще немає публічного ключа, встановіть його
+                if (user.getReceiverPublicKey() == null) {
+                    user.setReceiverPublicKey(publicKey);  // Встановлюємо публічний ключ
+                    sendKey(senderId);  // Відправляємо ключ
+                    break;  // Вихід після оновлення
+                } else break;
+            }
+        }
+        // Оновлюємо адаптер для відображення змін
+        userAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Додає новий контакт, отриманий через QR-код або інші джерела.
+     * @param contact дані контакту у вигляді рядка JSON.
+     */
+    private void addContact(String contact) {
+        try {
+            // Отримуємо директорію для зберігання файлу
+            File externalDir = new File(getExternalFilesDir(null), "cube");
+
+            // Створюємо JSONObject з контактних даних
+            JSONObject jsonObject = new JSONObject(contact);
+            String name_contact = jsonObject.getString("name_contact");
+            String id_contact = jsonObject.getString("id_contact");
+            String public_key_contact = jsonObject.getString("public_key_contact");
+
+            // Додаємо новий контакт до списку користувачів
+            userList.add(new UserData(id_contact, public_key_contact, name_contact, ""));
+
+            // Оновлюємо мапу контактів
+            for (UserData user : userList) {
+                contacts.put(user.getId(), user);
+            }
+
+            // Зберігаємо контакти у файл з шифруванням
+            new FileDetect().saveToFile(contacts, externalDir + "/contacts.cube", secretKey);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Зберігає контакт, отриманий ззовні, до локальної системи.
+     * @param contact контакт у вигляді JSON-рядка.
+     */
+    @Override
+    public void save_contact(String contact) {
+        if (contact != null) {
+            addContact(contact);
+        }
+    }
+
+    /**
+     * Викликає сканер QR-коду для додавання контакту.
+     */
+    @Override
+    public void scanner_qr_contact() {
+        new QR(qrCodeAddContact);
+    }
+
 }

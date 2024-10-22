@@ -101,7 +101,10 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 "All the missiles fired by #Russia were produced in the spring of 2023. In all of them, " +
                 "without… https://t.co/InqQMPl3xr https://t.co/ByK8CN1dyA", Side.Receiver));
 
-        binding.back.setOnClickListener(v -> finish());
+        binding.back.setOnClickListener(v -> {
+            sendDataBackToActivity("endUser");
+            finish();
+        });
         binding.sendBtn.setOnClickListener(v -> {
             String messageTxt = binding.messageBox.getText().toString();
             if (!binding.messageBox.getText().toString().isEmpty()) {

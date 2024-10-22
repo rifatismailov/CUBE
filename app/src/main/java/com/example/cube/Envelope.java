@@ -86,5 +86,6 @@ public class Envelope {
     public String getFileHash() {
         return fileHash;
     }
+
 }
 

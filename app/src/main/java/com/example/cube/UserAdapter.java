@@ -46,8 +46,14 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         TextView idNumber = view.findViewById(R.id.idNumber);
         idNumber.setText(userData.getId());
 
+
         TextView messageSize = view.findViewById(R.id.messageSize);
         messageSize.setText(userData.getMessageSize());
+        if (messageSize.getText().toString().isEmpty()) {
+            messageSize.setVisibility(View.GONE);
+        } else {
+            messageSize.setVisibility(View.VISIBLE);
+        }
 
         return view;
     }
