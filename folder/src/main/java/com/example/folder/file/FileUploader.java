@@ -15,7 +15,7 @@ public class FileUploader {
         this.doHandler = doHandler;
     }
 
-    private static final String SERVER_URL = "http://192.168.193.183:8020/api/files/upload"; // Змініть IP на ваш
+    private static final String SERVER_URL = "http://192.168.1.237:8020/api/files/upload"; // Змініть IP на ваш
 
     public void uploadFile(File file) {
 

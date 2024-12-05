@@ -16,27 +16,26 @@ import android.widget.LinearLayout;
 
 import java.util.Objects;
 
-public class Add_Client implements View.OnClickListener {
+public class ContactCreator implements View.OnClickListener {
 
     AlertDialog alertDialog;
     Context context;
     Activity activity;
-    Add_Client_Interface clientInterface;
+    CreatorOps creatorOps;
     ImageButton qr_code_scanner;
     LinearLayout save_contact;
     EditText name_contact;
     EditText id_contact;
     EditText public_key_contact;
 
-    public Add_Client(Context context) {
+    public ContactCreator(Context context) {
         this.context = context;
-        this.clientInterface = (Add_Client_Interface) context;
+        this.creatorOps = (CreatorOps) context;
         activity = (Activity) context;
-        DialogShow();
     }
 
-    private void DialogShow() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+    public void showCreator() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
         View linearlayout = activity.getLayoutInflater().inflate(R.layout.dialog_addcontact, null);
         dialog.setView(linearlayout);
         alertDialog = dialog.create();
@@ -64,19 +63,17 @@ public class Add_Client implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view == qr_code_scanner) {
-            clientInterface.scanner_qr_contact();
+            creatorOps.scannerQrContact();
         } else if (view == save_contact) {
-            clientInterface.save_contact(
+            creatorOps.saveContact(
                     "{ \"name_contact\":\"" + name_contact.getText()
                             + "\",\"id_contact\":\"" + id_contact.getText()
                             + "\",\"public_key_contact\":\"" + public_key_contact.getText() + "\"}");
         }
     }
 
-    // Інтерфейс для сповіщення про стан підключення
-    public interface Add_Client_Interface {
-        public void save_contact(String contact);
-
-        public void scanner_qr_contact();
+    public interface CreatorOps {
+         void saveContact(String contact);
+         void scannerQrContact();
     }
 }

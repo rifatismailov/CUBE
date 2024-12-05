@@ -112,9 +112,9 @@ public class FileDetect {
             return null;
         }
     }
-    public void saveJsonToFile(Context context, String filename, JSONObject jsonObject) {
+    public void saveJsonToFile(File externalDir, String filename, JSONObject jsonObject) {
         // Створюємо каталог "cube" у зовнішньому сховищі
-        File externalDir = new File(context.getExternalFilesDir(null), "cube");
+
         if (!externalDir.exists()) {
             boolean mkdirs = externalDir.mkdirs(); // Створюємо каталог, якщо його не існує
             if (!mkdirs) {
@@ -145,12 +145,12 @@ public class FileDetect {
     }
 
 
-    public JSONObject readJsonFromFile(Context context, String filename) {
+    public JSONObject readJsonFromFile(File externalDir, String filename) {
         StringBuilder jsonBuilder = new StringBuilder();
         FileInputStream fis = null;
 
         // Створюємо шлях до файлу в зовнішньому сховищі
-        File externalDir = new File(context.getExternalFilesDir(null), "cube");
+
         File file = new File(externalDir, filename);
 
         if (!file.exists()) {

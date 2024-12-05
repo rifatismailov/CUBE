@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -36,7 +37,7 @@ import java.util.logging.Logger;
  * @convertFile За задумкою всі ці методи мають окремі класи  як @ConvertImage
  * @ConvertFile яка будуть конвертувати файли
  */
-public class Open implements AdapterView.OnItemClickListener,DoHandler {
+public class Open implements AdapterView.OnItemClickListener, DoHandler {
     private static final Logger LOGGER = Logger.getLogger(Open.class.getName());
 
     AlertDialog alertDialog;
@@ -97,34 +98,21 @@ public class Open implements AdapterView.OnItemClickListener,DoHandler {
         return dir.list();
     }
 
-    public boolean checkFile(String file) {
-        return new File(file).isFile();
-    }
-
     /**
      * Проводник
      */
-    private void showDirectory(String analogDir) {
+    @Override
+    public void showDirectory(String analogDir) {
 
         arrayList.clear();
-        final String[] sDirList = arrayDir(analogDir);
+        String[] sDirList;
+        if (analogDir == null) {
+            sDirList = arrayDir(directory);
+        } else {
+            sDirList = arrayDir(analogDir);
+        }
         for (int i = 0; i < sDirList.length; i++) {
             File file = new File(analogDir + "/" + sDirList[i]);
-            if (!checkFile(analogDir + "/" + sDirList[i])) {
-                arrayList.add(new Search(sDirList[i], "time", "about", R.drawable.ic_folder, false));
-            } else {
-                arrayList.add(new Search(sDirList[i], "time", "about", R.drawable.ic_file_other, false));
-            }
-        }
-        searchAdapter = new SearchAdapter(context, R.layout.iteam_row, arrayList);
-        listView.setAdapter(searchAdapter);
-    }
-
-    public void showDirectory() {
-        arrayList.clear();
-        final String[] sDirList = arrayDir(directory);
-        for (int i = 0; i < sDirList.length; i++) {
-            File file = new File(directory + "/" + sDirList[i]);
             if (!file.isFile()) {
                 arrayList.add(new Search(sDirList[i], "time", "about", R.drawable.ic_folder, false));
             } else {
@@ -134,6 +122,8 @@ public class Open implements AdapterView.OnItemClickListener,DoHandler {
         searchAdapter = new SearchAdapter(context, R.layout.iteam_row, arrayList);
         listView.setAdapter(searchAdapter);
     }
+
+
 
     private void back() {
         try {
@@ -159,24 +149,27 @@ public class Open implements AdapterView.OnItemClickListener,DoHandler {
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        directory = directory + "/" + searchAdapter.getItem(position).getNumber();
-        if (checkFile(directory)) {
-            uploadFile(directory);
-        } else {
-            showDirectory(directory + "/");
-        }
-    }
+        // Оновлення шляху
+        String selectedPath = directory + "/" + searchAdapter.getItem(position).getNumber();
+        File selectedFile = new File(selectedPath);
 
-    private void uploadFile(String url) {
-        try {
+        // Перевірка, чи це файл або папка
+        if (selectedFile.isFile()) {
+            // Якщо це файл, викликаємо uploadFile
             FileUploader fileUploader = new FileUploader(this);
-            File file = new File(url);
+            File file = new File(selectedPath);
             fileUploader.uploadFile(file);
-        }catch (Exception e){
-
+            directory = selectedPath;
+        } else if (selectedFile.isDirectory()) {
+            // Якщо це папка, показуємо її вміст
+            directory = selectedPath + "/";
+            showDirectory(directory);
+        } else {
+            // Непередбачений випадок
+            Log.e("onItemClick", "Не вдалося визначити тип: " + selectedPath);
         }
-
     }
+
 
     public void closeDialog() {
         FileDetect fileDetect = new FileDetect();

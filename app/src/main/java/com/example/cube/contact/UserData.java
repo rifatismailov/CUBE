@@ -1,4 +1,4 @@
-package com.example.cube;
+package com.example.cube.contact;
 
 import java.io.Serializable;
 
@@ -7,8 +7,11 @@ public class UserData implements Serializable {
     private String publicKey;
     private String privateKey;
     private String receiverPublicKey;
+    private String senderKey;
+    private String receiverKey;
     private String name;
     private String messageSize;
+    private int size;
 
     // Конструктор
     public UserData(String id, String publicKey, String name, String messageSize) {
@@ -51,6 +54,13 @@ public class UserData implements Serializable {
     public void setMessageSize(String messageSize) {
         this.messageSize = messageSize;
     }
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public int getSize() {
+        return size;
+    }
 
     public String getPrivateKey() {
         return privateKey;
@@ -66,5 +76,21 @@ public class UserData implements Serializable {
 
     public void setReceiverPublicKey(String receiverPublicKey) {
         this.receiverPublicKey = receiverPublicKey;
+    }
+
+    public String getSenderKey() {
+        return senderKey;
+    }
+
+    public void setSenderKey(String senderKey) {
+        this.senderKey = senderKey;
+    }
+
+    public String getReceiverKey() {
+        return receiverKey;
+    }
+
+    public void setReceiverKey(String receiverKey) {
+        this.receiverKey = receiverKey;
     }
 }

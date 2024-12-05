@@ -1,4 +1,4 @@
-package com.example.cube;
+package com.example.cube.contact;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -6,12 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.cube.R;
 import com.example.qrcode.QRCode;
 
 import java.util.List;

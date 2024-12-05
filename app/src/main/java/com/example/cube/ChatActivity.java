@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.message.MessagesAdapter;
 import com.example.cube.control.Side;
 import com.example.cube.message.Message;
@@ -18,10 +19,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.Menu;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
+import com.example.cube.socket.Envelope;
 import com.example.folder.Folder;
 import com.example.folder.dialogwindows.Open;
 import com.example.qrcode.QR;
@@ -32,6 +35,8 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -44,11 +49,13 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     MessagesAdapter adapter;
     ArrayList<Message> messages;
     private String senderId;       // ІД відправника
-    String receiverName;
-    String receiverId;
-    String receiverStatus;
-
-
+    private String receiverName;
+    private String receiverId;
+    private String receiverStatus;
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
+    private PublicKey receiverPublicKey;
+    private KeyGenerator.RSA keyGenerator;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -77,6 +84,24 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         receiverName = bundle.getString("name");
         receiverId = bundle.getString("receiverId");
         receiverStatus = bundle.getString("status");
+        keyGenerator = new KeyGenerator.RSA();
+        try {
+            String sPublicKey = bundle.getString("publicKey");
+            if (sPublicKey != null && !sPublicKey.isEmpty()) {
+                publicKey = keyGenerator.decodePublicKey(sPublicKey);
+            }
+            String sPrivateKey = bundle.getString("privateKey");
+            if (sPrivateKey != null && !sPrivateKey.isEmpty()) {
+                privateKey = keyGenerator.decodePrivateKey(sPrivateKey);
+            }
+            String rPublicKey = bundle.getString("receiverPublicKey");
+            if (rPublicKey != null && !rPublicKey.isEmpty()) {
+                receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
+                Toast.makeText(this, "" + rPublicKey, Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
 
         messages = new ArrayList<>();
@@ -108,7 +133,6 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         binding.sendBtn.setOnClickListener(v -> {
             String messageTxt = binding.messageBox.getText().toString();
             if (!binding.messageBox.getText().toString().isEmpty()) {
-
                 send(new Message(messageTxt, Side.Sender));
                 //receive(new Message(messageTxt, Side.Receiver));
                 binding.messageBox.setText("");
@@ -127,15 +151,29 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         try {
             JSONObject object = new JSONObject(data);
             Envelope envelope = new Envelope(object);
+            String operation = envelope.toJson().getString("operation");
+
             // Обробляємо дані від Activity1, наприклад, оновлюємо UI
-            if (envelope.getFileUrl()==null) {
-                receive(new Message(envelope.getMessage(), Side.Receiver));
-            } else {
-                Message message = new Message(envelope.getMessage(), Uri.parse(envelope.getFileUrl()), Side.Receiver);
-                message.setHas(envelope.getFileHash());
-                receiveFile(message);
+            if ("message".equals(operation)) {
+                if (envelope.getFileUrl() == null) {
+                    receive(new Message(envelope.getMessage(), Side.Receiver));
+                } else {
+                    Message message = new Message(envelope.getMessage(), Uri.parse(envelope.getFileUrl()), Side.Receiver);
+                    message.setHas(envelope.getFileHash());
+                    receiveFile(message);
+                }
+            } else if ("handshake".equals(operation)) {
+                JSONObject jsonObject = new JSONObject(envelope.getMessage());
+                // чому getString("publicKey"); тому що відправник вказує в повідомлення метрику як publicKey
+                // тим вказує що це його публічний кул так ми його забираємо
+                String rPublicKey = jsonObject.getString("publicKey");
+                receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
+                Toast.makeText(this, "[" + receiverPublicKey + "]", Toast.LENGTH_SHORT).show();
             }
+
         } catch (JSONException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -167,8 +205,12 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private void send(Message message) {
         messages.add(message);
         runOnUiThread(() -> {
-            Envelope envelope = new Envelope(senderId, receiverId, message.getMessage());
+
+
+            Envelope envelope = new Envelope(senderId, receiverId, "message", message.getMessage());
+            //реалізація шифрування повідомлення
             sendDataBackToActivity(envelope.toJson().toString());
+
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
         });
@@ -207,7 +249,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 Message message = new Message("", Uri.parse(url), Side.Sender);
                 message.setHas(has);
                 sendFile(convertImage("", url, has, Side.Sender));
-                String urls = "http://192.168.193.183:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
+                String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
                 Envelope envelope = new Envelope(senderId, receiverId, message.getMessage(), urls, has);
                 sendDataBackToActivity(envelope.toJson().toString());
             }
@@ -225,7 +267,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender);
                 message.setHas(has);
                 sendFile(message);
-                String urls = "http://192.168.193.183:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
+                String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
                 Envelope envelope = new Envelope(senderId, receiverId, message.getMessage(), urls, has);
                 sendDataBackToActivity(envelope.toJson().toString());
             }
@@ -299,6 +341,4 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         message.setHas(has);
         return message;
     }
-
-
 }

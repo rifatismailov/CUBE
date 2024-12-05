@@ -52,5 +52,7 @@
     <string name="add_name">Введіть ім\'я</string>
     <string name="add_id">Введіть Id контакту</string>
     <string name="add_public_key">Введіть публічний ключ</string>
-    <string name="save_contact">Зберегти контакт</string>
+    <string name="save_contact">Зберегти</string>
+    <string name="navigation_drawer_open">Відкрити меню</string>
+    <string name="navigation_drawer_close">Закрити меню</string>
 </resources>

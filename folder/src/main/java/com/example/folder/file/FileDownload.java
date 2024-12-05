@@ -57,7 +57,7 @@ public class FileDownload {
                                     new Handler(Looper.getMainLooper()).post(() -> {
                                         doHandler.setProgress("Завантаження завершено");
                                         LOGGER.info("Завантаження завершено");
-                                        doHandler.showDirectory();
+                                        doHandler.showDirectory(null);
                                     });
                                 }
                             }))

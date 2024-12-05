@@ -1,39 +1,44 @@
 package com.example.cube.socket;
 
-import android.util.Log;
-
-import com.example.cube.Envelope;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+/**
+ * Клас для роботи з серверним підключенням.
+ * Використовується для надсилання, отримання даних та перевірки стану підключення.
+ */
 public class ServerConnection {
-    private static final String SERVER_IP = "192.168.31.172";  // IP сервера192.168.193.183
-    private static final int SERVER_PORT = 8080;  // Порт сервера
+
+    private final String SERVER_IP;  // IP сервера
+    private final int SERVER_PORT;  // Порт сервера
 
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
     private ScheduledExecutorService scheduler;
-    private ConnectionListener listener;
+    private ExecutorService connect; // Окремий ексекутор для підклюкача
+    private ExecutorService listenerExecutor;  // Окремий ексекутор для слухача
+
+
+    private final ConnectionListener listener;
     private String userId;
     private String receiverId;
-    private boolean connectUser = false;
+    private boolean connectUSER = false;
+    private boolean statusCONNECT = false;
+    private int checkCONNECT = 0;
 
-    public ServerConnection(ConnectionListener listener) {
+    public ServerConnection(ConnectionListener listener, String SERVER_IP, int SERVER_PORT) {
         this.listener = listener;
+        this.SERVER_IP = SERVER_IP;
+        this.SERVER_PORT = SERVER_PORT;
     }
 
     public void setUserId(String userId) {
@@ -46,75 +51,118 @@ public class ServerConnection {
 
     // Метод підключення до сервера
     public void connectToServer() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                socket = new Socket(SERVER_IP, SERVER_PORT);
-                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-                Log.d("MainActivity", "Підключення до сервера");
-                registerUser();
-                startConnectionChecker();
-                listener.onConnected();
-            } catch (IOException e) {
-                Log.e("ServerConnection", "Помилка підключення до сервера", e);
+        connect = Executors.newSingleThreadExecutor();
+        connect.execute(() -> {
+            while (true) {
+                try {
+                    System.out.println("ServerConnection: Спроба перепідключення...");
+                    socket = new Socket(SERVER_IP, SERVER_PORT);
+                    input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+                    System.out.println("ServerConnection: Успішно перепідключено.");
+
+                    // Реєстрація користувача знову після підключення
+                    registerUser();
+                    checkCONNECT = 0;
+                    statusCONNECT = false;
+
+                    // Відновлення перевірки з'єднання
+                    startConnectionChecker();
+
+                    // **Важливо:** Перезапустити слухання повідомлень з новим потоком
+                    listenerExecutor = Executors.newSingleThreadExecutor();
+                    listenerExecutor.execute(this::listenForMessages);
+                    listener.onConnected();
+                    break; // Вихід з циклу при успішному підключенні
+                } catch (IOException e) {
+                    System.out.println("ServerConnection: Не вдалося перепідключитися, спроба знову через 5 секунд.");
+                    try {
+                        Thread.sleep(5000); // Очікування 5 секунд перед повторною спробою
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         });
-
     }
 
     // Метод для перевірки підключення
     private void startConnectionChecker() {
-        scheduler = Executors.newScheduledThreadPool(1);
+
+        System.out.println("ServerConnection: Запуск переврки....");
+
+        if (scheduler != null) {
+            scheduler.shutdownNow(); // Завершити старий екземпляр
+        }
+        scheduler = Executors.newScheduledThreadPool(1); // Створити новий екземпляр
+
         scheduler.scheduleWithFixedDelay(() -> {
-            Log.d("MainActivity", "перевірка");
-
-            if (socket == null || socket.isClosed()) {
-                Log.d("MainActivity", "підключення розірвано");
-                return;
-            }
-            if (socket.isConnected()) {
-                Log.d("MainActivity", "підключення встановлнео");
-            }
             try {
+                System.out.println("ServerConnection: Перевірка підключення....");
 
-                // Перевіряємо, чи сервер доступний
-                boolean reachable = socket.getInetAddress().isReachable(1000); // Таймаут 1 секунда
-
-                if (!reachable) {
-                    Log.d("MainActivity", "сервер недосяжний, підключення розірвано");
-                    connectUser = false;
-
-                    // reconnectToServer(); // Перепідключення до сервера
-                } else {
-                    Log.d("MainActivity", "сервер доступний, підключення активне");
-                    if (!connectUser) {
-                        Log.d("MainActivity", "Регістрація");
-                        connectToServer();
-                    }
+                if (socket == null || socket.isClosed() || !socket.isConnected()) {
+                    System.out.println("ServerConnection: Підключення втрачено, запуск перепідключення.");
+                    stopConnectionChecker(); // Зупинка поточного перевіряча
+                    connectToServer();       // Запуск перепідключення
                 }
-            } catch (IOException e) {
-                Log.d("MainActivity", "помилка перевірки доступності сервера");
+                if (!connectUSER) {
+                    registerUser();
+                }
+                // Перевірка статусу підключення
+                if (statusCONNECT) {
+                    checkCONNECT = 0;
+                } else {
+                    checkCONNECT++;
+                }
+                if (checkCONNECT >= 2) {
+                    System.out.println("ServerConnection: Сервер не відповідає, запуск перепідключення.");
+                    connectUSER = false;
+                    stopConnectionChecker(); // Зупинка поточного перевіряча
+                    connectToServer(); // Запуск перепідключення
+                }
+                sendData(new Envelope(userId, userId, "ping", "ping").toJson().toString());
+                statusCONNECT = false;
+            } catch (Exception e) {
+                System.out.println("ServerConnection: Помилка перевірки з'єднання - " + e);
             }
-
         }, 0, 5, TimeUnit.SECONDS); // Перевірка кожні 5 секунд
+    }
+
+
+    // Реєстрація користувача
+    private void registerUser() {
+        sendData("{\"userId\":\"" + this.userId + "\"}");
+        connectUSER = true;
     }
 
     // Надсилання даних на сервер
     public void sendData(String data) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            if (output != null) {
+            if (output != null && !socket.isClosed() && socket.isConnected()) {
                 output.println(data);
+            } else {
+                System.out.println("ServerConnection: Неможливо надіслати дані, сокет закритий.");
             }
         });
     }
-
+    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
+        String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
+        sendData(new Envelope(userId, receiverId, operation, keyMessage).toJson().toString());
+    }
     // Читання даних з сервера
     public void listenForMessages() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                String message;
-                while ((message = input.readLine()) != null) {
-                    if (message != null) {
+        try {
+            String message;
+            while ((message = input.readLine()) != null) {
+                if (message != null) {
+                    if (!message.startsWith("{") && !message.endsWith("}")) {
+                        if (message.contains("USER_CONNECT")) {
+                            System.out.println("USER_CONNECT");
+                            statusCONNECT = true;
+                        } else {
+                            System.out.println(message);
+                        }
+                    } else {
                         JSONObject object = new JSONObject(message);
                         Envelope envelope = new Envelope(object);
 
@@ -122,75 +170,72 @@ public class ServerConnection {
                             listener.onMessageReceived(message);
                             Thread.sleep(100); // 100 мс
                         } else if (receiverId != null && receiverId.equals(envelope.getSenderId())) {
-                            if (isJson(envelope.getMessage()))
-                                listener.onMessageReceived(message);
-                            else handshake(envelope.getSenderId(), envelope.getMessage());
+                            listener.onMessageReceived(message);
                             Thread.sleep(100); // 100 мс
                         } else {
-                            if (isJson(envelope.getMessage()))
-                                listener.saveMessage(envelope);
-                            else handshake(envelope.getSenderId(), envelope.getMessage());
+                            listener.saveMessage(envelope);
                         }
-                    } else {
-                        Log.e("MainActivity", "Отримано null повідомлення");
                     }
-                    //listener.onMessageReceived(message);
                 }
-            } catch (IOException e) {
-                Log.e("ServerConnection", "Помилка читання повідомлень", e);
-            } catch (JSONException | InterruptedException e) {
-                throw new RuntimeException(e);
             }
-        });
-    }
-
-    private final Pattern JSON_PATTERN = Pattern.compile(
-            "\\s*\\{[^{}]*\\}\\s*|\\s*\\[[^\\[\\]]*\\]\\s*"
-    );
-
-    public boolean isJson(String jsonString) {
-        Matcher matcher = JSON_PATTERN.matcher(jsonString.trim());
-        return !matcher.matches();
-    }
-
-    public void handshake(String senderId, String jsonString) {
-
-        try {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            // Отримайте значення userId
-            String publicKey = jsonObject.getString("publicKey");
-            listener.clientHandshake(senderId, publicKey);
-
-        } catch (Exception e) {
+        } catch (IOException e) {
+            System.out.println("ServerConnection: Потік читання закрито або виникла помилка - " + e);
+        } catch (JSONException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
+
+    private void stopSCHEDULI() {
+        scheduler.shutdown();// Завершить роботу з усіма активними потоками в пулі
+        try {
+            if (!scheduler.awaitTermination(6, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();  // Якщо потоки не завершились, примусово завершити
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+    }
+
+    private void stopCONNECT() {
+        connect.shutdown();  // Завершить роботу з усіма активними потоками в пулі
+        try {
+            if (!connect.awaitTermination(60, TimeUnit.SECONDS)) {
+                connect.shutdownNow();  // Якщо потоки не завершились, примусово завершити
+            }
+        } catch (InterruptedException e) {
+            connect.shutdownNow();
+        }
+    }
+
+    private void stopLISTENER() {
+        if (listenerExecutor != null) {
+            listenerExecutor.shutdownNow(); // Завершуємо ексекутор для слухача
+        }
+    }
+
+    private void closeConnections() {
+        try {
+            if (input != null) input.close();
+            if (output != null) output.close();
+            if (socket != null && !socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            System.out.println("ServerConnection: Помилка закриття потоків - " + e);
+        }
+    }
 
     // Зупинка перевірки підключення
     public void stopConnectionChecker() {
-        if (scheduler != null && !scheduler.isShutdown()) {
-            scheduler.shutdown();
-        }
+        stopSCHEDULI();
+        stopCONNECT();
+        stopLISTENER();
         try {
-            if (input != null) {
-                input.close();
-            }
-            if (output != null) {
-                output.close();
-            }
-            if (socket != null) {
-                socket.close();
-            }
+            if (input != null) input.close();
+            if (output != null) output.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
-            Log.e("ServerConnection", "Помилка закриття сокета", e);
+            System.out.println("ServerConnection: Помилка закриття потоків - " + e);
         }
-    }
-
-    // Реєстрація користувача
-    private void registerUser() {
-        String registerMessage = "{\"userId\":\"" + this.userId + "\"}";
-        sendData(registerMessage);
-        connectUser = true;
     }
 
     // Інтерфейс для сповіщення про стан підключення
@@ -200,7 +245,5 @@ public class ServerConnection {
         void onMessageReceived(String message);
 
         void saveMessage(Envelope envelope);
-
-        void clientHandshake(String senderId, String publicKey);
     }
 }
