@@ -19,13 +19,6 @@
         android:theme="@style/Theme.CUBE"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
-
-        <activity
-            android:name=".Instruction_Activity"
-            android:exported="false"
-            android:label="@string/title_activity_instruktion"
-            android:theme="@style/Theme.CUBE.NoActionBar" />
         <activity
             android:name=".NewsActivity"
             android:exported="false"

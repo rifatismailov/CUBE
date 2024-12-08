@@ -58,7 +58,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener, ServerConnection.ConnectionListener,
-        ContactCreator.CreatorOps, AccountManager.AccountOps, Operation.Operable,NavigationManager.Navigation {
+        ContactCreator.CreatorOps, AccountManager.AccountOps, Operation.Operable, NavigationManager.Navigation {
 
     private ActivityMainBinding binding;
     private String userId;           // ID користувача
@@ -90,6 +90,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         this.password = password;
         binding.id.setText(this.userId);
         binding.name.setText(this.name + " " + this.lastName);
+        if (serverConnection != null)
+            serverConnection.setUserId(userId);
+        else
+            startConnect(userId);
+    }
+
+    private void startConnect(String userId) {
+        serverConnection = new ServerConnection(this, "192.168.1.237", 8080);
+        serverConnection.connectToServer();
+        serverConnection.setUserId(userId);
     }
 
     /**
@@ -135,21 +145,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button accountButton = findViewById(R.id.nav_account);
         Button settingsButton = findViewById(R.id.nav_settings);
         Button logoutButton = findViewById(R.id.nav_logout);
-        ImageButton add_accounte= findViewById(R.id.add_account);
+        ImageButton add_accounte = findViewById(R.id.add_account);
 
 
         // Використання NavigationManager для обробки меню
-        navigationManager = new NavigationManager(this, drawerLayout,add_accounte, accountButton, settingsButton, logoutButton);
+        navigationManager = new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
 
         externalDir = new File(getExternalFilesDir(null), "cube");
         new AccountManager(this).readAccount(externalDir);
 
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
-        // Створення підключення до сервера
-        serverConnection = new ServerConnection(this, "192.168.1.237", 8080);
-        serverConnection.connectToServer();
-        serverConnection.setUserId(userId);
+        if (userId != null)
+            // Створення підключення до сервера
+            startConnect(userId);
+        else
+            scannerQrAccount();
+
         initUserList();
     }
 
@@ -225,6 +237,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), userData.getPublicKey());
         intent.putExtra(FIELD.PRIVATE_KEY.getFIELD(), userData.getPrivateKey());
         intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), userData.getReceiverPublicKey());
+        intent.putExtra(FIELD.SENDER_KEY.getFIELD(), userData.getSenderKey());
+        intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
         startActivity(intent);
     }
 
@@ -259,16 +273,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             user.setPublicKey(keyGenerator.getPublicKey());
             user.setPrivateKey(keyGenerator.getPrivateKey());
             // Треба дадати генерацію ключа AES
-            user.setSenderKey("RtE1vuW5eM6k8CcsFeEt2Jtd7zRPJqjb3jz/kBunVnK5hK5/Lg9bx5jBOWMFB5cgQ=");
-
+            String key =KeyGenerator.AES.generateKey(16);
+            user.setSenderKey(key);
+            // відправка публічного ключа отримувачу
             serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
-            //Пунюємо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
+            //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
             serverConnection.setReceiverId(null);
 
         } else {
             try {
                 if (user.getReceiverPublicKey() == null) {
+                    // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
+                    // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
                     Log.e("ReceiverPublicKey", "Receiver public key is either null or empty");
+                    serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+                    //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
                     serverConnection.setReceiverId(null);
                 } else {
                     startChat(binding.getRoot().getRootView(), user);
@@ -421,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     });
 
     @Override
-    public void scannerQrAccount(){
+    public void scannerQrAccount() {
         new QR(qrCodeAddAccount);
     }
 

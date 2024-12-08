@@ -26,6 +26,7 @@ public class ServerConnection {
     private ScheduledExecutorService scheduler;
     private ExecutorService connect; // Окремий ексекутор для підклюкача
     private ExecutorService listenerExecutor;  // Окремий ексекутор для слухача
+    private ExecutorService senderExecutor;  // Окремий ексекутор для слухача
 
 
     private final ConnectionListener listener;
@@ -51,7 +52,8 @@ public class ServerConnection {
 
     // Метод підключення до сервера
     public void connectToServer() {
-        connect = Executors.newSingleThreadExecutor();
+        connect = Executors.newFixedThreadPool(1);
+        senderExecutor = Executors.newFixedThreadPool(1);
         connect.execute(() -> {
             while (true) {
                 try {
@@ -70,7 +72,7 @@ public class ServerConnection {
                     startConnectionChecker();
 
                     // **Важливо:** Перезапустити слухання повідомлень з новим потоком
-                    listenerExecutor = Executors.newSingleThreadExecutor();
+                    listenerExecutor = Executors.newFixedThreadPool(1);
                     listenerExecutor.execute(this::listenForMessages);
                     listener.onConnected();
                     break; // Вихід з циклу при успішному підключенні
@@ -137,7 +139,7 @@ public class ServerConnection {
 
     // Надсилання даних на сервер
     public void sendData(String data) {
-        Executors.newSingleThreadExecutor().execute(() -> {
+        senderExecutor.execute(() -> {
             if (output != null && !socket.isClosed() && socket.isConnected()) {
                 output.println(data);
             } else {
@@ -145,10 +147,7 @@ public class ServerConnection {
             }
         });
     }
-    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
-        String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
-        sendData(new Envelope(userId, receiverId, operation, keyMessage).toJson().toString());
-    }
+
     // Читання даних з сервера
     public void listenForMessages() {
         try {
@@ -159,6 +158,12 @@ public class ServerConnection {
                         if (message.contains("USER_CONNECT")) {
                             System.out.println("USER_CONNECT");
                             statusCONNECT = true;
+                        }
+                        if (message.contains("ID_NOT_CORRECT")) {
+                            if (userId != null && !userId.equals("null")){
+                                registerUser();
+                            }
+
                         } else {
                             System.out.println(message);
                         }
@@ -214,6 +219,12 @@ public class ServerConnection {
         }
     }
 
+    private void stopSENDER() {
+        if (senderExecutor != null) {
+            senderExecutor.shutdownNow(); // Завершуємо ексекутор для слухача
+        }
+    }
+
     private void closeConnections() {
         try {
             if (input != null) input.close();
@@ -229,6 +240,7 @@ public class ServerConnection {
         stopSCHEDULI();
         stopCONNECT();
         stopLISTENER();
+        stopSENDER();
         try {
             if (input != null) input.close();
             if (output != null) output.close();
@@ -236,6 +248,11 @@ public class ServerConnection {
         } catch (IOException e) {
             System.out.println("ServerConnection: Помилка закриття потоків - " + e);
         }
+    }
+
+    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
+        String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
+        sendData(new Envelope(userId, receiverId, operation, keyMessage).toJson().toString());
     }
 
     // Інтерфейс для сповіщення про стан підключення

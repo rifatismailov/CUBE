@@ -10,6 +10,8 @@ public enum FIELD {
     PUBLIC_KEY("publicKey"),
     PRIVATE_KEY("privateKey"),
     RECEIVER_PUBLIC_KEY("receiverPublicKey"),
+    SENDER_KEY("senderKey"),
+    RECEIVER_KEY("receiverKey"),
     AES_KEY("aes_key"),
     KEY_EXCHANGE("keyExchange"),
     NAME("name"),

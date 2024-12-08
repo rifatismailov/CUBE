@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.example.cube.control.FIELD;
+import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.message.MessagesAdapter;
 import com.example.cube.control.Side;
@@ -56,6 +58,9 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private PrivateKey privateKey;
     private PublicKey receiverPublicKey;
     private KeyGenerator.RSA keyGenerator;
+    private String senderKey;
+    private String receiverKey;
+
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -99,6 +104,8 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
                 Toast.makeText(this, "" + rPublicKey, Toast.LENGTH_SHORT).show();
             }
+            senderKey=bundle.getString(FIELD.SENDER_KEY.getFIELD());
+            receiverKey=bundle.getString(FIELD.RECEIVER_KEY.getFIELD());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -155,10 +162,11 @@ public class ChatActivity extends AppCompatActivity implements Folder {
 
             // Обробляємо дані від Activity1, наприклад, оновлюємо UI
             if ("message".equals(operation)) {
+                String rMessage= Encryption.AES.decrypt(envelope.getMessage(),senderKey);
                 if (envelope.getFileUrl() == null) {
-                    receive(new Message(envelope.getMessage(), Side.Receiver));
+                    receive(new Message(rMessage, Side.Receiver));
                 } else {
-                    Message message = new Message(envelope.getMessage(), Uri.parse(envelope.getFileUrl()), Side.Receiver);
+                    Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), Side.Receiver);
                     message.setHas(envelope.getFileHash());
                     receiveFile(message);
                 }

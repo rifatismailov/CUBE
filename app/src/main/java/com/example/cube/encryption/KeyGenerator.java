@@ -12,6 +12,39 @@ import java.util.Base64;
 
 public class KeyGenerator {
     public static class AES {
+        /**
+         * Генерує AES-ключ заданої довжини.
+         *
+         * @param length Довжина ключа в байтах (16, 24 або 32).
+         * @return Згенерований ключ у вигляді рядка.
+         */
+        public static String generateKey(int length) {
+            if (length != 16 && length != 24 && length != 32) {
+                throw new IllegalArgumentException("Довжина ключа має бути 16, 24 або 32 байти.");
+            }
+            SecureRandom secureRandom = new SecureRandom();
+            byte[] key = new byte[length];
+            secureRandom.nextBytes(key);
+            return bytesToHex(key);
+        }
+
+        /**
+         * Конвертує масив байтів у рядок у форматі Hex.
+         *
+         * @param bytes Масив байтів.
+         * @return Рядок у форматі Hex.
+         */
+        private static String bytesToHex(byte[] bytes) {
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : bytes) {
+                String hex = Integer.toHexString(0xFF & b);
+                if (hex.length() == 1) {
+                    hexString.append('0'); // Додаємо 0 для вирівнювання
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        }
     }
 
     public static class RSA {
