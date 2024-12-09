@@ -2,11 +2,13 @@ package com.example.cube;
 
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -21,14 +23,19 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
 import com.example.cube.contact.UserAdapter;
 import com.example.cube.contact.UserData;
 import com.example.cube.databinding.ActivityMainBinding;
+import com.example.cube.databinding.DrawerHeaderBinding;
+import com.example.cube.databinding.NavigationContentBinding;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
+import com.example.cube.log.LogAdapter;
+import com.example.cube.log.Logger;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 import com.example.cube.socket.Envelope;
@@ -61,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ContactCreator.CreatorOps, AccountManager.AccountOps, Operation.Operable, NavigationManager.Navigation {
 
     private ActivityMainBinding binding;
+    private TextView user_name;
+    private TextView user_id;
     private String userId;           // ID користувача
     private String receiverId;       // ID отримувача
     private String name;             // Ім'я користувача
@@ -68,8 +77,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String password;         // Пароль
     private UserData user;           // Об'єкт користувача
 
-    private List<UserData> userList = new ArrayList<>();  // Список користувачів
+    private final List<UserData> userList = new ArrayList<>();  // Список користувачів
     private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
+
+    private List<Logger> logs;
+    private LogAdapter logAdapter;
 
     private SecretKey secretKey;  // AES-ключ
 
@@ -90,10 +102,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         this.password = password;
         binding.id.setText(this.userId);
         binding.name.setText(this.name + " " + this.lastName);
+        user_name.setText(this.name + " " + this.lastName);
+        user_id.setText(this.userId);
+
         if (serverConnection != null)
             serverConnection.setUserId(userId);
         else
             startConnect(userId);
+    }
+
+    /**
+     * Додає новий контакт, отриманий через QR-код або інші джерела.
+     *
+     * @param id_contact дані контакту у вигляді рядка JSON.
+     */
+    @Override
+    public void setContact(String id_contact, String public_key_contact, String name_contact) {
+        // Додаємо новий контакт до списку користувачів
+        userList.add(new UserData(id_contact, public_key_contact, name_contact, ""));
+        // Оновлюємо мапу контактів
+        for (UserData user : userList) {
+            contacts.put(user.getId(), user);
+        }
+        new Cube(this).setContacts(contacts, secretKey);
     }
 
     private void startConnect(String userId) {
@@ -130,6 +161,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        logs = new ArrayList<>();
+        logAdapter = new LogAdapter(this, logs);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
+
+        binding.log.setLayoutManager(layoutManager);
+        binding.log.setAdapter(logAdapter);
+
         password = "1234567890123456";  // Пароль
         byte[] keyBytes = password.getBytes();  // Генерація байт ключа
         secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
@@ -142,11 +181,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+        user_name = findViewById(R.id.user_name);
+        user_id = findViewById(R.id.user_id);
         Button accountButton = findViewById(R.id.nav_account);
         Button settingsButton = findViewById(R.id.nav_settings);
         Button logoutButton = findViewById(R.id.nav_logout);
         ImageButton add_accounte = findViewById(R.id.add_account);
-
 
         // Використання NavigationManager для обробки меню
         navigationManager = new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
@@ -163,7 +203,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             scannerQrAccount();
 
         initUserList();
+
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -187,7 +230,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding.contentMain.userList.setAdapter(userAdapter);
         binding.contentMain.userList.setOnItemClickListener(this);
     }
-
+    @Override
+    public String getReceiverId(){
+        return receiverId;
+    }
 
     /**
      * Отримує дані з активності чату та передає їх на сервер.
@@ -226,20 +272,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param userData Дані користувача для чату.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    public void startChat(View view, UserData userData) {
-        IntentFilter filter = new IntentFilter("com.example.cube.REPLY_FROM_CHAT");
-        registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra(FIELD.SENDER_ID.getFIELD(), userId);
-        intent.putExtra(FIELD.NAME.getFIELD(), userData.getName());
-        intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), userData.getId());
-        intent.putExtra(FIELD.STATUS.getFIELD(), "online");
-        intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), userData.getPublicKey());
-        intent.putExtra(FIELD.PRIVATE_KEY.getFIELD(), userData.getPrivateKey());
-        intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), userData.getReceiverPublicKey());
-        intent.putExtra(FIELD.SENDER_KEY.getFIELD(), userData.getSenderKey());
-        intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
-        startActivity(intent);
+    public void startChat(View view, @NonNull UserData userData) {
+        if(serverConnection.getReceiverId().equals(receiverId)) {
+            IntentFilter filter = new IntentFilter("com.example.cube.REPLY_FROM_CHAT");
+            registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            Intent intent = new Intent(this, ChatActivity.class);
+            intent.putExtra(FIELD.SENDER_ID.getFIELD(), userId);
+            intent.putExtra(FIELD.NAME.getFIELD(), userData.getName());
+            intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), userData.getId());
+            intent.putExtra(FIELD.STATUS.getFIELD(), "online");
+            intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), userData.getPublicKey());
+            intent.putExtra(FIELD.PRIVATE_KEY.getFIELD(), userData.getPrivateKey());
+            intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), userData.getReceiverPublicKey());
+            intent.putExtra(FIELD.SENDER_KEY.getFIELD(), userData.getSenderKey());
+            intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
+            startActivity(intent);
+        }else {
+            Toast.makeText(this,"receiverId "+receiverId,Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -264,16 +314,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user = userList.get(i);
         user.setSize(0);
         receiverId = user.getId();
-        Toast.makeText(this, "" + receiverId, Toast.LENGTH_SHORT).show();
-        serverConnection.setReceiverId(receiverId);
         if (user.getPublicKey().isEmpty()) {
             //generate PublicKey
             KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
             keyGenerator.key();
             user.setPublicKey(keyGenerator.getPublicKey());
             user.setPrivateKey(keyGenerator.getPrivateKey());
-            // Треба дадати генерацію ключа AES
-            String key =KeyGenerator.AES.generateKey(16);
+            // Треба додати генерацію ключа AES
+            String key = KeyGenerator.AES.generateKey(16);
             user.setSenderKey(key);
             // відправка публічного ключа отримувачу
             serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
@@ -290,11 +338,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
                     serverConnection.setReceiverId(null);
                 } else {
+                    serverConnection.setReceiverId(receiverId);
                     startChat(binding.getRoot().getRootView(), user);
                     new Operation(this).openSaveMessage(receiverId, saveMessage);
                     user.setMessageSize("");
                     userAdapter.notifyDataSetChanged();
                     Log.e("ReceiverPublicKey", user.getReceiverPublicKey());
+                    Log.e("receiverId", receiverId);
+
+
                 }
             } catch (Exception e) {
                 Log.e("ReceiverPublicKey", e.toString());
@@ -310,6 +362,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onMessageReceived(String message) {
         new Operation(this).onReceived(message);
+    }
+
+    @Override
+    public void onConnected() {
+        // Викликається при підключенні до сервера
+        try {
+            serverConnection.listenForMessages();
+        } catch (Exception e) {
+            Log.e("onConnected", e.toString());
+        }
+
+    }
+
+    /**
+     * Зберігає отримане повідомлення.
+     *
+     * @param envelope дані повідомлення, яке зберігається.
+     */
+    @Override
+    public void saveMessage(Envelope envelope) {
+        Log.e("Exchange", "Збереження повідомлення: " + envelope);
+        // Оновлення інтерфейсу користувача на основі нових повідомлень
+        runOnUiThread(() -> {
+            numMessage = new Operation(this).saveMessage(envelope, saveMessage, numMessage, userList);
+        });
+    }
+
+    @Override
+    public void setLogs(String clas, String log) {
+        runOnUiThread(() -> {
+            logs.add(new Logger(clas, log));
+            logAdapter.notifyItemInserted(logs.size() - 1); // Повідомити, що новий елемент було вставлено
+            binding.log.smoothScrollToPosition(logs.size() - 1); // Прокрутити до нового елемента
+            Log.e(clas, log);
+        });
+
+
     }
 
     /**
@@ -399,20 +488,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         userAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * Зберігає отримане повідомлення.
-     *
-     * @param envelope дані повідомлення, яке зберігається.
-     */
-    @Override
-    public void saveMessage(Envelope envelope) {
-        Log.e("Exchange", "Збереження повідомлення: " + envelope);
-        // Оновлення інтерфейсу користувача на основі нових повідомлень
-        runOnUiThread(() -> {
-            numMessage = new Operation(this).saveMessage(envelope, saveMessage, numMessage, userList);
-        });
-    }
-
 
     /**
      * Лаунчер для сканування QR-коду для додавання аккаунту користувача.
@@ -468,33 +543,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    @Override
-    public void onConnected() {
-        // Викликається при підключенні до сервера
-        try {
-            serverConnection.listenForMessages();
-        } catch (Exception e) {
-            Log.e("onConnected", e.toString());
-        }
-
-    }
-
-
-    /**
-     * Додає новий контакт, отриманий через QR-код або інші джерела.
-     *
-     * @param id_contact дані контакту у вигляді рядка JSON.
-     */
-    @Override
-    public void setContact(String id_contact, String public_key_contact, String name_contact) {
-        // Додаємо новий контакт до списку користувачів
-        userList.add(new UserData(id_contact, public_key_contact, name_contact, ""));
-        // Оновлюємо мапу контактів
-        for (UserData user : userList) {
-            contacts.put(user.getId(), user);
-        }
-        new Cube(this).setContacts(contacts, secretKey);
-    }
 
     /**
      * Зберігає контакт, отриманий ззовні, до локальної системи.

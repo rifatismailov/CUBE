@@ -1,6 +1,8 @@
 package com.example.cube.socket;
 
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  * Використовується для надсилання, отримання даних та перевірки стану підключення.
  */
 public class ServerConnection {
-
     private final String SERVER_IP;  // IP сервера
     private final int SERVER_PORT;  // Порт сервера
 
@@ -57,11 +58,11 @@ public class ServerConnection {
         connect.execute(() -> {
             while (true) {
                 try {
-                    System.out.println("ServerConnection: Спроба перепідключення...");
+                    listener.setLogs("[INFO] [Connect]", "Спроба перепідключення...");
                     socket = new Socket(SERVER_IP, SERVER_PORT);
                     input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-                    System.out.println("ServerConnection: Успішно перепідключено.");
+                    listener.setLogs("[INFO] [Connect]", "Успішно перепідключено.");
 
                     // Реєстрація користувача знову після підключення
                     registerUser();
@@ -77,7 +78,7 @@ public class ServerConnection {
                     listener.onConnected();
                     break; // Вихід з циклу при успішному підключенні
                 } catch (IOException e) {
-                    System.out.println("ServerConnection: Не вдалося перепідключитися, спроба знову через 5 секунд.");
+                    listener.setLogs("[ERROR] [Connect]", "Не вдалося перепідключитися, спроба знову через 5 секунд.");
                     try {
                         Thread.sleep(5000); // Очікування 5 секунд перед повторною спробою
                     } catch (InterruptedException ex) {
@@ -91,8 +92,7 @@ public class ServerConnection {
     // Метод для перевірки підключення
     private void startConnectionChecker() {
 
-        System.out.println("ServerConnection: Запуск переврки....");
-
+        listener.setLogs("[INFO] [Check connect]", "Запуск переврки....");
         if (scheduler != null) {
             scheduler.shutdownNow(); // Завершити старий екземпляр
         }
@@ -100,10 +100,10 @@ public class ServerConnection {
 
         scheduler.scheduleWithFixedDelay(() -> {
             try {
-                System.out.println("ServerConnection: Перевірка підключення....");
+                listener.setLogs("[INFO] [Check connect]", "Перевірка підключення....");
 
                 if (socket == null || socket.isClosed() || !socket.isConnected()) {
-                    System.out.println("ServerConnection: Підключення втрачено, запуск перепідключення.");
+                    listener.setLogs("[INFO] [Check connect]", "Підключення втрачено, запуск перепідключення.");
                     stopConnectionChecker(); // Зупинка поточного перевіряча
                     connectToServer();       // Запуск перепідключення
                 }
@@ -117,7 +117,7 @@ public class ServerConnection {
                     checkCONNECT++;
                 }
                 if (checkCONNECT >= 2) {
-                    System.out.println("ServerConnection: Сервер не відповідає, запуск перепідключення.");
+                    listener.setLogs("[INFO] [Check connect]", "Сервер не відповідає, запуск перепідключення.");
                     connectUSER = false;
                     stopConnectionChecker(); // Зупинка поточного перевіряча
                     connectToServer(); // Запуск перепідключення
@@ -125,7 +125,7 @@ public class ServerConnection {
                 sendData(new Envelope(userId, userId, "ping", "ping").toJson().toString());
                 statusCONNECT = false;
             } catch (Exception e) {
-                System.out.println("ServerConnection: Помилка перевірки з'єднання - " + e);
+                listener.setLogs("[ERROR] [Check connect]", "Помилка перевірки з'єднання - " + e);
             }
         }, 0, 5, TimeUnit.SECONDS); // Перевірка кожні 5 секунд
     }
@@ -139,13 +139,18 @@ public class ServerConnection {
 
     // Надсилання даних на сервер
     public void sendData(String data) {
-        senderExecutor.execute(() -> {
-            if (output != null && !socket.isClosed() && socket.isConnected()) {
-                output.println(data);
-            } else {
-                System.out.println("ServerConnection: Неможливо надіслати дані, сокет закритий.");
-            }
-        });
+        if (!senderExecutor.isShutdown() && !senderExecutor.isTerminated()) {
+            senderExecutor.execute(() -> {
+                if (output != null && !socket.isClosed() && socket.isConnected()) {
+                    output.println(data);
+                } else {
+                    listener.setLogs("[INFO] [Register user]", "Неможливо надіслати дані, сокет закритий.");
+                }
+            });
+        } else {
+            listener.setLogs("[INFO] [Register user]", "Sender Executor вимкнено. Неможливо надіслати дані.");
+        }
+
     }
 
     // Читання даних з сервера
@@ -156,11 +161,13 @@ public class ServerConnection {
                 if (message != null) {
                     if (!message.startsWith("{") && !message.endsWith("}")) {
                         if (message.contains("USER_CONNECT")) {
-                            System.out.println("USER_CONNECT");
+                            listener.setLogs("[INFO] [Check connect]", "Сервер на зв'язку....");
                             statusCONNECT = true;
                         }
                         if (message.contains("ID_NOT_CORRECT")) {
-                            if (userId != null && !userId.equals("null")){
+                            if (userId != null && !userId.equals("null")) {
+                                listener.setLogs("[INFO] [Register user]", "Помилка авторизації на сервері. Виконуємо наступну спробу");
+
                                 registerUser();
                             }
 
@@ -168,8 +175,13 @@ public class ServerConnection {
                             System.out.println(message);
                         }
                     } else {
+                        if (!listener.getReceiverId().isEmpty() && receiverId == null) {
+                            receiverId = listener.getReceiverId();
+                        }
                         JSONObject object = new JSONObject(message);
                         Envelope envelope = new Envelope(object);
+
+                        listener.setLogs("[INFO] [Check receiver]", "Відправник " + receiverId);
 
                         if (userId.equals(envelope.getSenderId()) && receiverId.equals(envelope.getReceiverId())) {
                             listener.onMessageReceived(message);
@@ -184,9 +196,11 @@ public class ServerConnection {
                 }
             }
         } catch (IOException e) {
-            System.out.println("ServerConnection: Потік читання закрито або виникла помилка - " + e);
+            listener.setLogs("[ERROR] [Listen messages]", " Потік читання закрито або виникла помилка - " + e);
+
         } catch (JSONException | InterruptedException e) {
-            throw new RuntimeException(e);
+            listener.setLogs("[ERROR] [Listen messages]", " Помилка обробки JSON під час отримання повідомлення - " + e.getMessage());
+
         }
     }
 
@@ -231,7 +245,7 @@ public class ServerConnection {
             if (output != null) output.close();
             if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
-            System.out.println("ServerConnection: Помилка закриття потоків - " + e);
+            listener.setLogs("[ERROR] [Close connections]", "Помилка закриття потоків - " + e);
         }
     }
 
@@ -246,13 +260,17 @@ public class ServerConnection {
             if (output != null) output.close();
             if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
-            System.out.println("ServerConnection: Помилка закриття потоків - " + e);
+            listener.setLogs("[ERROR] [Close connections]", "Помилка закриття потоків - " + e);
         }
     }
 
     public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
         String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
         sendData(new Envelope(userId, receiverId, operation, keyMessage).toJson().toString());
+    }
+
+    public String getReceiverId() {
+        return receiverId;
     }
 
     // Інтерфейс для сповіщення про стан підключення
@@ -262,5 +280,9 @@ public class ServerConnection {
         void onMessageReceived(String message);
 
         void saveMessage(Envelope envelope);
+
+        void setLogs(String clas, String log);
+
+        String getReceiverId();
     }
 }

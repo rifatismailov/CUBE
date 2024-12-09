@@ -20,6 +20,7 @@ import com.example.cube.message.Message;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -60,7 +61,10 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private KeyGenerator.RSA keyGenerator;
     private String senderKey;
     private String receiverKey;
-
+    String test = "This is a photo of just one young family killed by a Russian missile attack " +
+            "on Kryvyi Rih. Tonight, there was another terrorist attack – and again three dead, this time in #Odesa. " +
+            "All the missiles fired by #Russia were produced in the spring of 2023. In all of them, " +
+            "without… https://t.co/InqQMPl3xr https://t.co/ByK8CN1dyA";
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -104,8 +108,8 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
                 Toast.makeText(this, "" + rPublicKey, Toast.LENGTH_SHORT).show();
             }
-            senderKey=bundle.getString(FIELD.SENDER_KEY.getFIELD());
-            receiverKey=bundle.getString(FIELD.RECEIVER_KEY.getFIELD());
+            senderKey = bundle.getString(FIELD.SENDER_KEY.getFIELD());
+            receiverKey = bundle.getString(FIELD.RECEIVER_KEY.getFIELD());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -128,10 +132,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
 
 
         receive(new Message("Hello my friend American English varieties", Side.Receiver));
-        receive(new Message("This is a photo of just one young family killed by a Russian missile attack " +
-                "on Kryvyi Rih. Tonight, there was another terrorist attack – and again three dead, this time in #Odesa. " +
-                "All the missiles fired by #Russia were produced in the spring of 2023. In all of them, " +
-                "without… https://t.co/InqQMPl3xr https://t.co/ByK8CN1dyA", Side.Receiver));
+        receive(new Message(test, Side.Receiver));
 
         binding.back.setOnClickListener(v -> {
             sendDataBackToActivity("endUser");
@@ -140,6 +141,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         binding.sendBtn.setOnClickListener(v -> {
             String messageTxt = binding.messageBox.getText().toString();
             if (!binding.messageBox.getText().toString().isEmpty()) {
+
                 send(new Message(messageTxt, Side.Sender));
                 //receive(new Message(messageTxt, Side.Receiver));
                 binding.messageBox.setText("");
@@ -162,7 +164,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
 
             // Обробляємо дані від Activity1, наприклад, оновлюємо UI
             if ("message".equals(operation)) {
-                String rMessage= Encryption.AES.decrypt(envelope.getMessage(),senderKey);
+                String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 if (envelope.getFileUrl() == null) {
                     receive(new Message(rMessage, Side.Receiver));
                 } else {
@@ -180,9 +182,11 @@ public class ChatActivity extends AppCompatActivity implements Folder {
             }
 
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+            Log.e("ChatActivity", "Помилка під час отримання JSON: " +e);
+
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Log.e("ChatActivity", "Помилка під час отримання даних з MainActivity: " +e);
         }
 
         // Відправляємо дані назад у Activity1
@@ -213,14 +217,18 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     private void send(Message message) {
         messages.add(message);
         runOnUiThread(() -> {
+            try {
+                String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
+                Envelope envelope = new Envelope(senderId, receiverId, "message", rMessage);
+                //реалізація шифрування повідомлення
+                sendDataBackToActivity(envelope.toJson().toString());
 
+                adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
+                binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+            } catch (Exception e) {
 
-            Envelope envelope = new Envelope(senderId, receiverId, "message", message.getMessage());
-            //реалізація шифрування повідомлення
-            sendDataBackToActivity(envelope.toJson().toString());
+            }
 
-            adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
         });
     }
 
@@ -252,15 +260,23 @@ public class ChatActivity extends AppCompatActivity implements Folder {
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void openFile(String url, String has) {
-        if (url.endsWith(".jpg") || url.endsWith(".png")) {
-            {
-                Message message = new Message("", Uri.parse(url), Side.Sender);
-                message.setHas(has);
-                sendFile(convertImage("", url, has, Side.Sender));
-                String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
-                Envelope envelope = new Envelope(senderId, receiverId, message.getMessage(), urls, has);
-                sendDataBackToActivity(envelope.toJson().toString());
-            }
+        try {
+
+
+            if (url.endsWith(".jpg") || url.endsWith(".png")) {
+                {
+                    Message message = new Message("", Uri.parse(url), Side.Sender);
+                    message.setHas(has);
+                    sendFile(convertImage("", url, has, Side.Sender));
+                    String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
+                    String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
+                    String rURL = Encryption.AES.encrypt(urls, receiverKey);
+                    String rHAS = Encryption.AES.encrypt(has, receiverKey);
+                    Envelope envelope = new Envelope(senderId, receiverId, "image", rMessage, rURL, rHAS);
+                    Log.e("SendFile", urls);
+
+                    sendDataBackToActivity(envelope.toJson().toString());
+                }
            /* {
                 String urls = "http://192.168.193.183:8080/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
                 Message message = new Message("There will be information about your message :\n", Uri.parse(urls), Side.Receiver);
@@ -270,15 +286,18 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 sendDataBackToActivity(envelope.toJson().toString());
             }
             */
-        } else {
-            {
-                Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender);
-                message.setHas(has);
-                sendFile(message);
-                String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
-                Envelope envelope = new Envelope(senderId, receiverId, message.getMessage(), urls, has);
-                sendDataBackToActivity(envelope.toJson().toString());
-            }
+            } else {
+                {
+                    Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender);
+                    message.setHas(has);
+                    sendFile(message);
+                    String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
+                    String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
+                    String rURL = Encryption.AES.encrypt(urls, receiverKey);
+                    String rHAS = Encryption.AES.encrypt(has, receiverKey);
+                    Envelope envelope = new Envelope(senderId, receiverId, "file", rMessage, rURL, rHAS);
+                    sendDataBackToActivity(envelope.toJson().toString());
+                }
 
             /*{
                 String urls = "http://192.168.193.183:8080/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
@@ -289,6 +308,9 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 sendDataBackToActivity(envelope.toJson().toString());
             }
              */
+
+            }
+        }catch (Exception e){
 
         }
 

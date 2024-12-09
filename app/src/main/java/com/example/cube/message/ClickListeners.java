@@ -34,9 +34,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                    viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    viewHolder.binding.feeling.setImageResource(emoji);
-                    viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                  //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                  //  viewHolder.binding.feeling.setImageResource(emoji);
+                  //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
 
@@ -49,9 +49,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                    viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    viewHolder.binding.feeling.setImageResource(emoji);
-                    viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                  //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                  //  viewHolder.binding.feeling.setImageResource(emoji);
+                  //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
         } else {
@@ -65,9 +65,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                    viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    viewHolder.binding.feeling.setImageResource(emoji);
-                    viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                   // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                   // viewHolder.binding.feeling.setImageResource(emoji);
+                   // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
 
                 }
             });
@@ -81,9 +81,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                    viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    viewHolder.binding.feeling.setImageResource(emoji);
-                    viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                   // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                   // viewHolder.binding.feeling.setImageResource(emoji);
+                   // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
             viewHolder.binding.file.setOnClickListener(v -> {

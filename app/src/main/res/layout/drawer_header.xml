@@ -43,7 +43,7 @@
 
         <!-- Текст посередині -->
         <TextView
-            android:id="@+id/center_text"
+            android:id="@+id/user_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="H652882301"
