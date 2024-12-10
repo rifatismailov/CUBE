@@ -131,6 +131,7 @@ public class Connector {
                 ping();
                 statusCONNECT = false;
             } catch (Exception e) {
+                Log.e("CONNECTOR","Помилка під час перевірки "+e);
             }
         }, 0, 5, TimeUnit.SECONDS); // Перевірка кожні 5 секунд
     }
