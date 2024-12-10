@@ -35,9 +35,17 @@ public class Operation {
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
                 Log.e("Operation", receivedMessage);
                 operable.addHandshake(envelope);
+                operable.addMessage(message);
             } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
                 operable.addAESKey(sender, receivedMessage);
+                operable.addMessage(message);
                 Log.e("Operation", "Отримано KEY_EXCHANGE [" + sender + "]: " + receivedMessage);
+            }
+            else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
+                //operable.addMessage(message);
+                String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
+                String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
+                Log.e("Operation", "Отримано STATUS_MESSAGE [" + sender + "]: " + status+" [ "+ messageID + "]" );
             }
             // Обробка отриманих повідомлень
         } catch (JSONException e) {

@@ -4,6 +4,7 @@ public enum FIELD {
     USER_ID("userId"),
     SENDER_ID("senderId"),
     RECEIVER_ID("receiverId"),
+    MESSAGE_ID("messageId"),
     MESSAGE("message"),
     OPERATION("operation"),
     HANDSHAKE("handshake"),
@@ -16,11 +17,12 @@ public enum FIELD {
     KEY_EXCHANGE("keyExchange"),
     NAME("name"),
     LAST_NAME("lastName"),
-    STATUS("status"),
+    STATUS_USER("status_user"),
     CONTACT_NAME("name_contact"),
     CONTACT_ID("id_contact"),
     CONTACT_PUBLIC_KEY("public_key_contact"),
-    PASSWORD("password");
+    PASSWORD("password"),
+    STATUS_MESSAGE("messageStatus");
     private final String field;
 
     FIELD(String field) {

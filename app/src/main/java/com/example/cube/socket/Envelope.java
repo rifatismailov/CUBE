@@ -3,36 +3,39 @@ package com.example.cube.socket;
 import org.json.JSONObject;
 
 public class Envelope {
-
+    private String messageId;     // Унікальний ідентифікатор повідомлення
     private String senderId;       // ІД відправника
     private String receiverId;     // ІД отримувача
     private String operation;
     private String message;    // Саме повідомлення (може бути null)
     private String fileUrl;        // Посилання на файл (може бути null)
     private String fileHash;       // Хеш-сума файла (може бути null)
+    private String messageStatus;
 
     // Конструктор для текстового повідомлення
-    public Envelope(String senderId, String receiverId,String operation, String message) {
+    public Envelope(String senderId, String receiverId, String operation, String message, String messageId) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.operation = operation;
         this.message = message;
         this.fileUrl = null;
         this.fileHash = null;
+        this.messageId = messageId;
     }
 
     // Конструктор для повідомлення з файлом
-    public Envelope(String senderId, String receiverId,String operation, String message, String fileUrl, String fileHash) {
+    public Envelope(String senderId, String receiverId, String operation, String message, String fileUrl, String fileHash, String messageId) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.operation = operation;
         this.message = message;
         this.fileUrl = fileUrl;
         this.fileHash = fileHash;
+        this.messageId = messageId;
     }
 
     // Конструктор для відправки лише файлу
-    public Envelope(String senderId, String receiverId, String operation, String fileUrl, String fileHash) {
+    public Envelope(String senderId, String receiverId, String operation, String fileUrl, String fileHash, String messageId) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.operation = operation;
@@ -51,6 +54,9 @@ public class Envelope {
             jsonObject.put("message", message);
             jsonObject.put("fileUrl", fileUrl);
             jsonObject.put("fileHash", fileHash);
+            jsonObject.put("messageId", messageId);
+            jsonObject.put("messageStatus", messageStatus);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,6 +72,9 @@ public class Envelope {
             this.message = jsonObject.getString("message");
             this.fileUrl = jsonObject.optString("fileUrl", null);  // fileUrl може бути необов'язковим
             this.fileHash = jsonObject.optString("fileHash", null);  // fileHash може бути необов'язковим
+            this.messageId = jsonObject.getString("messageId");  // fileHash може бути необов'язковим
+            this.messageStatus = jsonObject.optString("messageStatus", null);  // fileHash може бути необов'язковим
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,4 +102,19 @@ public class Envelope {
         return fileHash;
     }
 
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getMessageStatus() {
+        return messageStatus;
+    }
+
+    public void setMessageStatus(String messageStatus) {
+        this.messageStatus = messageStatus;
+    }
 }

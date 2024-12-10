@@ -42,6 +42,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -130,9 +131,9 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
 
-
-        receive(new Message("Hello my friend American English varieties", Side.Receiver));
-        receive(new Message(test, Side.Receiver));
+        //UUID.randomUUID().toString();
+        receive(new Message("Hello my friend American English varieties", Side.Receiver, UUID.randomUUID().toString()));
+        receive(new Message(test, Side.Receiver,UUID.randomUUID().toString()));
 
         binding.back.setOnClickListener(v -> {
             sendDataBackToActivity("endUser");
@@ -142,7 +143,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
             String messageTxt = binding.messageBox.getText().toString();
             if (!binding.messageBox.getText().toString().isEmpty()) {
 
-                send(new Message(messageTxt, Side.Sender));
+                send(new Message(messageTxt, Side.Sender,UUID.randomUUID().toString()));
                 //receive(new Message(messageTxt, Side.Receiver));
                 binding.messageBox.setText("");
             }
@@ -179,6 +180,12 @@ public class ChatActivity extends AppCompatActivity implements Folder {
                 String rPublicKey = jsonObject.getString("publicKey");
                 receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
                 Toast.makeText(this, "[" + receiverPublicKey + "]", Toast.LENGTH_SHORT).show();
+            }else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())){
+                JSONObject jsonObject = new JSONObject(envelope.getMessage());
+                String aesKey = jsonObject.getString(FIELD.AES_KEY.getFIELD());
+                receiverKey = Encryption.RSA.decrypt(aesKey, privateKey);
+                Toast.makeText(this, "[" + receiverKey + "]", Toast.LENGTH_SHORT).show();
+                Log.e("Chat Activity", "Отримано AES [" + receiverId + "]: " + receiverKey);
             }
 
         } catch (JSONException e) {
@@ -219,7 +226,7 @@ public class ChatActivity extends AppCompatActivity implements Folder {
         runOnUiThread(() -> {
             try {
                 String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
-                Envelope envelope = new Envelope(senderId, receiverId, "message", rMessage);
+                Envelope envelope = new Envelope(senderId, receiverId, "message", rMessage,message.getMessageId());
                 //реалізація шифрування повідомлення
                 sendDataBackToActivity(envelope.toJson().toString());
 
@@ -265,14 +272,14 @@ public class ChatActivity extends AppCompatActivity implements Folder {
 
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
                 {
-                    Message message = new Message("", Uri.parse(url), Side.Sender);
+                    Message message = new Message("", Uri.parse(url), Side.Sender,UUID.randomUUID().toString());
                     message.setHas(has);
                     sendFile(convertImage("", url, has, Side.Sender));
                     String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
                     String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
                     String rURL = Encryption.AES.encrypt(urls, receiverKey);
                     String rHAS = Encryption.AES.encrypt(has, receiverKey);
-                    Envelope envelope = new Envelope(senderId, receiverId, "image", rMessage, rURL, rHAS);
+                    Envelope envelope = new Envelope(senderId, receiverId, "image", rMessage, rURL, rHAS,message.getMessageId());
                     Log.e("SendFile", urls);
 
                     sendDataBackToActivity(envelope.toJson().toString());
@@ -288,14 +295,14 @@ public class ChatActivity extends AppCompatActivity implements Folder {
             */
             } else {
                 {
-                    Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender);
+                    Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender,UUID.randomUUID().toString());
                     message.setHas(has);
                     sendFile(message);
                     String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
                     String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
                     String rURL = Encryption.AES.encrypt(urls, receiverKey);
                     String rHAS = Encryption.AES.encrypt(has, receiverKey);
-                    Envelope envelope = new Envelope(senderId, receiverId, "file", rMessage, rURL, rHAS);
+                    Envelope envelope = new Envelope(senderId, receiverId, "file", rMessage, rURL, rHAS,message.getMessageId());
                     sendDataBackToActivity(envelope.toJson().toString());
                 }
 

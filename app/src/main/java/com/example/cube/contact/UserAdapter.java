@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.cube.R;
+import com.example.cube.encryption.Encryption;
 import com.example.qrcode.QRCode;
 
 import java.util.List;
@@ -46,6 +47,12 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         TextView idNumber = view.findViewById(R.id.idNumber);
         idNumber.setText(userData.getId());
 
+        TextView rPublicKey = view.findViewById(R.id.rPublicKey);
+
+        rPublicKey.setText(Encryption.getHash(userData.getReceiverPublicKey()));
+
+        TextView receiverKey = view.findViewById(R.id.receiverKey);
+        receiverKey.setText( Encryption.getHash(userData.getReceiverKey()));
 
         TextView messageSize = view.findViewById(R.id.messageSize);
         messageSize.setText(userData.getMessageSize());

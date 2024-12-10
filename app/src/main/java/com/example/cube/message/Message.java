@@ -29,8 +29,8 @@ public class Message implements Serializable {
     int imageHeight;              // Висота зображення
     private boolean statusFile = false;
     private String has;
+    private String messageStatus;
 
-    public Message(){}
     /**
      * Конструктор для створення текстового повідомлення.
      *
@@ -44,6 +44,19 @@ public class Message implements Serializable {
     }
 
     /**
+     * Конструктор для створення текстового повідомлення.
+     *
+     * @param message Текст повідомлення.
+     * @param side    Сторона повідомлення (відправлене чи отримане).
+     * @param  messageId id повідомлення
+     */
+    public Message(String message, Side side,String messageId) {
+        this.message = message;
+        this.check = Check.Message;
+        this.side = side;
+        this.messageId=messageId;
+    }
+    /**
      * Конструктор для створення повідомлення із файлом (URL).
      *
      * @param message     Текст повідомлення.
@@ -55,6 +68,21 @@ public class Message implements Serializable {
         this.selectedUrl = selectedUrl;
         this.check = Check.File;
         this.side = side;
+    }
+    /**
+     * Конструктор для створення повідомлення із файлом (URL).
+     *
+     * @param message     Текст повідомлення.
+     * @param selectedUrl URL вибраного файлу або отриманого файлу.
+     * @param side        Сторона повідомлення (відправлене чи отримане).
+     * @param  messageId id повідомлення
+     */
+    public Message(String message, @NonNull Uri selectedUrl, Side side,String messageId) {
+        this.message = message;
+        this.selectedUrl = selectedUrl;
+        this.check = Check.File;
+        this.side = side;
+        this.messageId=messageId;
     }
 
     /**
@@ -109,6 +137,27 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         this.check = Check.Image;
         this.side = side;
+    }
+    /**
+     * Конструктор для створення повідомлення із зображенням у байтовому форматі.
+     *
+     * @param message     Текст повідомлення.
+     * @param selectedUrl URL вибраного файлу або отриманого файлу.
+     * @param image       Масив байтів зображення.
+     * @param imageWidth  Ширина зображення.
+     * @param imageHeight Висота зображення.
+     * @param side        Сторона повідомлення (відправлене чи отримане).
+     * @param  messageId id повідомлення
+     */
+    public Message(String message, @NonNull Uri selectedUrl, byte[] image, int imageWidth, int imageHeight, Side side,String messageId) {
+        this.message = message;
+        this.selectedUrl = selectedUrl;
+        this.image = image;
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+        this.check = Check.Image;
+        this.side = side;
+        this.messageId=messageId;
     }
 
     // Геттер для масиву байтів зображення
@@ -240,4 +289,11 @@ public class Message implements Serializable {
         this.has = has;
     }
 
+    public String getMessageStatus() {
+        return messageStatus;
+    }
+
+    public void setMessageStatus(String messageStatus) {
+        this.messageStatus = messageStatus;
+    }
 }
