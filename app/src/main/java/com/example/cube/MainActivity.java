@@ -36,7 +36,7 @@ import com.example.cube.log.Logger;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 import com.example.cube.socket.Envelope;
-import com.example.cube.socket.ServerConnection;
+import com.example.cube.socket.Listener;
 import com.example.qrcode.QR;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -60,7 +60,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Реалізує кілька інтерфейсів для обробки кліків та отримання повідомлень від сервера.
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        View.OnClickListener, ServerConnection.ConnectionListener,
+        View.OnClickListener, Listener.DataListener,
         ContactCreator.CreatorOps, AccountManager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener {
 
     private ActivityMainBinding binding;
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
     private ShowPopupWindow showPopupWindow;        // Вікно для показу спливаючих повідомлень
-    private ServerConnection serverConnection;      // З'єднання з сервером
+    private Listener listener;      // З'єднання з сервером
     private File externalDir;  // Зовнішній каталог
 
 
@@ -101,9 +101,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user_name.setText(this.name + " " + this.lastName);
         user_id.setText(this.userId);
 
-        if (serverConnection != null)
-            serverConnection.setUserId(userId);
-        else
+        if (listener == null)
             startConnect(userId);
     }
 
@@ -124,8 +122,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startConnect(String userId) {
-        serverConnection = new ServerConnection(this, userId,"192.168.1.237", 8080);
-        serverConnection.connectToServer();
+        listener = new Listener(this, userId,"192.168.1.237", 8080);
+        //listener.connectToServer();
     }
 
     /**
@@ -240,13 +238,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void receivingData(String data) {
         if (data.equals("endUser")) {
             receiverId = null;
-            serverConnection.setReceiverId(receiverId);
+            //listener.setReceiverId(receiverId);
         } else {
             // якщо нема публічного ключа кому ми відправляємо то повідомлення не буде відправлено
             if (user != null) {
                 if (!data.isEmpty()) {
                     if (user.getReceiverPublicKey() != null) {
-                        serverConnection.sendData(data);
+                        listener.sendData(data);
                     }
                 }
             }
@@ -328,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             user.setSenderKey(key);
 
             // відправка публічного ключа отримувачу
-            serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+            listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
             //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
@@ -339,14 +337,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (user.getReceiverPublicKey() == null) {
                     // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
                     // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
-                    serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+                    listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
                     //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
                     //serverConnection.setReceiverId(receiverId);
                 } else {
                     if (receiverId != null && !receiverId.isEmpty()) {
                         if (!user.getReceiverKey().isEmpty()) {
-                            serverConnection.setReceiverId(receiverId);
                             setLogs("[INFO] [Check receiver]", "Відправник " + receiverId);
                             startChat(binding.getRoot().getRootView(), user);
                             new Operation(this).openSaveMessage(receiverId, saveMessage);
@@ -358,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                             String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
                             if (AES != null && !AES.isEmpty()) {
-                                serverConnection.sendHandshake(userId, receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                                listener.sendHandshake(userId, receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
                             } else {
                                 Log.e("AESKeyExchange", "Failed to encrypt AES key");
                             }
@@ -388,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String key = KeyGenerator.AES.generateKey(16);
         user.setSenderKey(key);
         // відправка публічного ключа отримувачу
-        serverConnection.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+        listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
         //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
         receiverId = null;
         //serverConnection.setReceiverId(receiverId);
@@ -488,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                 // Шифруємо AES ключ за допомогою публічного ключа отримувача
                 String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
-                serverConnection.sendHandshake(userId, sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                listener.sendHandshake(userId, sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
             }
         } catch (JSONException e) {
             Log.e("Exchange", "Помилка під час парсінгу JSON: " + e);
