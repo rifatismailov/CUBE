@@ -108,7 +108,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         setupRecyclerView();
 
         // Відправляємо тестове повідомлення
-        sendMessage(new Message(test, Side.Receiver, UUID.randomUUID().toString()));
+        readMessage(new Message(test, Side.Receiver, UUID.randomUUID().toString()));
 
         // Обробники натискання
         setupClickListeners();
@@ -262,22 +262,37 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
         });
     }
+    // Перевірка, чи знаходиться RecyclerView на останній позиції
+    private boolean isRecyclerViewAtBottom() {
+        // Отримуємо поточну позицію прокручування
+        LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
+        int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
+        int totalItemCount = layoutManager.getItemCount();
 
+        // Порівнюємо з останнім елементом у списку
+        return lastVisiblePosition == totalItemCount-2;
+    }
+    private void autoScroll(Message message){
+        adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
+        if (isRecyclerViewAtBottom()) {
+            // Якщо на останньому елементі — прокручуємо до нового
+            binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
+        }
+    }
     @Override
-    public void sendMessage(Message message) {
+    public void readMessage(Message message) {
         messages.add(message);
         runOnUiThread(() -> {
-            adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+            autoScroll(message);
+
         });
     }
 
     @Override
-    public void sendMessageFile(Message message) {
+    public void readMessageFile(Message message) {
         messages.add(message);
         runOnUiThread(() -> {
-            adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+            autoScroll(message);
         });
     }
 

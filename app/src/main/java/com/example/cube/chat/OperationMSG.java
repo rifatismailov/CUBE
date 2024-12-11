@@ -44,11 +44,11 @@ public class OperationMSG {
             if (operation.equals(FIELD.MESSAGE.getFIELD())) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 if (envelope.getFileUrl() == null) {
-                    operableMSG.sendMessage(new Message(rMessage, Side.Receiver,messageID));
+                    operableMSG.readMessage(new Message(rMessage, Side.Receiver,messageID));
                 } else {
                     Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), Side.Receiver,messageID);
                     message.setHas(envelope.getFileHash());
-                    operableMSG.sendMessageFile(message);
+                    operableMSG.readMessageFile(message);
                 }
                 //operableMSG.addMessage(messageID, envelope.getMessage());
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
@@ -105,8 +105,8 @@ public class OperationMSG {
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
      */
     public interface OperableMSG {
-        void sendMessage(Message message);
-        void sendMessageFile(Message message);
+        void readMessage(Message message);
+        void readMessageFile(Message message);
 
         void addReceiverPublicKey(String rPublicKey) throws Exception;
 
