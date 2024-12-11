@@ -15,66 +15,64 @@
 
     <TextView
         android:id="@+id/userName"
-        android:layout_width="130dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="7dp"
         android:layout_marginEnd="6dp"
         android:layout_toEndOf="@+id/qrCodeUser"
-        android:fontFamily="@font/opensans_bold"
+        android:fontFamily="@font/roboto_bold"
         android:text="userName"
         android:textColor="#049fd9"
         android:textSize="20sp"
         android:textStyle="bold"
         tools:ignore="HardcodedText" />
 
-    <TextView
+    <com.example.cube.draw.ColorfulDotsView
         android:id="@+id/rPublicKey"
         android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_height="28dp"
         android:layout_above="@+id/idNumber"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="190dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginBottom="4dp"
-        android:fontFamily="@font/monof55"
-        android:text="rPublicKey"
-        android:textColor="#545454"
-        android:textSize="10sp"
-        tools:ignore="HardcodedText"
-        android:hyphenationFrequency="full"/>
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="2dp"
+        android:layout_toStartOf="@+id/messageSize"
+        android:layout_toEndOf="@+id/userName"
+
+
+        android:background="@color/white" />
+
+    <com.example.cube.draw.ColorfulDotsView
+        android:id="@+id/receiverKey"
+        android:layout_width="match_parent"
+        android:layout_height="28dp"
+        android:layout_above="@+id/bottomView"
+        android:layout_below="@+id/userName"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="1dp"
+        android:layout_toStartOf="@+id/messageSize"
+        android:layout_toEndOf="@+id/idNumber"
+        android:background="@color/white" />
 
     <TextView
         android:id="@+id/idNumber"
-        android:layout_width="130dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/userName"
         android:layout_marginStart="6dp"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="3dp"
         android:layout_toEndOf="@+id/qrCodeUser"
+        android:fontFamily="@font/poppins_extralight"
         android:text="idNumber"
         android:textColor="#1d2124"
         android:textSize="15sp"
-        android:fontFamily="@font/poppins_extralight"
         tools:ignore="HardcodedText" />
 
-    <TextView
-        android:id="@+id/receiverKey"
-        android:layout_width="wrap_content"
-        android:layout_height="25dp"
-        android:layout_below="@+id/userName"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="190dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginRight="75dp"
-        android:fontFamily="@font/gamebold"
-        android:text="idNumber"
-        android:textColor="#898989"
-        android:textSize="10sp"
-        tools:ignore="HardcodedText" />
+
 
     <TextView
         android:id="@+id/messageSize"
@@ -86,18 +84,18 @@
         android:layout_marginEnd="6dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/check_message_style"
+        android:fontFamily="@font/roboto_bold"
         android:gravity="center"
+        android:hyphenationFrequency="full"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:textColor="#fff"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:fontFamily="@font/timeroman"
-        tools:ignore="SmallSp"
-        android:hyphenationFrequency="full"/>
+        tools:ignore="SmallSp" />
 
     <View
-        android:id="@+id/view2"
+        android:id="@+id/bottomView"
         android:layout_width="wrap_content"
         android:layout_height="1dp"
         android:layout_below="@+id/idNumber"

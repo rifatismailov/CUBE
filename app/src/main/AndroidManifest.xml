@@ -25,7 +25,7 @@
             android:label="@string/title_activity_news"
             android:theme="@style/Theme.CUBE.NoActionBar" />
         <activity
-            android:name=".ChatActivity"
+            android:name=".chat.ChatActivity"
             android:exported="false"
             android:label="@string/title_activity_chat"
             android:theme="@style/Theme.CUBE.NoActionBar" />

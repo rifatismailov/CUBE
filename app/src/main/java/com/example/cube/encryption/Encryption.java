@@ -11,11 +11,22 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Клас для виконання різних операцій шифрування і хешування.
+ * Він підтримує алгоритми AES та RSA для шифрування і дешифрування даних,
+ * а також надає можливість отримання хешу за допомогою алгоритму SHA-256.
+ */
 public class Encryption {
 
+    /**
+     * Метод для отримання хешу в форматі SHA-256.
+     *
+     * @param input Текст, який потрібно зашифрувати.
+     * @return Хеш у вигляді рядка у шістнадцятковому форматі.
+     */
     public static String getHash(String input) {
         if (input == null || input.isEmpty()) {
-            return "Input string is empty or null!";
+            return "";
         }
 
         try {
@@ -35,6 +46,10 @@ public class Encryption {
             return "Hash algorithm not found!";
         }
     }
+
+    /**
+     * Вкладений клас для шифрування і дешифрування тексту за допомогою алгоритму AES.
+     */
     public static class AES {
 
         private static final String ALGORITHM = "AES"; // Алгоритм шифрування (AES)
@@ -83,8 +98,19 @@ public class Encryption {
         }
     }
 
+    /**
+     * Вкладений клас для шифрування і дешифрування тексту за допомогою алгоритму RSA.
+     */
     public static class RSA {
-        // Шифрування тексту за допомогою публічного ключа
+
+        /**
+         * Шифрування тексту за допомогою публічного ключа.
+         *
+         * @param message    Текст, який потрібно зашифрувати.
+         * @param publicKey  Публічний ключ для шифрування.
+         * @return Зашифрований текст у форматі Base64.
+         * @throws Exception Якщо виникає помилка під час шифрування.
+         */
         public static String encrypt(String message, PublicKey publicKey) throws Exception {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -92,8 +118,14 @@ public class Encryption {
             return Base64.getEncoder().encodeToString(encryptedBytes);
         }
 
-
-        // Дешифрування тексту за допомогою приватного ключа
+        /**
+         * Дешифрування тексту за допомогою приватного ключа.
+         *
+         * @param encryptedMessage Зашифрований текст у форматі Base64.
+         * @param privateKey       Приватний ключ для дешифрування.
+         * @return Дешифрований текст у вигляді рядка.
+         * @throws Exception Якщо виникає помилка під час дешифрування.
+         */
         public static String decrypt(String encryptedMessage, PrivateKey privateKey) throws Exception {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -102,5 +134,4 @@ public class Encryption {
             return new String(decryptedBytes, StandardCharsets.UTF_8);
         }
     }
-
 }

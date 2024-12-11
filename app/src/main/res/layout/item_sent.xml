@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="60dp"
     android:layout_marginTop="5dp"
     android:layout_marginEnd="10dp">
 
+    <!-- Основний контейнер для повідомлення -->
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
@@ -18,13 +19,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Зображення (наприклад, фото або картинка в повідомленні) -->
         <androidx.cardview.widget.CardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="1dp"
-            android:layout_marginTop="1dp"
-            android:layout_marginEnd="1dp"
-
+            android:layout_margin="1dp"
             android:elevation="10dp"
             app:cardCornerRadius="19dp"
             app:cardElevation="0dp">
@@ -37,19 +36,15 @@
                 android:background="@color/demo_light_transparent"
                 android:maxHeight="250dp"
                 android:scaleType="centerCrop"
-                android:visibility="gone" >
-
-
-            </ImageView>
+                android:visibility="gone" />
         </androidx.cardview.widget.CardView>
 
+        <!-- Повідомлення з текстом і файлом -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/file"
@@ -64,7 +59,6 @@
                 android:id="@+id/message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left|center"
                 android:fontFamily="@font/opensans_medium"
                 android:gravity="top"
                 android:paddingLeft="10dp"
@@ -72,13 +66,13 @@
                 android:paddingRight="10dp"
                 android:paddingBottom="4dp"
                 android:textColor="#191919"
-                android:textSize="13dp" />
+                android:textSize="13sp" />
         </LinearLayout>
 
+        <!-- Додаткові індикатори -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
             android:layout_marginStart="4dp"
             android:layout_marginBottom="1dp"
             android:orientation="horizontal">
@@ -86,10 +80,7 @@
             <LinearLayout
                 android:id="@+id/feel_layout"
                 android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="@drawable/emoji_style"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:visibility="invisible">
@@ -97,14 +88,16 @@
                 <ImageView
                     android:id="@+id/feeling"
                     android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_height="8dp"
                     android:layout_gravity="center"
                     android:visibility="invisible" />
+
+                <com.example.cube.draw.MessageNotifierView
+                    android:id="@+id/messageNotifier"
+                    android:layout_width="25dp"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center" />
             </LinearLayout>
-
-
         </LinearLayout>
     </LinearLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

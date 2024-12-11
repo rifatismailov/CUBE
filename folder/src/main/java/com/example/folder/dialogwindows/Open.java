@@ -174,7 +174,7 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
     public void closeDialog() {
         FileDetect fileDetect = new FileDetect();
         alertDialog.cancel();
-        folder.openFile(directory, fileDetect.getFileHash(directory, "SHA-256"));
+        folder.addFile(directory, fileDetect.getFileHash(directory, "SHA-256"));
     }
 
     public void setProgress(String progress) {

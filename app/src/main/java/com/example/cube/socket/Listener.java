@@ -59,19 +59,20 @@ public class Listener implements Connector.Listener {
                 // Якщо повідомлення від нас самих (SenderId і ReceiverId однакові).
                 if (userId.equals(envelope.getSenderId()) && listener.getReceiverId().equals(envelope.getReceiverId())) {
                     listener.onReceived(message);
-                    Thread.sleep(100); // 100 мс затримка
+                    //Thread.sleep(100); // 100 мс затримка
 
                     // Якщо повідомлення для поточного користувача
                 } else if (listener.getReceiverId() != null && listener.getReceiverId().equals(envelope.getSenderId())) {
                     listener.onReceived(message);
-                    Thread.sleep(100); // 100 мс затримка
+                    //Thread.sleep(100); // 100 мс затримка
 
                     // Якщо повідомлення не для поточного користувача, зберігаємо його
                 } else {
                     listener.saveMessage(envelope);
                 }
             }
-        } catch (JSONException | InterruptedException e) {
+            //| InterruptedException
+        } catch (JSONException  e) {
             listener.setLogs("[ERROR] [Listen messages]", " Помилка обробки JSON під час отримання повідомлення - " + e.getMessage());
         }
     }

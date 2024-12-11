@@ -12,9 +12,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.cube.R;
+import com.example.cube.draw.ColorfulDotsView;
 import com.example.cube.encryption.Encryption;
 import com.example.qrcode.QRCode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdapter extends ArrayAdapter<UserData> {
@@ -47,12 +49,16 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         TextView idNumber = view.findViewById(R.id.idNumber);
         idNumber.setText(userData.getId());
 
-        TextView rPublicKey = view.findViewById(R.id.rPublicKey);
+        ColorfulDotsView rPublicKey = view.findViewById(R.id.rPublicKey);
+        List<String> chunksPublicKey = splitHash(Encryption.getHash(userData.getReceiverPublicKey()), 10);
+        rPublicKey.setHashes(chunksPublicKey);
+        //rPublicKey.setText(Encryption.getHash(userData.getReceiverPublicKey()));
 
-        rPublicKey.setText(Encryption.getHash(userData.getReceiverPublicKey()));
+        ColorfulDotsView receiverKey = view.findViewById(R.id.receiverKey);
+        //receiverKey.setText( Encryption.getHash(userData.getReceiverKey()));
+        List<String> chunksReceiverKey = splitHash(Encryption.getHash(userData.getReceiverKey()), 10);
+        receiverKey.setHashes(chunksReceiverKey);
 
-        TextView receiverKey = view.findViewById(R.id.receiverKey);
-        receiverKey.setText( Encryption.getHash(userData.getReceiverKey()));
 
         TextView messageSize = view.findViewById(R.id.messageSize);
         messageSize.setText(userData.getMessageSize());
@@ -64,4 +70,16 @@ public class UserAdapter extends ArrayAdapter<UserData> {
 
         return view;
     }
+    public List<String> splitHash(String hash, int chunkSize) {
+        List<String> chunks = new ArrayList<>();
+        int length = hash.length();
+
+        for (int i = 0; i < length; i += chunkSize) {
+            // Беремо підрядок розміром chunkSize або до кінця
+            chunks.add(hash.substring(i, Math.min(length, i + chunkSize)));
+        }
+
+        return chunks;
+    }
+
 }

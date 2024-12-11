@@ -16,13 +16,18 @@ public enum FIELD {
     AES_KEY("aes_key"),
     KEY_EXCHANGE("keyExchange"),
     NAME("name"),
+    USER_END("endUser"),
     LAST_NAME("lastName"),
     STATUS_USER("status_user"),
     CONTACT_NAME("name_contact"),
     CONTACT_ID("id_contact"),
     CONTACT_PUBLIC_KEY("public_key_contact"),
     PASSWORD("password"),
-    STATUS_MESSAGE("messageStatus");
+    STATUS_MESSAGE("messageStatus"),
+    REPLY_FROM_CHAT("REPLY_FROM_CHAT"),
+    DATA_TO_CHAT("DATA_TO_CHAT"),
+    DATE_FROM_USERS_ACTIVITY("DATE_FROM_USERS_ACTIVITY"),
+    DATA_FROM_CHAT("DATA_FROM_CHAT");
     private final String field;
 
     FIELD(String field) {

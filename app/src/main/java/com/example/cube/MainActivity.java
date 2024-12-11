@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 
+import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.UserAdapter;
 import com.example.cube.contact.UserData;
 import com.example.cube.databinding.ActivityMainBinding;
@@ -66,9 +67,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
-    private String userId = "H652882305";           // ID користувача
+    private String userId;           // ID користувача
     private String receiverId;       // ID отримувача
-    private String name = "ABBUS";             // Ім'я користувача
+    private String name;             // Ім'я користувача
     private String lastName;         // Прізвище користувача
     private String password;         // Пароль
     private UserData user;           // Об'єкт користувача
@@ -81,25 +82,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private SecretKey secretKey;  // AES-ключ
 
-    private HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
+    private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private int numMessage = 0;  // Лічильник повідомлень
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
-    private ShowPopupWindow showPopupWindow;        // Вікно для показу спливаючих повідомлень
     private Listener listener;      // З'єднання з сервером
     private File externalDir;  // Зовнішній каталог
 
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password) {
+        String accountName = name + " " + lastName;
         this.userId = userId;
         this.name = name;
         this.lastName = lastName;
         this.password = password;
-        binding.id.setText(this.userId);
-        binding.name.setText(this.name + " " + this.lastName);
-        user_name.setText(this.name + " " + this.lastName);
-        user_id.setText(this.userId);
+        binding.id.setText(userId);
+        binding.name.setText(accountName);
+        user_name.setText(accountName);
+        user_id.setText(userId);
 
         if (listener == null)
             startConnect(userId);
@@ -122,17 +123,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startConnect(String userId) {
-        listener = new Listener(this, userId,"192.168.1.237", 8080);
-        //listener.connectToServer();
+        listener = new Listener(this, userId, "192.168.1.237", 8080);
     }
 
     /**
      * BroadcastReceiver для отримання даних з ChatActivity через broadcast.
      */
-    private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String dataFromChat = intent.getStringExtra("data_from_chat");
+            String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
             if (dataFromChat != null) {
                 receivingData(dataFromChat);
             }
@@ -140,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     };
 
     private DrawerLayout drawerLayout;
-    private NavigationManager navigationManager;
 
     /**
      * Метод onCreate викликається при створенні активності.
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ImageButton add_accounte = findViewById(R.id.add_account);
 
         // Використання NavigationManager для обробки меню
-        navigationManager = new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
+        new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
 
         externalDir = new File(getExternalFilesDir(null), "cube");
         new AccountManager(this).readAccount(externalDir);
@@ -268,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void startChat(View view, @NonNull UserData userData) {
-        IntentFilter filter = new IntentFilter("com.example.cube.REPLY_FROM_CHAT");
+        IntentFilter filter = new IntentFilter(FIELD.REPLY_FROM_CHAT.getFIELD());
         registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra(FIELD.SENDER_ID.getFIELD(), userId);
@@ -344,7 +343,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 } else {
                     if (receiverId != null && !receiverId.isEmpty()) {
                         if (!user.getReceiverKey().isEmpty()) {
-                            setLogs("[INFO] [Check receiver]", "Відправник " + receiverId);
                             startChat(binding.getRoot().getRootView(), user);
                             new Operation(this).openSaveMessage(receiverId, saveMessage);
                             user.setMessageSize("");
@@ -436,8 +434,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     @Override
     public void addMessage(String message) {
-        Intent intent = new Intent("com.example.cube.DATA_TO_CHAT");
-        intent.putExtra("data_from_MainActivity", message);
+        Intent intent = new Intent(FIELD.DATA_TO_CHAT.getFIELD());
+        intent.putExtra(FIELD.DATE_FROM_USERS_ACTIVITY.getFIELD(), message);
         sendBroadcast(intent);
     }
 

@@ -16,4 +16,6 @@
     <color name="light_blue">#71c1ff</color>
     <color name="green">#4CAF50</color>
     <color name="greenDark">#28852C</color>
+    <color name="text_primary">#191919</color> <!-- Чорний колір -->
+
 </resources>
