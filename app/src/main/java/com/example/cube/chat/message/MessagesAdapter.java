@@ -73,7 +73,17 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         notifyItemChanged(position);
         notifyDataSetChanged();// Оновлюємо конкретну позицію
     }
-
+    // Метод для видалення елемента
+    public void removeItem(int position) {
+        // Видаляємо елемент зі списку
+        if (position >= 0 && position < messages.size()) {
+            messages.remove(position);
+            // Оновлюємо RecyclerView
+            notifyItemRemoved(position);
+            // Опціонально можна зробити notifyItemRangeChanged(position, messages.size())
+            // Якщо видалено кілька елементів (якщо це потрібно).
+        }
+    }
     @Override
     public int getItemCount() {
         return messages.size();

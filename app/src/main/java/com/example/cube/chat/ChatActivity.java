@@ -5,31 +5,39 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+
 import com.example.cube.chat.message.BundleProcessor;
 import com.example.cube.chat.message.ImageData;
 import com.example.cube.R;
 import com.example.cube.control.FIELD;
+import com.example.cube.dp.MessageDatabaseHelper;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.chat.message.MessagesAdapter;
 import com.example.cube.control.Side;
 import com.example.cube.chat.message.Message;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.Menu;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.folder.Folder;
 import com.example.folder.dialogwindows.Open;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
+
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -38,9 +46,10 @@ import java.util.concurrent.Executors;
 
 public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG {
     private ActivityChatBinding binding;
-
-    MessagesAdapter adapter;
-    ArrayList<Message> messages;
+    private MessageDatabaseHelper dbHelper;
+    private SQLiteDatabase db;
+    private MessagesAdapter adapter;
+    private ArrayList<Message> messages;
     private String senderId;       // ІД відправника
     private String receiverName;
     private String receiverId;
@@ -51,12 +60,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private KeyGenerator.RSA keyGenerator;
     private String senderKey;
     private String receiverKey;
-    String test = "This is a text message at the beginning of your chat. " +
-            "You have a simple interface for correspondence and file exchange." +
-            " This development was initiated with a special vision to learn programming and improve your programming knowledge. " +
-            "The repository of this development is at the link. " +
-            "https://github.com/rifatismailov/CUBE " +
-            "https://github.com/rifatismailov/";
+
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -86,9 +90,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
         }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHelper = new MessageDatabaseHelper(this);
+        db = dbHelper.getWritableDatabase();
 
         // Реєструємо ресівер для отримання даних
         registerDataReceiver();
@@ -108,10 +115,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         setupRecyclerView();
 
         // Відправляємо тестове повідомлення
-        readMessage(new Message(test, Side.Receiver, UUID.randomUUID().toString()));
+        //readMessage(new Message(test, Side.Receiver, UUID.randomUUID().toString()));
 
         // Обробники натискання
         setupClickListeners();
+        showMessage();
     }
 
     private void registerDataReceiver() {
@@ -156,8 +164,25 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
         binding.attachmentBtn.setOnClickListener(v -> new Open(ChatActivity.this));
         binding.profile.setOnClickListener(view -> new QR(this, receiverId));
+        binding.camera.setOnClickListener(view -> clearMessage());
+    }
+    private void clearMessage(){
+       dbHelper.deleteMessagesByReceiverId(db,receiverId);
+       finish();
     }
 
+    private void showMessage() {
+        MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
+        List<Message> messagesdb = dbHelper.getMessagesByReceiverId(receiverId);
+
+        for (Message message : messagesdb) {
+            messages.add(message);        }
+
+        runOnUiThread(() -> {
+            adapter.notifyItemInserted(messages.size() ); // Повідомити, що новий елемент було вставлено
+            binding.recyclerView.smoothScrollToPosition(messages.size() ); // Прокрутити до нового елемента
+        });
+    }
 
     private void handleReceivedData(String data) {
         new OperationMSG(this).onReceived(senderKey, data);
@@ -186,6 +211,9 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
     private void send(Message message) {
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        dbHelper.addMessage(db, message);
         messages.add(message);
         runOnUiThread(() -> {
             new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey);
@@ -196,6 +224,9 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
     private void addMessageFile(Message message) {
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        dbHelper. addMessage(db, message);
         messages.add(message);
         runOnUiThread(() -> {
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
@@ -212,18 +243,22 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
                 ImageData imageData = new ImageData().convertImage(url);
                 Message message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
+                message.setSenderId(senderId);
+                message.setReceiverId(receiverId);
                 message.setHas(has);
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
 
             } else {
                 Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender, messageId);
+                message.setSenderId(senderId);
+                message.setReceiverId(receiverId);
                 message.setHas(has);
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
             }
         } catch (Exception e) {
-            Log.e("ChatActivity","Помилка під час додовання файлу :"+e);
+            Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);
         }
 
     }
@@ -246,22 +281,23 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     ImageData imageData = new ImageData().convertImage(url);
                     message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender);
                 } else {
-                    message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Receiver);
-                    message.setHas(has);
+                    // message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Receiver);
+                    //message.setHas(has);
                 }
 
                 // Оновлюємо адаптер у головному потоці після обробки
                 runOnUiThread(() -> {
-                    adapter.updateItem(position, message);
-                    adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-                    binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+                    //adapter.updateItem(position, message);
+                    // adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
+                    // binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
                 });
 
             } catch (Exception e) {
-                Log.e("ChatActivity","Помилка під час відкриття файлу :"+e);
+                Log.e("ChatActivity", "Помилка під час відкриття файлу :" + e);
             }
         });
     }
+
     // Перевірка, чи знаходиться RecyclerView на останній позиції
     private boolean isRecyclerViewAtBottom() {
         // Отримуємо поточну позицію прокручування
@@ -270,17 +306,22 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         int totalItemCount = layoutManager.getItemCount();
 
         // Порівнюємо з останнім елементом у списку
-        return lastVisiblePosition == totalItemCount-2;
+        return lastVisiblePosition == totalItemCount - 2;
     }
-    private void autoScroll(Message message){
+
+    private void autoScroll(Message message) {
         adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
         if (isRecyclerViewAtBottom()) {
             // Якщо на останньому елементі — прокручуємо до нового
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
         }
     }
+
     @Override
     public void readMessage(Message message) {
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        dbHelper. addMessage(db, message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
@@ -290,6 +331,9 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void readMessageFile(Message message) {
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        dbHelper. addMessage(db, message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
@@ -312,6 +356,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
                 message.setMessageStatus(messageStatus);
+                dbHelper.updateMessage(db,message);
                 adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                 break; // Завершуємо цикл, оскільки повідомлення знайдено
             }

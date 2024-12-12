@@ -39,7 +39,7 @@ public class SendMessageHandler {
             viewHolder.binding.file.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
             viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
-        } else if (message.getCheck().equals(Check.File) && !message.getUrl().toString().isEmpty()) {
+        } else if (message.getCheck().equals(Check.File) && message.getUrl()!=null) {
             viewHolder.binding.file.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.image.setVisibility(View.GONE);

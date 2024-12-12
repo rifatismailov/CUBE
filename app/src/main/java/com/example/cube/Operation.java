@@ -59,9 +59,6 @@ public class Operation {
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
                 // Обробка статусних повідомлень
                 operable.addMessage(message);
-                //String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
-               // String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
-                //Log.e("Operation", "Отримано STATUS_MESSAGE [" + sender + "]: " + status + " [ " + messageID + "]" );
             }
         } catch (JSONException e) {
             Log.e("Operation", "Помилка під час отримання JSON у методі onReceived: " + e);
@@ -128,6 +125,9 @@ public class Operation {
             } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
                 operable.addAESKey(envelope.getSenderId(), receivedMessage);
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
+                //розкодувати коли реалізуємо збереження повідомлень у директорії
+               // saveMessage.put(numMessage, envelope);
+               // numMessage++;
                 // Обробка статусних повідомлень
                 String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
                 String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());

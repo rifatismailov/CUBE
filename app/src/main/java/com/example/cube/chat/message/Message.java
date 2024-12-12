@@ -18,18 +18,22 @@ public class Message implements Serializable {
     private String messageId;     // Унікальний ідентифікатор повідомлення
     private String message;       // Текст повідомлення
     private String senderId;      // Ідентифікатор відправника
+    private String receiverId;
     private long timestamp;       // Час відправлення повідомлення
     private int feeling = -1;     // Позиція емоції, пов'язаної з повідомленням (якщо присутня)
     private int emojisPosition = 0; // Позиція емодзі у повідомленні (якщо присутня)
     private Uri selectedUrl;              // Вибрана URL-адреса (якщо присутнє зображення)
-    Check check;                  // Тип перевірки для повідомлення (наприклад, текст чи зображення)
-    Side side;                    // Сторона повідомлення (відправлене чи отримане)
-    byte[] image;                 // Зображення в байтах (якщо присутнє)
-    int imageWidth;               // Ширина зображення
-    int imageHeight;              // Висота зображення
+    private Check check;                  // Тип перевірки для повідомлення (наприклад, текст чи зображення)
+    private Side side;                    // Сторона повідомлення (відправлене чи отримане)
+    private byte[] image;                 // Зображення в байтах (якщо присутнє)
+    private int imageWidth;               // Ширина зображення
+    private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
     private String has;
     private String messageStatus;
+
+
+    public Message(){}
 
     /**
      * Конструктор для створення текстового повідомлення.
@@ -239,7 +243,13 @@ public class Message implements Serializable {
     public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
+    public String getReceiverId() {
+        return receiverId;
+    }
 
+    public void setReceiverId(String receiverId) {
+        this.receiverId = receiverId;
+    }
     // Геттер для часу відправки повідомлення
     public long getTimestamp() {
         return timestamp;
