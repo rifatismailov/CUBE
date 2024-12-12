@@ -5,12 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,9 +37,10 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_IMAGE_HEIGHT = "height";
     private static final String COLUMN_STATUS = "status";
     private Context context;
+
     public MessageDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context=context;
+        this.context = context;
     }
 
     @Override
@@ -65,6 +68,7 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         onCreate(db);
     }
+
     public void clearMessagesTable(SQLiteDatabase db) {
         db.execSQL("DELETE FROM " + TABLE_MESSAGES);
     }
@@ -78,19 +82,22 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_RECEIVER, message.getReceiverId());
         values.put(COLUMN_MESSAGE, message.getMessage());
 
+
+            // Toast.makeText(context, ""+message.getUrl().toString(), Toast.LENGTH_SHORT).show();
+
         // Визначення типу повідомлення
         switch (message.getCheck()) {
             case Message: // Для текстового повідомлення
                 break;
 
             case File: // Для повідомлення з файлом
-                if (message.getUrl() != null) {
+                if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                 }
                 break;
 
             case Image: // Для повідомлення із зображенням
-                if (message.getUrl() != null) {
+                if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                 }
                 if (message.getImage() != null) {
@@ -110,6 +117,7 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
         // Вставка даних у таблицю
         db.insert("messages", null, values);
     }
+
     public int deleteMessagesByReceiverId(SQLiteDatabase db, String receiverId) {
         // Видалення записів, де ReceiverId збігається
         return db.delete(TABLE_MESSAGES, COLUMN_RECEIVER + " = ?", new String[]{receiverId});
@@ -155,6 +163,7 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
         // Виконання запиту на оновлення за messageId
         return db.update(TABLE_MESSAGES, values, COLUMN_MESSAGE_ID + " = ?", new String[]{message.getMessageId()});
     }
+
     public List<Message> getMessagesByReceiverId(String receiverId) {
         List<Message> messages = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_MESSAGES + " WHERE " + COLUMN_RECEIVER + " = ?";
@@ -169,7 +178,10 @@ public class MessageDatabaseHelper extends SQLiteOpenHelper {
                 message.setSenderId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SENDER)));
                 message.setReceiverId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER)));
                 message.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE)));
-                message.setUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SELECTED_URL)));
+                String urlString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SELECTED_URL));
+                if (urlString != null && !urlString.isEmpty()) {
+                    message.setUrl(Uri.parse(urlString));
+                }
                 message.setImage(cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)));
                 message.setImageWidth(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_WIDTH)));
                 message.setImageHeight(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_HEIGHT)));

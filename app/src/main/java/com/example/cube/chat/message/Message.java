@@ -279,7 +279,7 @@ public class Message implements Serializable {
     }
 
     // Сеттер для URL зображення
-    public void setUrl(String imageUrl) {
+    public void setUrl(Uri selectedUrl) {
         this.selectedUrl = selectedUrl;
     }
 

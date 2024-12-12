@@ -162,7 +162,7 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
             directory = selectedPath;
         } else if (selectedFile.isDirectory()) {
             // Якщо це папка, показуємо її вміст
-            directory = selectedPath + "/";
+            directory = selectedPath;
             showDirectory(directory);
         } else {
             // Непередбачений випадок

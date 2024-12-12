@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.Menu;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -176,7 +177,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         List<Message> messagesdb = dbHelper.getMessagesByReceiverId(receiverId);
 
         for (Message message : messagesdb) {
-            messages.add(message);        }
+            messages.add(message);
+        }
 
         runOnUiThread(() -> {
             adapter.notifyItemInserted(messages.size() ); // Повідомити, що новий елемент було вставлено
@@ -243,16 +245,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
                 ImageData imageData = new ImageData().convertImage(url);
                 Message message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
-                message.setSenderId(senderId);
-                message.setReceiverId(receiverId);
                 message.setHas(has);
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
-
             } else {
                 Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender, messageId);
-                message.setSenderId(senderId);
-                message.setReceiverId(receiverId);
                 message.setHas(has);
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
