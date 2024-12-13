@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +31,8 @@ import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.UserAdapter;
 import com.example.cube.contact.UserData;
 import com.example.cube.databinding.ActivityMainBinding;
+import com.example.cube.db.DatabaseHelper;
+import com.example.cube.db.ContactManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.log.LogAdapter;
@@ -73,6 +76,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String lastName;         // Прізвище користувача
     private String password;         // Пароль
     private UserData user;           // Об'єкт користувача
+    private DatabaseHelper dbHelper;
+    private SQLiteDatabase db;
+    ContactManager manager;
 
     private final List<UserData> userList = new ArrayList<>();  // Список користувачів
     private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
@@ -114,13 +120,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void setContact(String id_contact, String public_key_contact, String name_contact) {
         // Додаємо новий контакт до списку користувачів
-        userList.add(new UserData(id_contact, public_key_contact, name_contact, ""));
+        UserData newUser = new UserData(id_contact, public_key_contact, name_contact, "");
+        userList.add(newUser);
+
         // Оновлюємо мапу контактів
-        for (UserData user : userList) {
-            contacts.put(user.getId(), user);
-        }
-        new Cube(this).setContacts(contacts, secretKey);
+        contacts.put(newUser.getId(), newUser);
+
+        // Зберігаємо контакти у базу даних
+        manager.setContacts(contacts, secretKey);
     }
+
 
     private void startConnect(String userId) {
         listener = new Listener(this, userId, "192.168.1.237", 8080);
@@ -153,6 +162,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        dbHelper = new DatabaseHelper(this);
+        db = dbHelper.getWritableDatabase();
+        manager = new ContactManager(db);
         logs = new ArrayList<>();
         logAdapter = new LogAdapter(this, logs);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -213,7 +225,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void initUserList() {
         userList.clear();
-        contacts = new Cube(this).getContacts(secretKey);
+        //ContactManager manager=new ContactManager(db);
+        contacts =manager.getContacts(secretKey);
         for (Map.Entry<String, UserData> entry : contacts.entrySet()) {
             userList.add(entry.getValue());
         }
@@ -454,9 +467,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     String AES = Encryption.RSA.decrypt(receiverKey, privateKey);
                     Log.e("Exchange", "Отримано AES [" + sender + "]: " + AES);
                     user.setReceiverKey(AES);
+                    manager.updateContact(user,secretKey);
                     break;
                 }
             }
+            userAdapter.notifyDataSetChanged();
         } catch (Exception e) {
             Log.e("Exchange", "Помилка під час парсинга ключа [" + sender + "]: " + e);
 
@@ -504,10 +519,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for (UserData user : userList) {
             if (user.getId().equals(sender)) {
                 user.setReceiverPublicKey(publicKey);
+                manager.updateContact(user,secretKey);
                 Log.e("Exchange", "Оновлено публічний ключ для користувача: " + sender);
                 break;
             }
         }
+        // Оновлюємо мапу контактів
+        userAdapter.notifyDataSetChanged();
+
     }
 
     @Override
@@ -543,6 +562,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void scannerQrAccount() {
+        //manager.clearMessagesTable();
         new QR(qrCodeAddAccount);
     }
 

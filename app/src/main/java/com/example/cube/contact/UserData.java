@@ -1,5 +1,9 @@
 package com.example.cube.contact;
 
+import android.util.Log;
+
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 public class UserData implements Serializable {
@@ -14,12 +18,17 @@ public class UserData implements Serializable {
     private int size;
 
     // Конструктор
+    public UserData() {
+
+    }
+
     public UserData(String id, String publicKey, String name, String messageSize) {
         this.id = id;
         this.publicKey = publicKey;
         this.name = name;
         this.messageSize = messageSize;
     }
+
 
     // Геттери для доступу до полів
     public String getId() {
@@ -54,6 +63,7 @@ public class UserData implements Serializable {
     public void setMessageSize(String messageSize) {
         this.messageSize = messageSize;
     }
+
     public void setSize(int size) {
         this.size = size;
     }
@@ -92,5 +102,37 @@ public class UserData implements Serializable {
 
     public void setReceiverKey(String receiverKey) {
         this.receiverKey = receiverKey;
+    }
+
+    // Конструктор для десеріалізації з JSONObject
+    public UserData(JSONObject jsonObject) {
+        try {
+            this.id = jsonObject.optString("id", "No ID");
+            this.publicKey = jsonObject.optString("publicKey", "");
+            this.privateKey = jsonObject.optString("privateKey", "");
+            this.receiverPublicKey = jsonObject.optString("receiverPublicKey", "");
+            this.senderKey = jsonObject.optString("senderKey", "");
+            this.receiverKey = jsonObject.optString("receiverKey", "");
+            this.name = jsonObject.optString("name", "No name");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Метод для серіалізації в JSONObject
+    public JSONObject toJson() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", id);
+            jsonObject.put("publicKey", publicKey);
+            jsonObject.put("privateKey", privateKey);
+            jsonObject.put("receiverPublicKey", receiverPublicKey);
+            jsonObject.put("senderKey", senderKey);
+            jsonObject.put("receiverKey", receiverKey);
+            jsonObject.put("name", name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
 }

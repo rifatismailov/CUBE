@@ -5,10 +5,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -55,6 +57,7 @@ public class Encryption {
         private static final String ALGORITHM = "AES"; // Алгоритм шифрування (AES)
         private static final String TRANSFORMATION = "AES"; // Трансформація (AES)
 
+
         /**
          * Метод для шифрування тексту за допомогою алгоритму AES.
          *
@@ -74,6 +77,7 @@ public class Encryption {
             // Повертаємо результат у вигляді рядка, закодованого в Base64
             return Base64.getEncoder().encodeToString(encryptedBytes);
         }
+
 
         /**
          * Метод для дешифрування тексту за допомогою алгоритму AES.
@@ -96,7 +100,65 @@ public class Encryption {
             // Повертаємо результат у вигляді рядка
             return new String(decryptedBytes);
         }
+        /**
+         * Особливості обох методів:
+         * Алгоритм AES: Використовує шифрування на основі симетричного ключа, що забезпечує високу швидкість і надійність.
+         * Режим CBC (Cipher Block Chaining): Додає вектор ініціалізації (IV), щоб забезпечити унікальність результату навіть для однакових вхідних даних.
+         * Використання PKCS5Padding: Забезпечує правильне заповнення блоку даних, якщо їх довжина не є кратною розміру блоку AES (16 байт).
+         * IV: Генерується для кожного шифрування випадковим чином і зберігається разом із зашифрованими даними.
+
+         * Шифрує текстовий рядок за допомогою алгоритму AES із використанням режиму CBC та заповнення PKCS5Padding.
+         *
+         * @param plainText Текст, який потрібно зашифрувати.
+         * @param secretKey Секретний ключ для шифрування (повинен бути попередньо згенерований).
+         * @return Зашифрований текст у вигляді рядка, який містить IV та зашифрований текст, розділені символом ':'.
+         * @throws Exception Якщо виникають помилки під час ініціалізації шифру чи обробки даних.
+         *                   <p>
+         *                   Алгоритм дій:
+         *                   1. Ініціалізуємо `Cipher` з алгоритмом AES/CBC/PKCS5Padding.
+         *                   2. Генеруємо випадковий вектор ініціалізації (IV) для безпеки шифрування.
+         *                   3. Створюємо `IvParameterSpec` для передачі IV до шифра.
+         *                   4. Ініціалізуємо шифр у режимі шифрування (`ENCRYPT_MODE`) із секретним ключем та IV.
+         *                   5. Шифруємо текст і кодуємо результат у Base64.
+         *                   6. Повертаємо результат як рядок у форматі "IV:зашифрований_текст".
+         */
+        public static String encryptCBCdb(String plainText, SecretKey secretKey) throws Exception {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            byte[] iv = new byte[16];
+            SecureRandom random = new SecureRandom();
+            random.nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
+            byte[] encrypted = cipher.doFinal(plainText.getBytes());
+            return Base64.getEncoder().encodeToString(iv) + ":" + Base64.getEncoder().encodeToString(encrypted);
+        }
+        /**
+         * Розшифровує текстовий рядок, зашифрований методом `encrypt`, за допомогою алгоритму AES із використанням режиму CBC.
+         *
+         * @param encryptedText Зашифрований текст у форматі "IV:зашифрований_текст".
+         * @param secretKey     Секретний ключ для розшифрування (той самий, який використовувався для шифрування).
+         * @return Розшифрований текстовий рядок.
+         * @throws Exception Якщо виникають помилки під час ініціалізації шифру чи обробки даних.
+         *                   <p>
+         *                   Алгоритм дій:
+         *                   1. Розділяємо вхідний текст на дві частини: IV та зашифрований текст.
+         *                   2. Декодуємо IV та зашифрований текст із Base64.
+         *                   3. Створюємо `IvParameterSpec` для передачі IV до шифра.
+         *                   4. Ініціалізуємо шифр у режимі розшифрування (`DECRYPT_MODE`) із секретним ключем та IV.
+         *                   5. Розшифровуємо текст і повертаємо його у вигляді рядка.
+         */
+        public static String decryptCBCdb(String encryptedText, SecretKey secretKey) throws Exception {
+            String[] parts = encryptedText.split(":");
+            byte[] iv = Base64.getDecoder().decode(parts[0]);
+            byte[] encrypted = Base64.getDecoder().decode(parts[1]);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+            return new String(cipher.doFinal(encrypted));
+        }
     }
+
+
 
     /**
      * Вкладений клас для шифрування і дешифрування тексту за допомогою алгоритму RSA.
@@ -106,8 +168,8 @@ public class Encryption {
         /**
          * Шифрування тексту за допомогою публічного ключа.
          *
-         * @param message    Текст, який потрібно зашифрувати.
-         * @param publicKey  Публічний ключ для шифрування.
+         * @param message   Текст, який потрібно зашифрувати.
+         * @param publicKey Публічний ключ для шифрування.
          * @return Зашифрований текст у форматі Base64.
          * @throws Exception Якщо виникає помилка під час шифрування.
          */

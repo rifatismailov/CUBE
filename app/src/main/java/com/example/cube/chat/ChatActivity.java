@@ -13,7 +13,8 @@ import com.example.cube.chat.message.BundleProcessor;
 import com.example.cube.chat.message.ImageData;
 import com.example.cube.R;
 import com.example.cube.control.FIELD;
-import com.example.cube.dp.MessageDatabaseHelper;
+import com.example.cube.db.DatabaseHelper;
+import com.example.cube.db.MessageManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.chat.message.MessagesAdapter;
@@ -25,7 +26,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.Menu;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -47,7 +47,8 @@ import java.util.concurrent.Executors;
 
 public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG {
     private ActivityChatBinding binding;
-    private MessageDatabaseHelper dbHelper;
+    private DatabaseHelper dbHelper;
+    private MessageManager manager;
     private SQLiteDatabase db;
     private MessagesAdapter adapter;
     private ArrayList<Message> messages;
@@ -95,8 +96,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHelper = new MessageDatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
         db = dbHelper.getWritableDatabase();
+        manager=new MessageManager(db);
+
 
         // Реєструємо ресівер для отримання даних
         registerDataReceiver();
@@ -168,18 +171,15 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         binding.camera.setOnClickListener(view -> clearMessage());
     }
     private void clearMessage(){
-       dbHelper.deleteMessagesByReceiverId(db,receiverId);
+        manager.deleteMessagesByReceiverId(receiverId);
        finish();
     }
 
     private void showMessage() {
-        MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
-        List<Message> messagesdb = dbHelper.getMessagesByReceiverId(receiverId);
-
+        List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
         for (Message message : messagesdb) {
             messages.add(message);
         }
-
         runOnUiThread(() -> {
             adapter.notifyItemInserted(messages.size() ); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() ); // Прокрутити до нового елемента
@@ -215,7 +215,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private void send(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        dbHelper.addMessage(db, message);
+        manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey);
@@ -228,7 +228,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private void addMessageFile(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        dbHelper. addMessage(db, message);
+        manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
@@ -318,7 +318,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessage(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        dbHelper. addMessage(db, message);
+        manager. addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
@@ -330,7 +330,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessageFile(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        dbHelper. addMessage(db, message);
+        manager. addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
@@ -353,7 +353,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
                 message.setMessageStatus(messageStatus);
-                dbHelper.updateMessage(db,message);
+                manager.updateMessage(message);
                 adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                 break; // Завершуємо цикл, оскільки повідомлення знайдено
             }

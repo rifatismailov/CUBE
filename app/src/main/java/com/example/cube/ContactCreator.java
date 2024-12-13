@@ -70,6 +70,7 @@ public class ContactCreator implements View.OnClickListener {
                             + "\",\"id_contact\":\"" + id_contact.getText()
                             + "\",\"public_key_contact\":\"" + public_key_contact.getText() + "\"}");
         }
+        alertDialog.cancel(); // Cancel dialog on the UI thread
     }
 
     public interface CreatorOps {
