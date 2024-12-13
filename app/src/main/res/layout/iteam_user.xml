@@ -27,10 +27,9 @@
         android:textStyle="bold"
         tools:ignore="HardcodedText" />
 
-    <com.example.cube.draw.ColorfulDotsView
-        android:id="@+id/rPublicKey"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="28dp"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/idNumber"
         android:layout_alignParentTop="true"
         android:layout_marginStart="1dp"
@@ -39,14 +38,22 @@
         android:layout_marginBottom="2dp"
         android:layout_toStartOf="@+id/messageSize"
         android:layout_toEndOf="@+id/userName"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/key_darck"/>
+        <com.example.cube.draw.ColorfulDotsView
+            android:id="@+id/rPublicKey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white" />
+    </LinearLayout>
 
-        android:background="@color/white" />
-
-    <com.example.cube.draw.ColorfulDotsView
-        android:id="@+id/receiverKey"
-        android:layout_width="match_parent"
-        android:layout_height="28dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/bottomView"
         android:layout_below="@+id/userName"
         android:layout_marginStart="5dp"
@@ -55,7 +62,19 @@
         android:layout_marginBottom="1dp"
         android:layout_toStartOf="@+id/messageSize"
         android:layout_toEndOf="@+id/idNumber"
-        android:background="@color/white" />
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/key_darck"/>
+        <com.example.cube.draw.ColorfulDotsView
+            android:id="@+id/receiverKey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white" />
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/idNumber"
@@ -71,7 +90,6 @@
         android:textColor="#1d2124"
         android:textSize="15sp"
         tools:ignore="HardcodedText" />
-
 
 
     <TextView

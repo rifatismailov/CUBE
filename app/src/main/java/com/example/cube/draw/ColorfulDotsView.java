@@ -36,22 +36,29 @@ public class ColorfulDotsView extends View {
         }
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Paint paint = new Paint();
-        int radius = 10; // Радіус точки
-        int spacing = 21; // Відстань між точками
 
-        int totalWidth = colors.size() * spacing; // Загальна ширина точок
-        int startX = (getWidth() - totalWidth) / 2; // Початкова точка для центрованого вмісту
-        int y = getHeight() / 2; // Центруємо точки по вертикалі
+        int squareWidth = 10; // Ширина квадрату
+        int squareHeight = 60; // Висота квадрату
+        int spacing = 10; // Відстань між квадратами
+
+        int totalWidth = colors.size() * (squareWidth + spacing) - spacing; // Загальна ширина квадратів
+        int startX = (getWidth() - totalWidth) / 10; // Початкова точка для центрованого вмісту
+        int startY = (getHeight() - squareHeight) / 2; // Центруємо квадрати по вертикалі
 
         for (int i = 0; i < colors.size(); i++) {
             paint.setColor(colors.get(i));
-            canvas.drawCircle(startX + i * spacing, y, radius, paint);
+            float left = startX + i * (squareWidth + spacing);
+            float top = startY;
+            float right = left + squareWidth;
+            float bottom = top + squareHeight;
+
+            canvas.drawRect(left, top, right, bottom, paint);
         }
     }
+
 
 }

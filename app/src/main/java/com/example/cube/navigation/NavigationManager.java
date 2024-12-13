@@ -1,4 +1,4 @@
-package com.example.cube;
+package com.example.cube.navigation;
 
 import android.app.Activity;
 import android.widget.Button;
@@ -6,6 +6,8 @@ import android.widget.ImageButton;
 
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.example.cube.R;
 
 public class NavigationManager {
 
@@ -23,8 +25,6 @@ public class NavigationManager {
         this.accountButton = accountButton;
         this.settingsButton = settingsButton;
         this.logoutButton = logoutButton;
-
-
         setupButtons();
     }
 

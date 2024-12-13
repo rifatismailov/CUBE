@@ -44,12 +44,11 @@
             android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:maxHeight="45dp"
                 android:scaleType="centerCrop"
                 android:visibility="gone" />
 

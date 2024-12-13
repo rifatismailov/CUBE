@@ -37,6 +37,7 @@ import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.log.LogAdapter;
 import com.example.cube.log.Logger;
+import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 import com.example.cube.socket.Envelope;
