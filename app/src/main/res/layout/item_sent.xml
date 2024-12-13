@@ -20,24 +20,20 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Зображення (наприклад, фото або картинка в повідомленні) -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dp"
-            android:elevation="10dp"
-            app:cardCornerRadius="19dp"
-            app:cardElevation="0dp">
 
-            <ImageView
+
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:background="@color/demo_light_transparent"
+                android:layout_marginTop="1dp"
+                android:layout_marginRight="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginBottom="1dp"
+                android:maxWidth="350dp"
                 android:maxHeight="250dp"
-                android:scaleType="centerCrop"
-                android:visibility="gone" />
-        </androidx.cardview.widget.CardView>
+                android:scaleType="center"
+                app:shapeAppearanceOverlay="@style/AppTheme.CornerCut" />
 
         <!-- Повідомлення з текстом і файлом -->
         <LinearLayout
@@ -74,7 +70,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:layout_marginBottom="1dp"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -82,6 +77,8 @@
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
                 android:orientation="horizontal"
                 android:visibility="invisible">
 
