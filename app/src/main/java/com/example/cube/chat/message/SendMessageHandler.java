@@ -9,12 +9,16 @@ import android.graphics.Color;
 import android.view.View;
 
 import com.example.cube.R;
+import com.example.cube.chat.preview.DocxPreview;
+import com.example.cube.chat.preview.PdfPreview;
+import com.example.cube.chat.preview.WordPreview;
 import com.example.cube.control.Check;
 import com.example.cube.holder.SentViewHolder;
 import com.example.textvisualization.visualization.Watcher;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,7 +55,29 @@ public class SendMessageHandler {
             viewHolder.binding.file.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.image.setVisibility(View.GONE);
-            viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
+            ShapeAppearanceModel shapeAppearanceModel = new ShapeAppearanceModel()
+                    .toBuilder()
+                    .setTopLeftCorner(CornerFamily.ROUNDED, 58f) // Верхній лівий кут
+                    .setTopRightCorner(CornerFamily.ROUNDED, 10f) // Верхній правий кут
+                    .setBottomLeftCorner(CornerFamily.ROUNDED, 10f)  // Нижній лівий кут (прямий)
+                    .setBottomRightCorner(CornerFamily.ROUNDED, 10f) // Нижній правий кут (прямий)
+                    .build();
+            viewHolder.binding.file.setShapeAppearanceModel(shapeAppearanceModel);
+            if (message.getUrl().toString().endsWith(".pdf")) {
+                Bitmap pdfBitmap = PdfPreview.getPdfFirstPage(new File(message.getUrl().toString()), 0);
+                viewHolder.binding.file.setImageBitmap(pdfBitmap);
+            }else  if (message.getUrl().toString().endsWith(".docx")) {
+                Bitmap docxPreview = WordPreview.renderDocxToBitmap(new File(message.getUrl().toString()), 800, 1200); // Ширина та висота прев'ю
+
+                if (docxPreview != null) {
+                    viewHolder.binding.file.setImageBitmap(docxPreview);
+                } else {
+                    viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
+                }
+            }else{
+                viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
+
+            }
             viewHolder.binding.message.setText(message.getUrl().toString() + "\n" + message.getMessage());
         } else {
             viewHolder.binding.image.setVisibility(View.GONE);

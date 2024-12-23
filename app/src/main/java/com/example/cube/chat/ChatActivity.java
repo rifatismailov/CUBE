@@ -249,7 +249,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
             } else {
-                Message message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Sender, messageId);
+                Message message = new Message("There will be information about your message ", Uri.parse(url), Side.Sender, messageId);
                 message.setHas(has);
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);

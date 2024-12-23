@@ -28,22 +28,22 @@ public class BundleProcessor {
 
     private void processBundle(Bundle bundle) {
         try {
-            senderId = bundle.getString("senderId");
-            receiverName = bundle.getString("name");
-            receiverId = bundle.getString("receiverId");
-            receiverStatus = bundle.getString("status");
+            senderId = bundle.getString(FIELD.SENDER_ID.getFIELD());
+            receiverName = bundle.getString(FIELD.NAME.getFIELD());
+            receiverId = bundle.getString(FIELD.RECEIVER_ID.getFIELD());
+            receiverStatus = bundle.getString(FIELD.STATUS.getFIELD());
 
-            String sPublicKey = bundle.getString("publicKey");
+            String sPublicKey = bundle.getString(FIELD.PUBLIC_KEY.getFIELD());
             if (sPublicKey != null && !sPublicKey.isEmpty()) {
                 publicKey = keyGenerator.decodePublicKey(sPublicKey);
             }
 
-            String sPrivateKey = bundle.getString("privateKey");
+            String sPrivateKey = bundle.getString(FIELD.PRIVATE_KEY.getFIELD());
             if (sPrivateKey != null && !sPrivateKey.isEmpty()) {
                 privateKey = keyGenerator.decodePrivateKey(sPrivateKey);
             }
 
-            String rPublicKey = bundle.getString("receiverPublicKey");
+            String rPublicKey = bundle.getString(FIELD.RECEIVER_PUBLIC_KEY.getFIELD());
             if (rPublicKey != null && !rPublicKey.isEmpty()) {
                 receiverPublicKey = keyGenerator.decodePublicKey(rPublicKey);
             }

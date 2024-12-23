@@ -18,6 +18,7 @@ public enum FIELD {
     NAME("name"),
     USER_END("endUser"),
     LAST_NAME("lastName"),
+    STATUS("status"),
     STATUS_USER("status_user"),
     CONTACT_NAME("name_contact"),
     CONTACT_ID("id_contact"),

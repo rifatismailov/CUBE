@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="60dp"
     android:layout_marginTop="5dp"
-    android:layout_marginEnd="10dp">
+    android:layout_marginEnd="10dp"
+    >
 
     <!-- Основний контейнер для повідомлення -->
     <LinearLayout
@@ -39,8 +40,8 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
@@ -50,6 +51,8 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
+                android:maxWidth="100sp"
+                android:maxHeight="100sp"
                 android:visibility="gone" />
 
             <TextView
@@ -62,7 +65,7 @@
                 android:paddingTop="5dp"
                 android:paddingRight="10dp"
                 android:paddingBottom="4dp"
-                android:textColor="#191919"
+                android:textColor="#000"
                 android:textSize="16sp" />
         </LinearLayout>
 

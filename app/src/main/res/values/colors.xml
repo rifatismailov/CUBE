@@ -12,6 +12,8 @@
     <color name="chat_toolbar">#191919</color>
     <color name="grey">#E3E3E3</color>
     <color name="blue">#22adff</color>
+    <color name="colorSender">#fdfffc</color>
+
     <color name="light_gray">#000</color>
     <color name="light_blue">#71c1ff</color>
     <color name="green">#4CAF50</color>

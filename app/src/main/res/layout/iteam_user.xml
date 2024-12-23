@@ -40,10 +40,12 @@
         android:layout_toEndOf="@+id/userName"
         android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="25dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/key_darck"/>
+            android:text="RSA" />
+
+
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/rPublicKey"
             android:layout_width="wrap_content"
@@ -64,10 +66,12 @@
         android:layout_toEndOf="@+id/idNumber"
         android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="25dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/key_darck"/>
+            android:text="AES" />
+
+
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/receiverKey"
             android:layout_width="wrap_content"

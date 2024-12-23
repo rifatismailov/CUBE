@@ -23,17 +23,17 @@ public class MessageManager {
     private SQLiteDatabase database;
 
     private static final String TABLE_MESSAGES = "messages";
-    private static final String COLUMN_SENDER = "senderId";
-    private static final String COLUMN_RECEIVER = "receiverId";
-    private static final String COLUMN_MESSAGE = "message";
+    private static final String COLUMN_SENDER = "sender";
+    private static final String COLUMN_RECEIVER = "receiver";
+    private static final String COLUMN_MESSAGE = "message_text";
     private static final String COLUMN_TIMESTAMP = "timestamp";
-    private static final String COLUMN_SIDE = "sider";
-    private static final String COLUMN_MESSAGE_ID = "messagesId";
-    private static final String COLUMN_CHECK = "checker";
-    private static final String COLUMN_SELECTED_URL = "url";
+    private static final String COLUMN_SIDE = "side";
+    private static final String COLUMN_MESSAGE_ID = "message_id";
+    private static final String COLUMN_CHECK = "check_";
+    private static final String COLUMN_SELECTED_URL = "selected_url";
     private static final String COLUMN_IMAGE = "image";
-    private static final String COLUMN_IMAGE_WIDTH = "width";
-    private static final String COLUMN_IMAGE_HEIGHT = "height";
+    private static final String COLUMN_IMAGE_WIDTH = "image_width";
+    private static final String COLUMN_IMAGE_HEIGHT = "image_height";
     private static final String COLUMN_STATUS = "status";
 
     /**
@@ -166,10 +166,8 @@ public class MessageManager {
         List<Message> messages = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_MESSAGES + " WHERE " + COLUMN_RECEIVER + " = ?";
 
-
         Cursor cursor = database.rawQuery(selectQuery, new String[]{receiverId});
-
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 Message message = new Message();
                 message.setMessageId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)));
@@ -191,9 +189,8 @@ public class MessageManager {
                 messages.add(message);
             } while (cursor.moveToNext());
         }
-
         cursor.close();
-        ////database.close();
+        //database.close();
         return messages;
     }
 

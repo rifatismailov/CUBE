@@ -3,6 +3,8 @@ package com.example.cube.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
 import com.example.cube.contact.UserData;
 import com.example.cube.encryption.Encryption;
 import org.json.JSONObject;
@@ -20,7 +22,7 @@ public class ContactManager {
     private final SQLiteDatabase database;
 
     // Table and column definitions
-    private static final String TABLE_NAME = "Contacts";
+    public static final String TABLE_CONTACTS = "contacts";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_ENCRYPTED_DATA = "encrypted_data";
 
@@ -38,7 +40,7 @@ public class ContactManager {
      * Useful for resetting or purging the contact data.
      */
     public void clearMessagesTable() {
-        database.execSQL("DELETE FROM " + TABLE_NAME);
+        database.execSQL("DELETE FROM " + TABLE_CONTACTS);
     }
 
     /**
@@ -51,7 +53,7 @@ public class ContactManager {
         Map<String, UserData> contacts = new HashMap<>();
         Cursor cursor = null;
         try {
-            cursor = database.query(TABLE_NAME, null, null, null, null, null, null);
+            cursor = database.query(TABLE_CONTACTS, null, null, null, null, null, null);
             while (cursor.moveToNext()) {
                 String id = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
                 String encryptedData = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
@@ -99,10 +101,13 @@ public class ContactManager {
                 values.put(COLUMN_ENCRYPTED_DATA, encryptedJson);
 
                 // Use conflict resolution to replace existing entries
-                database.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                database.insertWithOnConflict(TABLE_CONTACTS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                Log.e("createContact", "createContact ");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("createContact", "createContact "+e);
+
         }
     }
 
@@ -130,7 +135,7 @@ public class ContactManager {
             String[] whereArgs = {id};
 
             // Perform the update
-            database.update(TABLE_NAME, values, whereClause, whereArgs);
+            database.update(TABLE_CONTACTS, values, whereClause, whereArgs);
         } catch (Exception e) {
             e.printStackTrace();
         }

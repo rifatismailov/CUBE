@@ -66,21 +66,21 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener, Listener.DataListener,
-        ContactCreator.CreatorOps, AccountManager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener {
+        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener {
 
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
     private String userId;           // ID користувача
-    private String receiverId;       // ID отримувача
+    private String receiverId = null;       // ID отримувача
     private String name;             // Ім'я користувача
     private String lastName;         // Прізвище користувача
     private String password;         // Пароль
     private UserData user;           // Об'єкт користувача
     private DatabaseHelper dbHelper;
     private SQLiteDatabase db;
-    ContactManager manager;
-
+    ContactManager contactManager;
+    Manager manager;
     private final List<UserData> userList = new ArrayList<>();  // Список користувачів
     private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
 
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contacts.put(newUser.getId(), newUser);
 
         // Зберігаємо контакти у базу даних
-        manager.setContacts(contacts, secretKey);
+        contactManager.setContacts(contacts, secretKey);
     }
 
 
@@ -163,9 +163,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        dbHelper = new DatabaseHelper(this);
-        db = dbHelper.getWritableDatabase();
-        manager = new ContactManager(db);
         logs = new ArrayList<>();
         logAdapter = new LogAdapter(this, logs);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -174,9 +171,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding.log.setLayoutManager(layoutManager);
         binding.log.setAdapter(logAdapter);
 
-        password = "1234567890123456";  // Пароль
-        byte[] keyBytes = password.getBytes();  // Генерація байт ключа
-        secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
         // Ініціалізація DrawerLayout і NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
 
@@ -195,8 +189,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Використання NavigationManager для обробки меню
         new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
 
+
+        password = "1234567890123456";  // Пароль
+        byte[] keyBytes = password.getBytes();  // Генерація байт ключа
+        secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        dbHelper = new DatabaseHelper(this);
+        db = dbHelper.getWritableDatabase();
         externalDir = new File(getExternalFilesDir(null), "cube");
-        new AccountManager(this).readAccount(externalDir);
+        manager= new Manager(this,db,secretKey);
+        manager.readAccount(externalDir);
+        contactManager = new ContactManager(db);
+
 
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
@@ -227,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void initUserList() {
         userList.clear();
         //ContactManager manager=new ContactManager(db);
-        contacts =manager.getContacts(secretKey);
+        contacts = contactManager.getContacts(secretKey);
         for (Map.Entry<String, UserData> entry : contacts.entrySet()) {
             userList.add(entry.getValue());
         }
@@ -287,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.SENDER_ID.getFIELD(), userId);
         intent.putExtra(FIELD.NAME.getFIELD(), userData.getName());
         intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), userData.getId());
-        intent.putExtra(FIELD.STATUS_USER.getFIELD(), "online");
+        intent.putExtra(FIELD.STATUS.getFIELD(), "online");
         intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), userData.getPublicKey());
         intent.putExtra(FIELD.PRIVATE_KEY.getFIELD(), userData.getPrivateKey());
         intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), userData.getReceiverPublicKey());
@@ -468,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     String AES = Encryption.RSA.decrypt(receiverKey, privateKey);
                     Log.e("Exchange", "Отримано AES [" + sender + "]: " + AES);
                     user.setReceiverKey(AES);
-                    manager.updateContact(user,secretKey);
+                    contactManager.updateContact(user, secretKey);
                     break;
                 }
             }
@@ -520,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for (UserData user : userList) {
             if (user.getId().equals(sender)) {
                 user.setReceiverPublicKey(publicKey);
-                manager.updateContact(user,secretKey);
+                contactManager.updateContact(user, secretKey);
                 Log.e("Exchange", "Оновлено публічний ключ для користувача: " + sender);
                 break;
             }
@@ -544,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @SuppressLint("SetTextI18n")
     ActivityResultLauncher<ScanOptions> qrCodeAddAccount = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
-            new AccountManager(this).writeAccount(externalDir, result.getContents());
+            manager.writeAccount(externalDir, result.getContents());
         }
     });
 
@@ -557,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ActivityResultLauncher<ScanOptions> qrCodeAddContact = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
             // Додає новий контакт із QR-коду
-            new AccountManager(this).createContact(result.getContents());
+            manager.createContact(result.getContents());
         }
     });
 
@@ -573,7 +576,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void scannerQrContact() {
-        new QR(qrCodeAddContact);
+        deleteDatabase("cube.db");
+        finish();
+       // new QR(qrCodeAddContact);
     }
 
     @Override
@@ -601,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void saveContact(String contact) {
         if (contact != null) {
-            new AccountManager(this).createContact(contact);
+            manager.createContact(contact);
         }
     }
 

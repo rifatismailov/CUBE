@@ -26,6 +26,9 @@ public class Message implements Serializable {
     private Check check;                  // Тип перевірки для повідомлення (наприклад, текст чи зображення)
     private Side side;                    // Сторона повідомлення (відправлене чи отримане)
     private byte[] image;                 // Зображення в байтах (якщо присутнє)
+    private byte[] previewFile;                 // Зображення в байтах (якщо присутнє)
+
+
     private int imageWidth;               // Ширина зображення
     private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
@@ -33,7 +36,8 @@ public class Message implements Serializable {
     private String messageStatus;
 
 
-    public Message(){}
+    public Message() {
+    }
 
     /**
      * Конструктор для створення текстового повідомлення.
@@ -50,16 +54,17 @@ public class Message implements Serializable {
     /**
      * Конструктор для створення текстового повідомлення.
      *
-     * @param message Текст повідомлення.
-     * @param side    Сторона повідомлення (відправлене чи отримане).
-     * @param  messageId id повідомлення
+     * @param message   Текст повідомлення.
+     * @param side      Сторона повідомлення (відправлене чи отримане).
+     * @param messageId id повідомлення
      */
-    public Message(String message, Side side,String messageId) {
+    public Message(String message, Side side, String messageId) {
         this.message = message;
         this.check = Check.Message;
         this.side = side;
-        this.messageId=messageId;
+        this.messageId = messageId;
     }
+
     /**
      * Конструктор для створення повідомлення із файлом (URL).
      *
@@ -73,20 +78,21 @@ public class Message implements Serializable {
         this.check = Check.File;
         this.side = side;
     }
+
     /**
      * Конструктор для створення повідомлення із файлом (URL).
      *
      * @param message     Текст повідомлення.
      * @param selectedUrl URL вибраного файлу або отриманого файлу.
      * @param side        Сторона повідомлення (відправлене чи отримане).
-     * @param  messageId id повідомлення
+     * @param messageId   id повідомлення
      */
-    public Message(String message, @NonNull Uri selectedUrl, Side side,String messageId) {
+    public Message(String message, @NonNull Uri selectedUrl, Side side, String messageId) {
         this.message = message;
         this.selectedUrl = selectedUrl;
         this.check = Check.File;
         this.side = side;
-        this.messageId=messageId;
+        this.messageId = messageId;
     }
 
     /**
@@ -106,6 +112,7 @@ public class Message implements Serializable {
         this.check = Check.Image;
         this.side = side;
     }
+
     /**
      * Конструктор для створення повідомлення із зображенням у байтовому форматі.
      *
@@ -123,6 +130,7 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         this.check = Check.Image;
     }
+
     /**
      * Конструктор для створення повідомлення із зображенням у байтовому форматі.
      *
@@ -142,6 +150,7 @@ public class Message implements Serializable {
         this.check = Check.Image;
         this.side = side;
     }
+
     /**
      * Конструктор для створення повідомлення із зображенням у байтовому форматі.
      *
@@ -151,9 +160,9 @@ public class Message implements Serializable {
      * @param imageWidth  Ширина зображення.
      * @param imageHeight Висота зображення.
      * @param side        Сторона повідомлення (відправлене чи отримане).
-     * @param  messageId id повідомлення
+     * @param messageId   id повідомлення
      */
-    public Message(String message, @NonNull Uri selectedUrl, byte[] image, int imageWidth, int imageHeight, Side side,String messageId) {
+    public Message(String message, @NonNull Uri selectedUrl, byte[] image, int imageWidth, int imageHeight, Side side, String messageId) {
         this.message = message;
         this.selectedUrl = selectedUrl;
         this.image = image;
@@ -161,7 +170,7 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         this.check = Check.Image;
         this.side = side;
-        this.messageId=messageId;
+        this.messageId = messageId;
     }
 
     // Геттер для масиву байтів зображення
@@ -172,6 +181,14 @@ public class Message implements Serializable {
     // Сеттер для масиву байтів зображення
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    public byte[] getPreviewFile() {
+        return previewFile;
+    }
+
+    public void setPreviewFile(byte[] previewFile) {
+        this.previewFile = previewFile;
     }
 
     // Геттер для ширини зображення
@@ -243,6 +260,7 @@ public class Message implements Serializable {
     public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
+
     public String getReceiverId() {
         return receiverId;
     }
@@ -250,6 +268,7 @@ public class Message implements Serializable {
     public void setReceiverId(String receiverId) {
         this.receiverId = receiverId;
     }
+
     // Геттер для часу відправки повідомлення
     public long getTimestamp() {
         return timestamp;

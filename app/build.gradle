@@ -65,5 +65,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.google.android.material:material:1.8.0'  // Перевірте на останню версію
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
 
 }

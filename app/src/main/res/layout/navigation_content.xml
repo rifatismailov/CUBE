@@ -42,5 +42,11 @@
             android:textStyle="bold"
             android:typeface="monospace"/>
     </LinearLayout>
-
+    <!-- Кнопка праворуч -->
+    <ImageButton
+        android:id="@+id/add_account"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/qr_code_icon"
+      />
 </LinearLayout>

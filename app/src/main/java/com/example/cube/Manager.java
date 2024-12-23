@@ -1,37 +1,55 @@
 package com.example.cube;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.cube.control.FIELD;
-import com.example.folder.file.FileDetect;
+import com.example.cube.db.AccountManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 
-public class AccountManager {
-    AccountOps accountOps;
+import javax.crypto.SecretKey;
 
-    public AccountManager(AccountOps accountOps) {
+public class Manager {
+    AccountOps accountOps;
+    SQLiteDatabase db;
+    SecretKey secretKey;
+    AccountManager accountManager;
+    public Manager(AccountOps accountOps, SQLiteDatabase db, SecretKey secretKey) {
         this.accountOps = accountOps;
+        accountManager=new AccountManager(db);
+        this.secretKey=secretKey;
     }
 
     public void readAccount(File externalDir) {
 
-        JSONObject jsonObject = new FileDetect().readJsonFromFile(externalDir, "cube.json");
+        JSONObject jsonObject =accountManager.getAccount(secretKey);// new FileDetect().readJsonFromFile(externalDir, "cube.json");
         if (jsonObject != null) {
             createAccount(jsonObject);
+            Log.e("DatabaseHelper", "Manager JSONObject Not null.");
+
+        }else{
+            Log.e("DatabaseHelper", "Manager JSONObject null.");
+
         }
     }
     public void writeAccount(File externalDir,String result){
         try {
                 // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
                 JSONObject jsonObject = new JSONObject(result);
-                // Зберігаємо JSON-дані в файл "cube.json"
-                new FileDetect().saveJsonToFile(externalDir, "cube.json", jsonObject);
+                if(jsonObject!=null) {
+                    accountManager.setAccount(jsonObject, secretKey);
+                    Log.e("DatabaseHelper", "account setAccount. ");
+                }
+
+            // Зберігаємо JSON-дані в файл "cube.json"
+                //new FileDetect().saveJsonToFile(externalDir, "cube.json", jsonObject);
                 // Читаємо дані з JSON-об'єкта
                 createAccount(jsonObject);
 
