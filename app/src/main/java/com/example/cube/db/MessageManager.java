@@ -31,11 +31,16 @@ public class MessageManager {
     private static final String COLUMN_MESSAGE_ID = "message_id";
     private static final String COLUMN_CHECK = "check_";
     private static final String COLUMN_SELECTED_URL = "selected_url";
+    public static final String COLUMN_FILE_NAME = "file_name";
+
     private static final String COLUMN_IMAGE = "image";
     private static final String COLUMN_IMAGE_WIDTH = "image_width";
     private static final String COLUMN_IMAGE_HEIGHT = "image_height";
     private static final String COLUMN_STATUS = "status";
-
+    private static final String COLUMN_FILE_SIZE="file_size";
+    private static final String COLUMN_TYPE_FILE="type_file";
+    private static final String COLUMN_FILE_HASH="hash";
+    private static final String COLUMN_DATE_CREATE="data_create";
     /**
      * Конструктор класу MessageManager.
      *
@@ -74,12 +79,27 @@ public class MessageManager {
             case File: // Для повідомлення з файлом
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
+                    values.put(COLUMN_FILE_NAME, message.getFileName());
+                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH,message.getHas());
+                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                }
+                if (message.getImage() != null) {
+                    values.put(COLUMN_IMAGE, message.getImage());
+                    values.put(COLUMN_IMAGE_WIDTH, message.getImageWidth());
+                    values.put(COLUMN_IMAGE_HEIGHT, message.getImageHeight());
                 }
                 break;
 
             case Image: // Для повідомлення із зображенням
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
+                    values.put(COLUMN_FILE_NAME, message.getFileName());
+                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH,message.getHas());
+                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -130,12 +150,24 @@ public class MessageManager {
             case File:
                 if (message.getUrl() != null) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
+                    values.put(COLUMN_FILE_NAME, message.getFileName());
+                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH,message.getHas());
+                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+
                 }
                 break;
 
             case Image:
                 if (message.getUrl() != null) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
+                    values.put(COLUMN_FILE_NAME, message.getFileName());
+                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH,message.getHas());
+                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -175,8 +207,20 @@ public class MessageManager {
                 message.setReceiverId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER)));
                 message.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE)));
                 String urlString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SELECTED_URL));
+                String filename=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_NAME));
+                String fileSize = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_SIZE));
+                String fileType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE_FILE));
+                String fileHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_HASH));
+                String fileDateCreate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_CREATE));
+
                 if (urlString != null && !urlString.isEmpty()) {
                     message.setUrl(Uri.parse(urlString));
+                    message.setFileName(filename);
+                    message.setFileSize(fileSize);
+                    message.setTypeFile(fileType);
+                    message.setHas(fileHash);
+                    message.setDataCreate(fileDateCreate);
+
                 }
                 message.setImage(cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)));
                 message.setImageWidth(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_WIDTH)));

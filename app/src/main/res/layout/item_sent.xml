@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="60dp"
     android:layout_marginTop="5dp"
-    android:layout_marginEnd="10dp"
-    >
+    android:layout_marginEnd="10dp">
 
     <!-- Основний контейнер для повідомлення -->
     <LinearLayout
@@ -22,19 +20,109 @@
 
         <!-- Зображення (наприклад, фото або картинка в повідомленні) -->
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginRight="2dp"
-                android:layout_marginLeft="2dp"
                 android:layout_marginBottom="3dp"
                 android:maxWidth="350dp"
                 android:maxHeight="250dp"
                 android:scaleType="center"
                 app:shapeAppearanceOverlay="@style/AppTheme.CornerCut" />
+
+            <LinearLayout
+                android:id="@+id/aboutFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+
+                android:elevation="4dp">
+
+                <!-- Тип файлу -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+                    <TextView
+                        android:id="@+id/fileType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/ibmplexsans_medium"
+                        android:text="Тип файлу: Текстовий"
+                        android:textColor="#54585b"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Розмір файлу -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+
+                    <TextView
+                        android:id="@+id/fileSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/ibmplexsans_medium"
+                        android:text="Розмір: 1.2 MB"
+                        android:textColor="@color/blue"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Дата створення -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+
+
+                    <TextView
+                        android:id="@+id/fileDateCreate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/ibmplexsans_medium"
+                        android:text="Створено: 2024-12-23"
+                        android:textColor="@color/blue"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Хеш-файл -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+                    <TextView
+                        android:id="@+id/fileHash"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/notoserif_thin"
+                        android:text="Хеш: abcd1234..."
+                        android:textColor="#54585b"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
 
         <!-- Повідомлення з текстом і файлом -->
         <LinearLayout
@@ -43,17 +131,21 @@
             android:layout_marginStart="2dp"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="4dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <com.google.android.material.imageview.ShapeableImageView
+            <TextView
                 android:id="@+id/file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:maxWidth="100sp"
-                android:maxHeight="100sp"
-                android:visibility="gone" />
+                android:fontFamily="@font/ibmplexsans_bold"
+                android:gravity="top"
+                android:paddingLeft="10dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="4dp"
+                android:text="@string/app_version"
+                android:textColor="@color/blue"
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/message"
@@ -80,24 +172,24 @@
                 android:id="@+id/feel_layout"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
+                android:gravity="center"
                 android:orientation="horizontal"
                 android:visibility="invisible">
+
                 <com.example.cube.draw.MessageNotifierView
                     android:id="@+id/messageNotifier"
                     android:layout_width="25dp"
                     android:layout_height="15dp"
                     android:layout_gravity="center" />
+
                 <ImageView
                     android:id="@+id/feeling"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_gravity="center"
                     android:visibility="invisible" />
-
-
 
 
             </LinearLayout>

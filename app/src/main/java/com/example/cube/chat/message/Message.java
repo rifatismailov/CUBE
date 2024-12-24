@@ -23,16 +23,18 @@ public class Message implements Serializable {
     private int feeling = -1;     // Позиція емоції, пов'язаної з повідомленням (якщо присутня)
     private int emojisPosition = 0; // Позиція емодзі у повідомленні (якщо присутня)
     private Uri selectedUrl;              // Вибрана URL-адреса (якщо присутнє зображення)
+    private String fileName;
     private Check check;                  // Тип перевірки для повідомлення (наприклад, текст чи зображення)
     private Side side;                    // Сторона повідомлення (відправлене чи отримане)
     private byte[] image;                 // Зображення в байтах (якщо присутнє)
-    private byte[] previewFile;                 // Зображення в байтах (якщо присутнє)
-
+    private String fileSize;
+    private String typeFile;
+    private String has;
+    private String dataCreate;
 
     private int imageWidth;               // Ширина зображення
     private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
-    private String has;
     private String messageStatus;
 
 
@@ -128,8 +130,11 @@ public class Message implements Serializable {
         this.image = image;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
-        this.check = Check.Image;
-    }
+        if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
+            this.check = Check.Image;
+        }else {
+            this.check = Check.File;
+        }    }
 
     /**
      * Конструктор для створення повідомлення із зображенням у байтовому форматі.
@@ -147,7 +152,11 @@ public class Message implements Serializable {
         this.image = image;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
-        this.check = Check.Image;
+        if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
+            this.check = Check.Image;
+        }else {
+            this.check = Check.File;
+        }
         this.side = side;
     }
 
@@ -160,7 +169,7 @@ public class Message implements Serializable {
      * @param imageWidth  Ширина зображення.
      * @param imageHeight Висота зображення.
      * @param side        Сторона повідомлення (відправлене чи отримане).
-     * @param messageId   id повідомлення
+     * @param messageId   id повідомлення A
      */
     public Message(String message, @NonNull Uri selectedUrl, byte[] image, int imageWidth, int imageHeight, Side side, String messageId) {
         this.message = message;
@@ -168,7 +177,11 @@ public class Message implements Serializable {
         this.image = image;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
-        this.check = Check.Image;
+        if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
+            this.check = Check.Image;
+        }else {
+            this.check = Check.File;
+        }
         this.side = side;
         this.messageId = messageId;
     }
@@ -183,13 +196,6 @@ public class Message implements Serializable {
         this.image = image;
     }
 
-    public byte[] getPreviewFile() {
-        return previewFile;
-    }
-
-    public void setPreviewFile(byte[] previewFile) {
-        this.previewFile = previewFile;
-    }
 
     // Геттер для ширини зображення
     public int getImageWidth() {
@@ -324,5 +330,37 @@ public class Message implements Serializable {
 
     public void setMessageStatus(String messageStatus) {
         this.messageStatus = messageStatus;
+    }
+
+    public String getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(String fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public String getTypeFile() {
+        return typeFile;
+    }
+
+    public void setTypeFile(String typeFile) {
+        this.typeFile = typeFile;
+    }
+
+    public String getDataCreate() {
+        return dataCreate;
+    }
+
+    public void setDataCreate(String dataCreate) {
+        this.dataCreate = dataCreate;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

@@ -35,6 +35,7 @@ import com.example.folder.dialogwindows.Open;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
 
+import java.io.File;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -242,15 +243,29 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void addFile(String url, String has) {
         try {
             String messageId = UUID.randomUUID().toString();
+            String fileName=new File(url).getName();
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
                 ImageData imageData = new ImageData().convertImage(url);
                 Message message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
+                //values.put(COLUMN_FILE_SIZE,message.getFileSize());
+                //values.put(COLUMN_TYPE_FILE,message.getTypeFile());
+               // values.put(COLUMN_FILE_HASH,message.getHas());
+               // values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                message.setFileName(fileName);
+                message.setFileSize("100mb");
+                message.setTypeFile("IMAGE");
                 message.setHas(has);
+                message.setDataCreate("10.10.10 12.00.00");
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
             } else {
-                Message message = new Message("There will be information about your message ", Uri.parse(url), Side.Sender, messageId);
+                ImageData imageData = new ImageData().convertFilePreview(fileName,url,has);
+                Message message = new Message("There will be information about your message ", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
+                message.setFileName(fileName);
+                message.setFileSize("100mb");
+                message.setTypeFile("IMAGE");
                 message.setHas(has);
+                message.setDataCreate("10.10.10 12.00.00");
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
             }

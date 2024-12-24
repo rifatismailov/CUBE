@@ -35,6 +35,7 @@ public class SendMessageHandler {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
             if(message.getImageWidth()>2000)
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
@@ -45,6 +46,8 @@ public class SendMessageHandler {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
 
             if(message.getImageWidth()>2000)
@@ -54,31 +57,18 @@ public class SendMessageHandler {
         } else if (message.getCheck().equals(Check.File)) {
             viewHolder.binding.file.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.image.setVisibility(View.GONE);
-            ShapeAppearanceModel shapeAppearanceModel = new ShapeAppearanceModel()
-                    .toBuilder()
-                    .setTopLeftCorner(CornerFamily.ROUNDED, 58f) // Верхній лівий кут
-                    .setTopRightCorner(CornerFamily.ROUNDED, 10f) // Верхній правий кут
-                    .setBottomLeftCorner(CornerFamily.ROUNDED, 10f)  // Нижній лівий кут (прямий)
-                    .setBottomRightCorner(CornerFamily.ROUNDED, 10f) // Нижній правий кут (прямий)
-                    .build();
-            viewHolder.binding.file.setShapeAppearanceModel(shapeAppearanceModel);
-            if (message.getUrl().toString().endsWith(".pdf")) {
-                Bitmap pdfBitmap = PdfPreview.getPdfFirstPage(new File(message.getUrl().toString()), 0);
-                viewHolder.binding.file.setImageBitmap(pdfBitmap);
-            }else  if (message.getUrl().toString().endsWith(".docx")) {
-                Bitmap docxPreview = WordPreview.renderDocxToBitmap(new File(message.getUrl().toString()), 800, 1200); // Ширина та висота прев'ю
+            viewHolder.binding.image.setVisibility(View.VISIBLE);
 
-                if (docxPreview != null) {
-                    viewHolder.binding.file.setImageBitmap(docxPreview);
-                } else {
-                    viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
-                }
-            }else{
-                viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
-
+            if(message.getImage()!=null) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() , message.getImageHeight() , false));
             }
-            viewHolder.binding.message.setText(message.getUrl().toString() + "\n" + message.getMessage());
+            viewHolder.binding.fileHash.setText(message.getHas());
+            viewHolder.binding.fileType.setText(message.getTypeFile());
+            viewHolder.binding.fileSize.setText(message.getFileSize());
+            viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
+            viewHolder.binding.file.setText(message.getFileName());
+            viewHolder.binding.message.setText(message.getMessage());
         } else {
             viewHolder.binding.image.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);

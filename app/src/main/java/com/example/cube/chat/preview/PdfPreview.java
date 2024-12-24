@@ -8,7 +8,7 @@ import java.io.File;
 
 public class PdfPreview {
 
-    public static Bitmap getPdfFirstPage(File file, int pageIndex) {
+    public static Bitmap getPdfFirstPage(File file, int pageIndex,int width, int height) {
         try {
             // Отримати дескриптор файлу
             ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
@@ -18,7 +18,7 @@ public class PdfPreview {
             PdfRenderer.Page page = pdfRenderer.openPage(pageIndex);
 
             // Створити зображення для прев'ю
-            Bitmap bitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
             // Закрити ресурси

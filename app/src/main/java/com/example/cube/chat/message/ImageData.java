@@ -1,7 +1,19 @@
 package com.example.cube.chat.message;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.util.Log;
+
+import androidx.core.content.ContextCompat;
+
+import com.example.cube.chat.preview.HashBitmapGenerator;
+import com.example.cube.chat.preview.PdfPreview;
+import com.example.cube.chat.preview.WordPreview;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -80,4 +92,56 @@ public class ImageData {
 
         return new ImageData(stream.toByteArray(), width, height);
     }
+
+    public ImageData convertFilePreview(String fileName, String url,String hash) throws IOException {
+        Bitmap bitmap = null;
+        if (url.endsWith(".pdf")) {
+            bitmap = PdfPreview.getPdfFirstPage(new File(url), 0, 400, 600);
+        } else if (url.endsWith(".docx")) {
+            bitmap = WordPreview.renderDocxToBitmap(new File(url), 400, 600); // Ширина та висота прев'ю
+            if (bitmap == null) {
+                bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+            }
+        } else {
+            bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+        }
+
+        if (bitmap == null) {
+            throw new IOException("Failed to decode image from URL: " + url);
+        }
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        // Компресія в JPEG з якістю 80%
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+
+        // Закриваємо потік після використання
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new ImageData(stream.toByteArray(), width, height);
+    }
+
+
+    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        if (drawable instanceof VectorDrawable) {
+            VectorDrawable vectorDrawable = (VectorDrawable) drawable;
+            Bitmap bitmap = Bitmap.createBitmap(400, 600, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            vectorDrawable.draw(canvas);
+            return bitmap;
+        } else {
+            Log.e("VectorToBitmap", "Drawable is not a vector drawable");
+            return null;
+        }
+    }
+
 }
