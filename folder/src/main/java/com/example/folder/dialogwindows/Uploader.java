@@ -15,7 +15,7 @@ public class Uploader {
     private FileOMG fileOMG;
     String messageId;
     Context context;
-    private  String server_address; // Змініть IP на ваш
+    private final String server_address; // Змініть IP на ваш
     public Uploader(Context context, String messageId, String server_address) {
         this.context=context;
         this.fileOMG=(FileOMG)context;

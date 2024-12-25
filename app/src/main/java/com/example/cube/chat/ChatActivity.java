@@ -31,7 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.folder.Folder;
-import com.example.folder.dialogwindows.Open;
+import com.example.folder.dialogwindows.FileExplorer;
 import com.example.folder.file.FileOMG;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
@@ -168,7 +168,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
         });
 
-        binding.attachmentBtn.setOnClickListener(v -> new Open(ChatActivity.this));
+        binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(ChatActivity.this));
         binding.profile.setOnClickListener(view -> new QR(this, receiverId));
         binding.camera.setOnClickListener(view -> clearMessage());
     }

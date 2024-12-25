@@ -11,7 +11,6 @@ import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
 import com.example.emoji.emoji.MyEmoji;
 import com.example.folder.dialogwindows.Downloader;
-import com.example.folder.dialogwindows.Open;
 
 import java.io.File;
 import java.net.MalformedURLException;

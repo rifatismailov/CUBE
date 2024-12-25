@@ -27,31 +27,28 @@ import java.util.UUID;
  * Клас Open відповідає за відображення діалогового вікна, яке дозволяє
  * користувачеві переглядати файли та директорії, а також завантажувати файли на сервер.
  */
-public class Open implements AdapterView.OnItemClickListener {
+public class FileExplorer implements AdapterView.OnItemClickListener {
 
-    private AlertDialog alertDialog;
     private final Context context;
     private final List<Search> arrayList = new ArrayList<>();
+    private final Folder folder;
+    private final String DIR = Environment.getExternalStorageDirectory().toString();
+    private final String messageId;
+    private AlertDialog alertDialog;
     private SearchAdapter searchAdapter;
     private ListView listView;
     private String directory;
     private ImageButton back;
-    private final Folder folder;
-    private TextView infoFile;
-
-    public static final String DIR = Environment.getExternalStorageDirectory().toString();
-    private final Activity activity;
     private String fileName;
-    private String messageId;
 
     /**
      * Конструктор класу Open.
+     *
      * @param context Контекст, у якому працює діалог.
      */
-    public Open(Context context) {
+    public FileExplorer(Context context) {
         this.directory = DIR;
         this.context = context;
-        this.activity = (Activity) context;
         this.folder = (Folder) context;
         messageId = UUID.randomUUID().toString();
         showDialog();
@@ -62,7 +59,7 @@ public class Open implements AdapterView.OnItemClickListener {
      */
     private void showDialog() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-        View layout = activity.getLayoutInflater().inflate(R.layout.dialog_open, null);
+        View layout = ((Activity) context).getLayoutInflater().inflate(R.layout.dialog_open, null);
         dialog.setView(layout);
         alertDialog = dialog.show();
         Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -73,12 +70,12 @@ public class Open implements AdapterView.OnItemClickListener {
         back = layout.findViewById(R.id.back);
         back.setOnClickListener(v -> navigateBack());
 
-        infoFile = layout.findViewById(R.id.infoFile);
         displayDirectoryContents(directory);
     }
 
     /**
      * Отримання списку файлів і папок у директорії.
+     *
      * @param directory Шлях до директорії.
      * @return Масив назв файлів і папок.
      */
@@ -89,6 +86,7 @@ public class Open implements AdapterView.OnItemClickListener {
 
     /**
      * Відображення вмісту директорії.
+     *
      * @param path Шлях до директорії.
      */
     public void displayDirectoryContents(String path) {
@@ -128,10 +126,11 @@ public class Open implements AdapterView.OnItemClickListener {
 
     /**
      * Обробка кліку на елемент списку.
-     * @param parent Батьківський адаптер.
-     * @param view Натиснутий елемент.
+     *
+     * @param parent   Батьківський адаптер.
+     * @param view     Натиснутий елемент.
      * @param position Позиція елемента.
-     * @param id ID елемента.
+     * @param id       ID елемента.
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -149,12 +148,13 @@ public class Open implements AdapterView.OnItemClickListener {
 
     /**
      * Завантаження файлу на сервер.
+     *
      * @param file Файл для завантаження.
      */
     private void uploadFile(File file) {
-        fileName=file.getName();
+        fileName = file.getName();
         String serverUrl = "http://192.168.1.237:8020/api/files/upload";
-        Uploader uploader = new Uploader( context, messageId, serverUrl);
+        Uploader uploader = new Uploader(context, messageId, serverUrl);
 
         try {
             uploader.uploadFile(file);
@@ -170,7 +170,7 @@ public class Open implements AdapterView.OnItemClickListener {
      */
     public void onFinish() {
         FileDetect fileDetect = new FileDetect();
-        folder.addFile(messageId,directory+"/"+fileName, fileDetect.getFileHash(directory+"/"+fileName, "SHA-256"));
+        folder.addFile(messageId, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
         alertDialog.cancel();
     }
 }

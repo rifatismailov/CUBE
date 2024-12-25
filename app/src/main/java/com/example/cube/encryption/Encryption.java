@@ -1,5 +1,11 @@
 package com.example.cube.encryption;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -155,6 +161,68 @@ public class Encryption {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
             return new String(cipher.doFinal(encrypted));
+        }
+
+
+        /**
+         * Метод для серіалізації об'єкта, шифрування його та запису у файл.
+         *
+         * @param o          Об'єкт, який потрібно серіалізувати та зашифрувати.
+         * @param fileName   Назва файлу, в який буде записано зашифровані дані.
+         * @param secretKey  Ключ для шифрування (SecretKey).
+         * @throws Exception У випадку помилок серіалізації, шифрування чи запису у файл.
+         */
+        public void saveToFile(Object o, String fileName, SecretKey secretKey) throws Exception {
+            // 1. Серіалізація об'єкта в масив байтів
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            try (ObjectOutputStream oos = new ObjectOutputStream(byteOut)) {
+                oos.writeObject(o); // Записуємо об'єкт у потік
+            }
+
+            // 2. Шифрування масиву байтів за допомогою AES
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey); // Ініціалізуємо шифрування
+            byte[] encryptedBytes = cipher.doFinal(byteOut.toByteArray()); // Шифруємо дані
+
+            // 3. Запис зашифрованих байтів у файл
+            try (FileOutputStream fos = new FileOutputStream(fileName)) {
+                fos.write(encryptedBytes);
+            }
+        }
+
+        /**
+         * Метод для зчитування даних із файлу, їх розшифрування та десеріалізації в об'єкт.
+         *
+         * @param fileName   Назва файлу, з якого потрібно зчитати дані.
+         * @param secretKey  Ключ для розшифрування (SecretKey).
+         * @return Десеріалізований об'єкт, отриманий після розшифрування.
+         * @throws Exception У випадку помилок зчитування, розшифрування чи десеріалізації.
+         */
+        public Object loadFromFile(String fileName, SecretKey secretKey) throws Exception {
+            byte[] encryptedBytes;
+
+            // 1. Зчитуємо байти із файлу
+            try (FileInputStream fis = new FileInputStream(fileName);
+                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+                byte[] data = new byte[1024]; // Буфер для зчитування
+                int bytesRead;
+                while ((bytesRead = fis.read(data, 0, data.length)) != -1) {
+                    buffer.write(data, 0, bytesRead); // Записуємо зчитані байти в буфер
+                }
+                encryptedBytes = buffer.toByteArray(); // Отримуємо всі зашифровані байти
+            }
+
+            // 2. Розшифровуємо зчитані байти за допомогою AES
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey); // Ініціалізуємо розшифрування
+            byte[] decryptedBytes = cipher.doFinal(encryptedBytes); // Розшифровуємо дані
+
+            // 3. Десеріалізація розшифрованих байтів в об'єкт
+            ByteArrayInputStream byteIn = new ByteArrayInputStream(decryptedBytes);
+            try (ObjectInputStream ois = new ObjectInputStream(byteIn)) {
+                return ois.readObject(); // Десеріалізуємо об'єкт
+            }
         }
     }
 
