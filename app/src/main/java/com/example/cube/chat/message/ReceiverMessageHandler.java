@@ -11,6 +11,8 @@ import com.example.cube.R;
 import com.example.cube.control.Check;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.textvisualization.visualization.Watcher;
+import com.google.android.material.shape.CornerFamily;
+import com.google.android.material.shape.ShapeAppearanceModel;
 
 public class ReceiverMessageHandler {
     private Context context;
@@ -30,31 +32,55 @@ public class ReceiverMessageHandler {
         if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
-
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-            viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
+            if(message.getImageWidth()>2000)
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
+            else
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
             viewHolder.binding.message.setText(message.getMessage());
         } else if (message.getCheck().equals(Check.Image) && message.getMessage().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.GONE);
+            viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.aboutFile.setVisibility(View.GONE);
 
-            viewHolder.binding.file.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-            viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
-        } else if (message.getCheck().equals(Check.File) && !message.getUrl().toString().isEmpty()) {
+
+            if(message.getImageWidth()>2000)
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
+            else
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
+        } else if (message.getCheck().equals(Check.File)) {
+            ShapeAppearanceModel shapeAppearanceModel = new ShapeAppearanceModel()
+                    .toBuilder()
+                    .setTopLeftCorner(CornerFamily.ROUNDED, 0f) // Верхній лівий кут
+                    .setTopRightCorner(CornerFamily.ROUNDED, 10f) // Верхній правий кут
+                    .setBottomLeftCorner(CornerFamily.ROUNDED, 10f)  // Нижній лівий кут (прямий)
+                    .setBottomRightCorner(CornerFamily.ROUNDED, 10f) // Нижній правий кут (прямий)
+                    .build();
+            viewHolder.binding.image.setShapeAppearanceModel(shapeAppearanceModel);
             viewHolder.binding.file.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.image.setVisibility(View.GONE);
-            //viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
-            viewHolder.binding.message.setText(message.getUrl().toString() + "\n" + message.getMessage());
+            viewHolder.binding.image.setVisibility(View.VISIBLE);
+            viewHolder.binding.aboutFile.setVisibility(View.VISIBLE);
 
+            if(message.getImage()!=null) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() , message.getImageHeight() , false));
+            }
+            viewHolder.binding.fileHash.setText("AAA"+message.getHas());
+            viewHolder.binding.fileType.setText("AAA"+message.getTypeFile());
+            viewHolder.binding.fileSize.setText("AAA"+message.getFileSize());
+            viewHolder.binding.fileDateCreate.setText("AAA"+message.getDataCreate());
+            viewHolder.binding.file.setText(message.getFileName());
+            viewHolder.binding.message.setText(message.getMessage());
         } else {
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             viewHolder.binding.image.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
@@ -63,7 +89,6 @@ public class ReceiverMessageHandler {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.feeling.setVisibility(View.VISIBLE);
         } else {
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
             viewHolder.binding.feeling.setVisibility(View.GONE);
         }

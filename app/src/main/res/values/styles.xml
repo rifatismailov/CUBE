@@ -76,15 +76,17 @@
         <item name="android:padding">0dp</item>
         <item name="android:background">@android:color/transparent</item>
     </style>
-    <style name="AppTheme.CornerCut" parent="ShapeAppearance.MaterialComponents.SmallComponent">
-
+    <style name="AppTheme.CornerCutRight" parent="ShapeAppearance.MaterialComponents.SmallComponent">
         <item name="cornerSizeTopRight">0dp</item>
         <item name="cornerSizeTopLeft">20dp</item>
-        <item name="cornerSizeBottomRight">20dp</item>
-        <item name="cornerSizeBottomLeft">20dp</item>
-
-
+        <item name="cornerSizeBottomRight">5dp</item>
+        <item name="cornerSizeBottomLeft">5dp</item>
     </style>
-
+    <style name="AppTheme.CornerCutLeft" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeBottomRight">5dp</item>
+        <item name="cornerSizeBottomLeft">5dp</item>
+    </style>
 
 </resources>

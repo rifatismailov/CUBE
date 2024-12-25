@@ -48,9 +48,7 @@ public class Operation {
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
 
             // Обробка різних операцій на основі отриманого повідомлення
-            if (operation.equals(FIELD.MESSAGE.getFIELD())) {
-                operable.addMessage(message);
-            } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
+            if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
                 operable.addHandshake(envelope);
                 operable.addMessage(message);
             } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
@@ -58,6 +56,8 @@ public class Operation {
                 operable.addMessage(message);
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
                 // Обробка статусних повідомлень
+                operable.addMessage(message);
+            } else {
                 operable.addMessage(message);
             }
         } catch (JSONException e) {
@@ -69,7 +69,7 @@ public class Operation {
      * Відкриває збережені повідомлення після певної затримки, щоб дозволити активності чату ініціалізуватися.
      * Метод використовує Handler для відкладеного виконання на основному потоці.
      *
-     * @param receiverId Ідентифікатор отримувача повідомлення.
+     * @param receiverId  Ідентифікатор отримувача повідомлення.
      * @param saveMessage Словник збережених повідомлень.
      */
     public void openSaveMessage(String receiverId, HashMap<Integer, Envelope> saveMessage) {
@@ -97,10 +97,10 @@ public class Operation {
      * Зберігає отримане повідомлення у словнику та оновлює кількість повідомлень для відповідного користувача.
      * Також оновлюється адаптер для відображення змін у списку користувачів.
      *
-     * @param envelope Дані повідомлення, яке потрібно зберегти.
+     * @param envelope    Дані повідомлення, яке потрібно зберегти.
      * @param saveMessage Словник для зберігання повідомлень.
-     * @param numMessage Лічильник номерів повідомлень.
-     * @param userList Список користувачів для оновлення.
+     * @param numMessage  Лічильник номерів повідомлень.
+     * @param userList    Список користувачів для оновлення.
      * @return Оновлений лічильник номерів повідомлень.
      */
     public int saveMessage(Envelope envelope, HashMap<Integer, Envelope> saveMessage, int numMessage, List<UserData> userList) {
@@ -126,8 +126,8 @@ public class Operation {
                 operable.addAESKey(envelope.getSenderId(), receivedMessage);
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
                 //розкодувати коли реалізуємо збереження повідомлень у директорії
-               // saveMessage.put(numMessage, envelope);
-               // numMessage++;
+                // saveMessage.put(numMessage, envelope);
+                // numMessage++;
                 // Обробка статусних повідомлень
                 String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
                 String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());

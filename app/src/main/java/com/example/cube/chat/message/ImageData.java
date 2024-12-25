@@ -92,8 +92,25 @@ public class ImageData {
 
         return new ImageData(stream.toByteArray(), width, height);
     }
+    public ImageData convertFilePreview(String fileName, String hash) throws IOException {
+        Bitmap bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-    public ImageData convertFilePreview(String fileName, String url,String hash) throws IOException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        // Компресія в JPEG з якістю 80%
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+
+        // Закриваємо потік після використання
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ImageData(stream.toByteArray(), width, height);
+    }
+    public ImageData convertFilePreviewLocal(String fileName, String url, String hash) throws IOException {
         Bitmap bitmap = null;
         if (url.endsWith(".pdf")) {
             bitmap = PdfPreview.getPdfPreview(new File(url), 0, 400, 600);
@@ -124,7 +141,6 @@ public class ImageData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return new ImageData(stream.toByteArray(), width, height);
     }
 

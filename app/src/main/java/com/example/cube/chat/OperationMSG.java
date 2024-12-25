@@ -3,6 +3,7 @@ package com.example.cube.chat;
 import android.net.Uri;
 import android.util.Log;
 
+import com.example.cube.chat.message.ImageData;
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.FIELD;
 import com.example.cube.control.Side;
@@ -39,6 +40,7 @@ public class OperationMSG {
             Envelope envelope = new Envelope(object);
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
+            Log.e("Listener", "operation " + operation);
 
             // Обробляємо дані від Activity, наприклад, оновлюємо UI
             if (operation.equals(FIELD.MESSAGE.getFIELD())) {
@@ -52,10 +54,16 @@ public class OperationMSG {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), senderKey);
                 String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), senderKey);
-                Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), Side.Receiver, messageID);
+                ImageData imageData = new ImageData().convertFilePreview(fileUrl, fileHash);
+
+                Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Receiver, messageID);
+                Log.e("Listener", "MessageListener");
                 message.setUrl(Uri.parse(fileUrl));
                 message.setHas(fileHash);
-                message.setHas(envelope.getFileHash());
+                message.setFileName(fileUrl);
+                message.setFileSize("100mb");
+                message.setTypeFile("IMAGE");
+                message.setDataCreate("10.10.10 12.00.00");
                 operableMSG.readMessageFile(message);
 
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
@@ -103,7 +111,13 @@ public class OperationMSG {
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             String rURL = Encryption.AES.encrypt(urls, receiverKey);
             String rHAS = Encryption.AES.encrypt(has, receiverKey);
-            Envelope envelope = new Envelope(senderId, receiverId, "file", rMessage, rURL, rHAS, messageId);
+            String operation;
+            if (url.endsWith(".jpg") || url.endsWith(".png")) {
+                operation = FIELD.IMAGE.getFIELD();
+            } else {
+                operation = FIELD.FILE.getFIELD();
+            }
+            Envelope envelope = new Envelope(senderId, receiverId, operation, rMessage, rURL, rHAS, messageId);
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
 

@@ -188,6 +188,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
     private void handleReceivedData(String data) {
+        Log.e("Listener","Data "+data);
+
         new OperationMSG(this).onReceived(senderKey, data);
     }
 
@@ -259,7 +261,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 addMessageFile(message);
                 new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
             } else {
-                ImageData imageData = new ImageData().convertFilePreview(fileName,url,has);
+                ImageData imageData = new ImageData().convertFilePreviewLocal(fileName,url,has);
                 Message message = new Message("There will be information about your message ", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
                 message.setFileName(fileName);
                 message.setFileSize("100mb");
