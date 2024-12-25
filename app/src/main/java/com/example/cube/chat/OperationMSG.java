@@ -62,8 +62,8 @@ public class OperationMSG {
                 message.setHas(fileHash);
                 message.setFileName(fileUrl);
                 message.setFileSize("100mb");
-                message.setTypeFile("IMAGE");
-                message.setDataCreate("10.10.10 12.00.00");
+                message.setTypeFile(FIELD.FILE.getFIELD());
+                message.setDataCreate("11.11.11 12.12.12");
                 operableMSG.readMessageFile(message);
 
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
@@ -107,7 +107,7 @@ public class OperationMSG {
 
     public void onSendFile(String senderId, String receiverId, String message, String url, String has, String receiverKey, String messageId) {
         try {
-            String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
+            String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             String rURL = Encryption.AES.encrypt(urls, receiverKey);
             String rHAS = Encryption.AES.encrypt(has, receiverKey);

@@ -1,6 +1,7 @@
 package com.example.cube.chat.message;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -88,8 +89,14 @@ public class ClickListeners {
             viewHolder.binding.file.setOnClickListener(v -> {
                 if (!message.getUrl().toString().startsWith("http")) {
                     if (new File(message.getUrl().toString()).exists() && new File(message.getUrl().toString()).isFile()) {
-                        // URL url = new URL("http://192.168.193.183:8080/api/files/download/" + new File(message.getUrl().toString()).getName()); // Змініть IP на ваш
-                        // new Open(context,url);
+//                        URL url = null; // Змініть IP на ваш
+//                        try {
+//                            url = new URL(new File(message.getUrl().toString()).getName());
+//                            Log.e("Listener",url.toString());
+//                        } catch (MalformedURLException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                        new Open(context,url,position);
                         Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
                     }
                     //відкриваємо за допомогою додатку для файлу
@@ -99,6 +106,8 @@ public class ClickListeners {
                          * Ми вже знаємо на який сервер звертатися та по якоми параметру */
                         //Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
                         URL url = new URL(message.getUrl().toString()); // Змініть IP на ваш
+                        Log.e("Listener",url.toString());
+
                         new Open(context, url,position);
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);

@@ -306,6 +306,11 @@ public class Message implements Serializable {
     // Сеттер для URL зображення
     public void setUrl(Uri selectedUrl) {
         this.selectedUrl = selectedUrl;
+        if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
+            this.check = Check.Image;
+        }else {
+            this.check = Check.File;
+        }
     }
 
     public boolean isStatusFile() {

@@ -206,7 +206,7 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
                 @Override
                 public void run() {
                     FileDetect fileDetect = new FileDetect();
-                    folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory, "SHA-256"));
+                    folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
                     LOGGER.severe("Завершено завантаження");
 
                     activity.runOnUiThread(new Runnable() {

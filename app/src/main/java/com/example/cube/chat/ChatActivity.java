@@ -286,24 +286,44 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private final ExecutorService update_execService = Executors.newSingleThreadExecutor();
 
     public void updateItemAsync(int position, @NonNull String url, String has) {
+        Message message=messages.get(position);
         update_execService.execute(() -> {
             /**ОБЛАСТЬ ЦЬОГО КОДУ ТРЕБА ПЕРЕРРОБИТИ ТАК ЯК МИ СТВОРЮЄМО НОВИЙ ОБЄКТ Message А ЦЕ НЕ КОРЕКТНО ТОМУ ЩО КОЖНЕ ПОВІДОМЛЕННЯ МАЄ ID НОМЕР
              * ЗА ЯКИМ З НИМ МОЖНО ВЗАЄМОДІЯТИ */
             try {
-                Message message;
+                String fileName=new File(url).getName();
+
                 if (url.endsWith(".jpg") || url.endsWith(".png")) {
                     ImageData imageData = new ImageData().convertImage(url);
-                    message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender);
+                    message.setUrl(Uri.parse(url));
+                    message.setImage(imageData.getImageBytes());
+                    message.setImageWidth(imageData.getWidth());
+                    message.setImageHeight(imageData.getHeight());
+                    message.setFileName(fileName);
+                    message.setFileSize("100mb");
+                    message.setTypeFile("IMAGE");
+                    message.setHas(has);
+                    message.setDataCreate("10.10.10 12.00.00");
                 } else {
-                    // message = new Message("There will be information about your message :\n", Uri.parse(url), Side.Receiver);
-                    //message.setHas(has);
+                    ImageData imageData = new ImageData().convertFilePreviewLocal(fileName,url,has);
+                    message.setUrl(Uri.parse(url));
+                    message.setImage(imageData.getImageBytes());
+                    message.setImageWidth(imageData.getWidth());
+                    message.setImageHeight(imageData.getHeight());
+                    message.setFileName(fileName);
+                    message.setFileSize("100mb");
+                    message.setTypeFile("IMAGE");
+                    message.setHas(has);
+                    message.setDataCreate("10.10.10 12.00.00");
                 }
 
                 // Оновлюємо адаптер у головному потоці після обробки
                 runOnUiThread(() -> {
-                    //adapter.updateItem(position, message);
-                    // adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-                    // binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+                    manager.updateMessage(message);
+
+                    adapter.updateItem(position, message);
+                    adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
+                   // binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
                 });
 
             } catch (Exception e) {

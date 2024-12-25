@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.Check;
@@ -138,6 +139,7 @@ public class MessageManager {
      */
     public int updateMessage(Message message) {
         ContentValues values = new ContentValues();
+        Log.e("Listener", "Id "+message.getMessageId());
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSenderId());
         values.put(COLUMN_RECEIVER, message.getReceiverId());
@@ -147,27 +149,30 @@ public class MessageManager {
             case Message:
                 break;
 
-            case File:
-                if (message.getUrl() != null) {
+            case File: // Для повідомлення з файлом
+                if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
                     values.put(COLUMN_FILE_SIZE,message.getFileSize());
                     values.put(COLUMN_TYPE_FILE,message.getTypeFile());
                     values.put(COLUMN_FILE_HASH,message.getHas());
                     values.put(COLUMN_DATE_CREATE,message.getDataCreate());
-
+                }
+                if (message.getImage() != null) {
+                    values.put(COLUMN_IMAGE, message.getImage());
+                    values.put(COLUMN_IMAGE_WIDTH, message.getImageWidth());
+                    values.put(COLUMN_IMAGE_HEIGHT, message.getImageHeight());
                 }
                 break;
 
-            case Image:
-                if (message.getUrl() != null) {
+            case Image: // Для повідомлення із зображенням
+                if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
                     values.put(COLUMN_FILE_SIZE,message.getFileSize());
                     values.put(COLUMN_TYPE_FILE,message.getTypeFile());
                     values.put(COLUMN_FILE_HASH,message.getHas());
                     values.put(COLUMN_DATE_CREATE,message.getDataCreate());
-
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());

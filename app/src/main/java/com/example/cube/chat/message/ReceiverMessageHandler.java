@@ -70,10 +70,10 @@ public class ReceiverMessageHandler {
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() , message.getImageHeight() , false));
             }
-            viewHolder.binding.fileHash.setText("AAA"+message.getHas());
-            viewHolder.binding.fileType.setText("AAA"+message.getTypeFile());
-            viewHolder.binding.fileSize.setText("AAA"+message.getFileSize());
-            viewHolder.binding.fileDateCreate.setText("AAA"+message.getDataCreate());
+            viewHolder.binding.fileHash.setText(message.getHas());
+            viewHolder.binding.fileType.setText(message.getTypeFile());
+            viewHolder.binding.fileSize.setText(message.getFileSize());
+            viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
             viewHolder.binding.file.setText(message.getFileName());
             viewHolder.binding.message.setText(message.getMessage());
         } else {
