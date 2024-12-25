@@ -23,20 +23,19 @@ import javax.crypto.SecretKey;
 public class FileEncryption {
     private static final String ALGORITHM = "AES";
     private static final int BUFFER_SIZE = 4096; // Розмір блоку для обробки (4KB)
-    private FileOMG fileOMG;
-    String messageId;
-    Context context;
+    private final FileOMG fileOMG;
+    private final String messageId;
+    private final Context context;
     private final String server_address; // Змініть IP на ваш
-    private String encrypFile;
-    String encryptedFileName;
-    File inputFile;
-    SecretKey secretKey;
+    private String encryptedFileName;
+    private File inputFile;
+    private SecretKey secretKey;
     public FileEncryption(Context context, String messageId, String server_address) {
         this.context = context;
         this.fileOMG = (FileOMG) context;
         this.messageId = messageId;
         this.server_address = server_address;
-        encrypFile = UUID.randomUUID().toString();
+
     }/**
      * @param inputFile  Оригінальний файл для шифрування.
      * @param secretKey  Секретний ключ для шифрування.
