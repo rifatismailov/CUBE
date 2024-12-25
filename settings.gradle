@@ -19,6 +19,5 @@ include ':app'
 include ':folder'
 include ':textvisualization'
 include ':myemoji'
-include ':fileexchange'
 include ':qrcode'
-include ':cubeNavigation'
+
