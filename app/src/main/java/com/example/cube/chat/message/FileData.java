@@ -17,16 +17,18 @@ import com.example.cube.chat.preview.WordPreview;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class ImageData {
+public class FileData {
     private byte[] imageBytes;
     private int width;
     private int height;
 
-    public ImageData() {
+    public FileData() {
     }
 
-    public ImageData(byte[] imageBytes, int width, int height) {
+    public FileData(byte[] imageBytes, int width, int height) {
         this.imageBytes = imageBytes;
         this.width = width;
         this.height = height;
@@ -44,7 +46,41 @@ public class ImageData {
         return height;
     }
 
-    public ImageData convertImage(String url) throws IOException {
+    public  String getFileSize(File file) {
+        if (file.exists() && file.isFile()) {
+            long sizeInBytes = file.length();
+            double sizeInMB = (double) sizeInBytes / (1024 * 1024);
+            return String.format("%.2f MB", sizeInMB);
+        } else {
+            return "File not found or not accessible";
+        }
+    }
+
+    public  String getFileType(File file) {
+        if (file.exists() && file.isFile()) {
+            String fileName = file.getName();
+            int dotIndex = fileName.lastIndexOf('.');
+            if (dotIndex != -1 && dotIndex < fileName.length() - 1) {
+                return fileName.substring(dotIndex + 1).toUpperCase();
+            } else {
+                return "Unknown";
+            }
+        } else {
+            return "File not found or not accessible";
+        }
+    }
+
+    public  String getFileDate(File file) {
+        if (file.exists() && file.isFile()) {
+            long lastModified = file.lastModified();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+            return sdf.format(new Date(lastModified));
+        } else {
+            return "File not found or not accessible";
+        }
+    }
+
+    public FileData convertImage(String url) throws IOException {
         // Перевірка на існування файлу
         File file = new File(url);
         if (!file.exists()) {
@@ -90,10 +126,11 @@ public class ImageData {
             e.printStackTrace();
         }
 
-        return new ImageData(stream.toByteArray(), width, height);
+        return new FileData(stream.toByteArray(), width, height);
     }
-    public ImageData convertFilePreview(String fileName, String hash) throws IOException {
-        Bitmap bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+
+    public FileData convertFilePreview(String fileName, String hash) throws IOException {
+        Bitmap bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 
@@ -108,19 +145,20 @@ public class ImageData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ImageData(stream.toByteArray(), width, height);
+        return new FileData(stream.toByteArray(), width, height);
     }
-    public ImageData convertFilePreviewLocal(String fileName, String url, String hash) throws IOException {
+
+    public FileData convertFilePreviewLocal(String fileName, String url, String hash) throws IOException {
         Bitmap bitmap = null;
         if (url.endsWith(".pdf")) {
             bitmap = PdfPreview.getPdfPreview(new File(url), 0, 400, 600);
         } else if (url.endsWith(".docx")) {
             bitmap = WordPreview.renderDocxToBitmap(new File(url), 400, 600); // Ширина та висота прев'ю
             if (bitmap == null) {
-                bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+                bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
             }
         } else {
-            bitmap = HashBitmapGenerator.generateHashBitmap(fileName,hash,400, 600);
+            bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
         }
 
         if (bitmap == null) {
@@ -141,7 +179,7 @@ public class ImageData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ImageData(stream.toByteArray(), width, height);
+        return new FileData(stream.toByteArray(), width, height);
     }
 
 

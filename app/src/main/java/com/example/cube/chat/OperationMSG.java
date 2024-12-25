@@ -3,7 +3,7 @@ package com.example.cube.chat;
 import android.net.Uri;
 import android.util.Log;
 
-import com.example.cube.chat.message.ImageData;
+import com.example.cube.chat.message.FileData;
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.FIELD;
 import com.example.cube.control.Side;
@@ -54,9 +54,9 @@ public class OperationMSG {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), senderKey);
                 String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), senderKey);
-                ImageData imageData = new ImageData().convertFilePreview(fileUrl, fileHash);
+                FileData fileData = new FileData().convertFilePreview(fileUrl, fileHash);
 
-                Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Receiver, messageID);
+                Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Receiver, messageID);
                 Log.e("Listener", "MessageListener");
                 message.setUrl(Uri.parse(fileUrl));
                 message.setHas(fileHash);

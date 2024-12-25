@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.cube.chat.message.BundleProcessor;
-import com.example.cube.chat.message.ImageData;
+import com.example.cube.chat.message.FileData;
 import com.example.cube.R;
 import com.example.cube.control.FIELD;
 import com.example.cube.db.DatabaseHelper;
@@ -99,7 +99,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         super.onCreate(savedInstanceState);
         dbHelper = new DatabaseHelper(this);
         db = dbHelper.getWritableDatabase();
-        manager=new MessageManager(db);
+        manager = new MessageManager(db);
 
 
         // Реєструємо ресівер для отримання даних
@@ -171,9 +171,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         binding.profile.setOnClickListener(view -> new QR(this, receiverId));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
-    private void clearMessage(){
+
+    private void clearMessage() {
         manager.deleteMessagesByReceiverId(receiverId);
-       finish();
+        finish();
     }
 
     private void showMessage() {
@@ -182,13 +183,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             messages.add(message);
         }
         runOnUiThread(() -> {
-            adapter.notifyItemInserted(messages.size() ); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() ); // Прокрутити до нового елемента
+            adapter.notifyItemInserted(messages.size()); // Повідомити, що новий елемент було вставлено
+            binding.recyclerView.smoothScrollToPosition(messages.size()); // Прокрутити до нового елемента
         });
     }
 
     private void handleReceivedData(String data) {
-        Log.e("Listener","Data "+data);
+        Log.e("Listener", "Data " + data);
 
         new OperationMSG(this).onReceived(senderKey, data);
     }
@@ -244,33 +245,25 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     @Override
     public void addFile(String url, String has) {
         try {
+            Message message;
+            FileData fileData;
             String messageId = UUID.randomUUID().toString();
-            String fileName=new File(url).getName();
+            String fileName = new File(url).getName();
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
-                ImageData imageData = new ImageData().convertImage(url);
-                Message message = new Message("", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
-                //values.put(COLUMN_FILE_SIZE,message.getFileSize());
-                //values.put(COLUMN_TYPE_FILE,message.getTypeFile());
-               // values.put(COLUMN_FILE_HASH,message.getHas());
-               // values.put(COLUMN_DATE_CREATE,message.getDataCreate());
-                message.setFileName(fileName);
-                message.setFileSize("100mb");
-                message.setTypeFile("IMAGE");
-                message.setHas(has);
-                message.setDataCreate("10.10.10 12.00.00");
-                addMessageFile(message);
-                new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
+                fileData = new FileData().convertImage(url);
+                message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
-                ImageData imageData = new ImageData().convertFilePreviewLocal(fileName,url,has);
-                Message message = new Message("There will be information about your message ", Uri.parse(url), imageData.getImageBytes(), imageData.getWidth(), imageData.getHeight(), Side.Sender, messageId);
-                message.setFileName(fileName);
-                message.setFileSize("100mb");
-                message.setTypeFile("IMAGE");
-                message.setHas(has);
-                message.setDataCreate("10.10.10 12.00.00");
-                addMessageFile(message);
-                new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
+                fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
+                message = new Message("There will be information about your message ", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             }
+            message.setFileName(fileName);
+            message.setFileSize(fileData.getFileSize(new File(url)));
+            message.setTypeFile(fileData.getFileType(new File(url)));
+            message.setHas(has);
+            message.setDataCreate(fileData.getFileDate(new File(url)));
+            addMessageFile(message);
+            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
+
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);
         }
@@ -286,44 +279,34 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private final ExecutorService update_execService = Executors.newSingleThreadExecutor();
 
     public void updateItemAsync(int position, @NonNull String url, String has) {
-        Message message=messages.get(position);
+        Message message = messages.get(position);
         update_execService.execute(() -> {
             /**ОБЛАСТЬ ЦЬОГО КОДУ ТРЕБА ПЕРЕРРОБИТИ ТАК ЯК МИ СТВОРЮЄМО НОВИЙ ОБЄКТ Message А ЦЕ НЕ КОРЕКТНО ТОМУ ЩО КОЖНЕ ПОВІДОМЛЕННЯ МАЄ ID НОМЕР
              * ЗА ЯКИМ З НИМ МОЖНО ВЗАЄМОДІЯТИ */
             try {
-                String fileName=new File(url).getName();
-
+                String fileName = new File(url).getName();
+                FileData fileData;
                 if (url.endsWith(".jpg") || url.endsWith(".png")) {
-                    ImageData imageData = new ImageData().convertImage(url);
-                    message.setUrl(Uri.parse(url));
-                    message.setImage(imageData.getImageBytes());
-                    message.setImageWidth(imageData.getWidth());
-                    message.setImageHeight(imageData.getHeight());
-                    message.setFileName(fileName);
-                    message.setFileSize("100mb");
-                    message.setTypeFile("IMAGE");
-                    message.setHas(has);
-                    message.setDataCreate("10.10.10 12.00.00");
+                    fileData = new FileData().convertImage(url);
                 } else {
-                    ImageData imageData = new ImageData().convertFilePreviewLocal(fileName,url,has);
-                    message.setUrl(Uri.parse(url));
-                    message.setImage(imageData.getImageBytes());
-                    message.setImageWidth(imageData.getWidth());
-                    message.setImageHeight(imageData.getHeight());
-                    message.setFileName(fileName);
-                    message.setFileSize("100mb");
-                    message.setTypeFile("IMAGE");
-                    message.setHas(has);
-                    message.setDataCreate("10.10.10 12.00.00");
+                    fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 }
+                message.setUrl(Uri.parse(url));
+                message.setImage(fileData.getImageBytes());
+                message.setImageWidth(fileData.getWidth());
+                message.setImageHeight(fileData.getHeight());
+                message.setFileName(fileName);
+                message.setFileSize(fileData.getFileSize(new File(url)));
+                message.setTypeFile(fileData.getFileType(new File(url)));
+                message.setHas(has);
+                message.setDataCreate(fileData.getFileDate(new File(url)));
 
                 // Оновлюємо адаптер у головному потоці після обробки
                 runOnUiThread(() -> {
                     manager.updateMessage(message);
-
                     adapter.updateItem(position, message);
                     adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-                   // binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+                    // binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
                 });
 
             } catch (Exception e) {
@@ -355,7 +338,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessage(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        manager. addMessage(message);
+        manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
@@ -367,7 +350,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessageFile(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
-        manager. addMessage(message);
+        manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
             autoScroll(message);
