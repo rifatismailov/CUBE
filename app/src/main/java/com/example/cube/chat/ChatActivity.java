@@ -168,7 +168,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
         });
 
-        binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(ChatActivity.this));
+        binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(ChatActivity.this,senderKey));
         binding.profile.setOnClickListener(view -> new QR(this, receiverId));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
@@ -242,7 +242,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void addFile(String messageId,String url, String has) {
+    public void addFile(String messageId,String url,String encFile, String has) {
         try {
             Message message;
             FileData fileData;
@@ -260,7 +260,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setHas(has);
             message.setDataCreate(fileData.getFileDate(new File(url)));
             addMessageFile(message);
-            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, has, receiverKey, messageId);
+            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, has, receiverKey, messageId);
 
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);

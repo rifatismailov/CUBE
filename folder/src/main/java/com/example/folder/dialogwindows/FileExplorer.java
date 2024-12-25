@@ -5,13 +5,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.example.folder.Folder;
 import com.example.folder.R;
@@ -23,11 +27,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * Клас Open відповідає за відображення діалогового вікна, яке дозволяє
  * користувачеві переглядати файли та директорії, а також завантажувати файли на сервер.
  */
 public class FileExplorer implements AdapterView.OnItemClickListener {
+    private static final String ALGORITHM = "AES";
 
     private final Context context;
     private final List<Search> arrayList = new ArrayList<>();
@@ -40,15 +48,18 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     private String directory;
     private ImageButton back;
     private String fileName;
+    private String senderKey;
 
     /**
      * Конструктор класу Open.
      *
-     * @param context Контекст, у якому працює діалог.
+     * @param context   Контекст, у якому працює діалог.
+     * @param senderKey
      */
-    public FileExplorer(Context context) {
+    public FileExplorer(Context context, String senderKey) {
         this.directory = DIR;
         this.context = context;
+        this.senderKey = senderKey;
         this.folder = (Folder) context;
         messageId = UUID.randomUUID().toString();
         showDialog();
@@ -132,6 +143,7 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
      * @param position Позиція елемента.
      * @param id       ID елемента.
      */
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         String selectedPath = directory + "/" + Objects.requireNonNull(searchAdapter.getItem(position)).getNumber();
@@ -151,26 +163,44 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
      *
      * @param file Файл для завантаження.
      */
-    private void uploadFile(File file) {
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    public void uploadFile(File file) {
         fileName = file.getName();
         String serverUrl = "http://192.168.1.237:8020/api/files/upload";
-        Uploader uploader = new Uploader(context, messageId, serverUrl);
 
-        try {
-            uploader.uploadFile(file);
-            onFinish();
-        } catch (InterruptedException e) {
-            Log.e("uploadFile", "Помилка завантаження файлу", e);
-        }
+        // Закриваємо діалог одразу
+        alertDialog.cancel();
+
+        // Виконуємо шифрування у фоновому потоці
+        new Thread(() -> {
+            try {
+                FileEncryption fileEncryption = new FileEncryption(context, messageId, serverUrl);
+                SecretKey secretKey = new SecretKeySpec(senderKey.getBytes(), ALGORITHM);
+                String encryptedFile = fileEncryption.getEncFile(file, secretKey);
+                ((Activity) context).runOnUiThread(() -> onFinish(encryptedFile));
+                // Шифруємо файл
+                fileEncryption.fileEncryption();
+
+                // Передаємо результат у головний потік
+
+            } catch (Exception e) {
+                Log.e("uploadFile", "Помилка завантаження файлу", e);
+
+                // Повідомлення про помилку в головному потоці
+                ((Activity) context).runOnUiThread(() ->
+                        Toast.makeText(context, "Помилка завантаження файлу", Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
     }
 
 
     /**
      * Закриття діалогового вікна та оновлення інформації у батьківському компоненті.
      */
-    public void onFinish() {
+    public void onFinish(String encFile) {
         FileDetect fileDetect = new FileDetect();
-        folder.addFile(messageId, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
+        folder.addFile(messageId, directory + "/" + fileName, encFile, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
         alertDialog.cancel();
     }
 }

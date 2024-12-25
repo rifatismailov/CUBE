@@ -8,8 +8,15 @@ import com.example.folder.file.progress.ProgressRequestBody;
 
 import okhttp3.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 public class Uploader {
     private FileOMG fileOMG;
