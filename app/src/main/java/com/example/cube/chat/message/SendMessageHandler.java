@@ -72,6 +72,8 @@ public class SendMessageHandler {
         } else {
             viewHolder.binding.image.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }

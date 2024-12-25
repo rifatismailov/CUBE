@@ -1,5 +1,7 @@
 package com.example.cube.socket;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,6 +57,7 @@ public class Listener implements Connector.Listener {
             if (message != null) {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
+                Log.e("Listener",envelope.toJson().toString());
 
                 // Якщо повідомлення від нас самих (SenderId і ReceiverId однакові).
                 if (userId.equals(envelope.getSenderId()) && listener.getReceiverId().equals(envelope.getReceiverId())) {

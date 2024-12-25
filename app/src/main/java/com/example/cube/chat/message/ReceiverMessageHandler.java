@@ -30,6 +30,8 @@ public class ReceiverMessageHandler {
         if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
             viewHolder.binding.file.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
             viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
@@ -37,6 +39,8 @@ public class ReceiverMessageHandler {
         } else if (message.getCheck().equals(Check.Image) && message.getMessage().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.GONE);
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
             viewHolder.binding.file.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
             viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / DELETE, message.getImageHeight() / DELETE, false));
@@ -44,10 +48,11 @@ public class ReceiverMessageHandler {
             viewHolder.binding.file.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.image.setVisibility(View.GONE);
-            viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
+            //viewHolder.binding.file.setImageResource(R.drawable.ic_file_hex);
             viewHolder.binding.message.setText(message.getUrl().toString() + "\n" + message.getMessage());
 
         } else {
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             viewHolder.binding.image.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
@@ -58,6 +63,7 @@ public class ReceiverMessageHandler {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.feeling.setVisibility(View.VISIBLE);
         } else {
+            viewHolder.binding.aboutFile.setVisibility(View.GONE);
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
             viewHolder.binding.feeling.setVisibility(View.GONE);
         }

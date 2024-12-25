@@ -10,7 +10,7 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
-import com.example.cube.chat.preview.HashBitmapGenerator;
+import com.example.cube.draw.HashBitmapGenerator;
 import com.example.cube.chat.preview.PdfPreview;
 import com.example.cube.chat.preview.WordPreview;
 
@@ -96,7 +96,7 @@ public class ImageData {
     public ImageData convertFilePreview(String fileName, String url,String hash) throws IOException {
         Bitmap bitmap = null;
         if (url.endsWith(".pdf")) {
-            bitmap = PdfPreview.getPdfFirstPage(new File(url), 0, 400, 600);
+            bitmap = PdfPreview.getPdfPreview(new File(url), 0, 400, 600);
         } else if (url.endsWith(".docx")) {
             bitmap = WordPreview.renderDocxToBitmap(new File(url), 400, 600); // Ширина та висота прев'ю
             if (bitmap == null) {

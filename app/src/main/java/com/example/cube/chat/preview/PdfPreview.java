@@ -10,7 +10,7 @@ import java.io.File;
 
 public class PdfPreview {
 
-    public static Bitmap getPdfFirstPage(File file, int pageIndex, int width, int height) {
+    public static Bitmap getPdfPreview(File file, int pageIndex, int width, int height) {
         try {
             // Отримати дескриптор файлу
             ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);

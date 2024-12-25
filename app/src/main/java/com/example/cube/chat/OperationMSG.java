@@ -33,7 +33,7 @@ public class OperationMSG {
      *
      * @param data Повідомлення у форматі JSON, яке потрібно обробити.
      */
-    public void onReceived(String senderKey,String data) {
+    public void onReceived(String senderKey, String data) {
         try {
             JSONObject object = new JSONObject(data);
             Envelope envelope = new Envelope(object);
@@ -44,13 +44,20 @@ public class OperationMSG {
             if (operation.equals(FIELD.MESSAGE.getFIELD())) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 if (envelope.getFileUrl() == null) {
-                    operableMSG.readMessage(new Message(rMessage, Side.Receiver,messageID));
-                } else {
-                    Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), Side.Receiver,messageID);
-                    message.setHas(envelope.getFileHash());
-                    operableMSG.readMessageFile(message);
+                    operableMSG.readMessage(new Message(rMessage, Side.Receiver, messageID));
                 }
                 //operableMSG.addMessage(messageID, envelope.getMessage());
+            } else if (operation.equals(FIELD.IMAGE.getFIELD())) {
+            } else if (operation.equals(FIELD.FILE.getFIELD())) {
+                String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
+                String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), senderKey);
+                String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), senderKey);
+                Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), Side.Receiver, messageID);
+                message.setUrl(Uri.parse(fileUrl));
+                message.setHas(fileHash);
+                message.setHas(envelope.getFileHash());
+                operableMSG.readMessageFile(message);
+
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
                 // чому getString("publicKey"); тому що відправник вказує в повідомлення метрику як publicKey
@@ -77,18 +84,20 @@ public class OperationMSG {
             Log.e("OperationMSG", "Помилка під час отримання даних : " + e);
         }
     }
-    public void onSend(String senderId,String receiverId,String message,String messageId,String receiverKey){
+
+    public void onSend(String senderId, String receiverId, String message, String messageId, String receiverKey) {
         try {
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId);
             //реалізація шифрування повідомлення
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
     }
-    public void onSendFile(String senderId,String receiverId,String message,String url,String has,String receiverKey,String messageId){
+
+    public void onSendFile(String senderId, String receiverId, String message, String url, String has, String receiverKey, String messageId) {
         try {
             String urls = "http://192.168.1.237/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
@@ -96,16 +105,18 @@ public class OperationMSG {
             String rHAS = Encryption.AES.encrypt(has, receiverKey);
             Envelope envelope = new Envelope(senderId, receiverId, "file", rMessage, rURL, rHAS, messageId);
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
+
     /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
      */
     public interface OperableMSG {
         void readMessage(Message message);
+
         void readMessageFile(Message message);
 
         void addReceiverPublicKey(String rPublicKey) throws Exception;
@@ -113,6 +124,7 @@ public class OperationMSG {
         void addReceiverKey(String receiverKey) throws Exception;
 
         void addNotifier(String messageID, String status);
+
         void sendDataBackToActivity(String message);
     }
 }

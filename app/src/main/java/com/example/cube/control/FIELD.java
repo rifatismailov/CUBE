@@ -6,6 +6,8 @@ public enum FIELD {
     RECEIVER_ID("receiverId"),
     MESSAGE_ID("messageId"),
     MESSAGE("message"),
+    IMAGE("image"),
+    FILE("file"),
     OPERATION("operation"),
     HANDSHAKE("handshake"),
     PUBLIC_KEY("publicKey"),
