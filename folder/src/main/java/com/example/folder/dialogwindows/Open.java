@@ -65,22 +65,7 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
         DialogShow();
     }
 
-    public Open(Context context, URL url, int position, String messageId) {
-        File externalDir = new File(context.getExternalFilesDir(null), "cube");
-        if (!externalDir.exists()) {
-            boolean mkdirs = externalDir.mkdirs();
-        }
-        fileName = new FileDownload(this).getFileNameFromUrl(url.toString());
-        new FileDownload(this).downloadFile(url, new File(externalDir + "/" + fileName));
-        this.directory = externalDir.getAbsolutePath();
-        this.context = context;
-        activity = (Activity) context;
-        folder = (Folder) context;
-        this.position = position;
-        DialogShow();
-        fileOMG =(FileOMG)context;
-        this.messageId=messageId;
-    }
+
 
 
 
@@ -163,8 +148,9 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
 
         // Перевірка, чи це файл або папка
         if (selectedFile.isFile()) {
+           String SERVER_URL = "http://192.168.1.237:8020/api/files/upload"; // Змініть IP на ваш
             // Якщо це файл, викликаємо uploadFile
-            FileUploader fileUploader = new FileUploader(this, context,messageId);
+            FileUploader fileUploader = new FileUploader(this, context,messageId,SERVER_URL);
             File file = new File(selectedPath);
             try {
                 fileUploader.uploadFile(file);

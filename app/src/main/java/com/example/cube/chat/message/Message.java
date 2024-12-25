@@ -19,7 +19,7 @@ public class Message implements Serializable {
     private String message;       // Текст повідомлення
     private String senderId;      // Ідентифікатор відправника
     private String receiverId;
-    private long timestamp;       // Час відправлення повідомлення
+    private String timestamp;       // Час відправлення повідомлення
     private int feeling = -1;     // Позиція емоції, пов'язаної з повідомленням (якщо присутня)
     private int emojisPosition = 0; // Позиція емодзі у повідомленні (якщо присутня)
     private Uri selectedUrl;              // Вибрана URL-адреса (якщо присутнє зображення)
@@ -277,12 +277,12 @@ public class Message implements Serializable {
     }
 
     // Геттер для часу відправки повідомлення
-    public long getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
     // Сеттер для часу відправки повідомлення
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 

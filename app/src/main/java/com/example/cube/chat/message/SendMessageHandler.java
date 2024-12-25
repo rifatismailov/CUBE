@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.View;
+
 import com.example.cube.control.Check;
 import com.example.cube.holder.SentViewHolder;
 import com.example.textvisualization.visualization.Watcher;
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class SendMessageHandler {
     private Context context;
+
     public SendMessageHandler(Context context) {
         this.context = context;
     }
@@ -30,7 +32,7 @@ public class SendMessageHandler {
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.aboutFile.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-            if(message.getImageWidth()>2000)
+            if (message.getImageWidth() > 2000)
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
             else
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
@@ -43,7 +45,7 @@ public class SendMessageHandler {
 
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
 
-            if(message.getImageWidth()>2000)
+            if (message.getImageWidth() > 2000)
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
             else
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
@@ -52,9 +54,9 @@ public class SendMessageHandler {
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.image.setVisibility(View.VISIBLE);
 
-            if(message.getImage()!=null) {
+            if (message.getImage() != null) {
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() , message.getImageHeight() , false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth(), message.getImageHeight(), false));
             }
             viewHolder.binding.fileHash.setText(message.getHas());
             viewHolder.binding.fileType.setText(message.getTypeFile());
@@ -71,7 +73,7 @@ public class SendMessageHandler {
             viewHolder.binding.message.setText(message.getMessage());
         }
 
-            // Оновлюємо messageNotifier
+        // Оновлюємо messageNotifier
         if (message.getMessageStatus() != null && message.getMessageStatus().equals("server")) {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
             viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
@@ -102,14 +104,15 @@ public class SendMessageHandler {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
         }
         viewHolder.binding.messageNotifier.setProgressRadius(30);
-
-        if(message.getProgress()==100){
+        viewHolder.binding.time.setText(message.getTimestamp());
+        if (message.getProgress() == 100) {
+            viewHolder.binding.time.setText(message.getTimestamp());
             List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);
 
             viewHolder.binding.messageNotifier.setProgress(0);
-        }else {
+        } else {
             viewHolder.binding.messageNotifier.setProgress(message.getProgress());
         }
 

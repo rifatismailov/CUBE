@@ -38,7 +38,7 @@ public class ReceiverMessageHandler {
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.aboutFile.setVisibility(View.GONE);
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-            if(message.getImageWidth()>2000)
+            if (message.getImageWidth() > 2000)
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
             else
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
@@ -51,7 +51,7 @@ public class ReceiverMessageHandler {
 
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
 
-            if(message.getImageWidth()>2000)
+            if (message.getImageWidth() > 2000)
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
             else
                 viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
@@ -69,9 +69,9 @@ public class ReceiverMessageHandler {
             viewHolder.binding.image.setVisibility(View.VISIBLE);
             viewHolder.binding.aboutFile.setVisibility(View.VISIBLE);
 
-            if(message.getImage()!=null) {
+            if (message.getImage() != null) {
                 Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() , message.getImageHeight() , false));
+                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth(), message.getImageHeight(), false));
             }
             viewHolder.binding.fileHash.setText(message.getHas());
             viewHolder.binding.fileType.setText(message.getTypeFile());
@@ -88,20 +88,22 @@ public class ReceiverMessageHandler {
             viewHolder.binding.message.setText(message.getMessage());
         }
         // Загальне налаштування feelLayout
-        if (message.getFeeling() >= 0 || message.getProgress()>0) {
+        if (message.getFeeling() >= 0 || message.getProgress() > 0 || message.getTimestamp() != null) {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+            viewHolder.binding.time.setText(message.getTimestamp());
+
         } else {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
         }
         viewHolder.binding.messageNotifier.setProgressRadius(30);
 
 
-        if(message.getProgress()==100){
+        if (message.getProgress() == 100) {
             List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
             viewHolder.binding.messageNotifier.setHashes(hashes);
             viewHolder.binding.messageNotifier.setProgress(0);
-        }else {
-            List<String> hashes = Arrays.asList( "abcdef123456", "123456abcdef");
+        } else {
+            List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
             viewHolder.binding.messageNotifier.setHashes(hashes);
             viewHolder.binding.messageNotifier.setProgress(message.getProgress());
         }

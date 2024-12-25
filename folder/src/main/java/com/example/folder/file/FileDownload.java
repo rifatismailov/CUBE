@@ -3,6 +3,8 @@ package com.example.folder.file;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
 import com.example.folder.file.progress.ProgressResponseBody;
 import okhttp3.*;
 
@@ -11,20 +13,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.logging.Logger;
 
 public class FileDownload {
-    private static final Logger LOGGER = Logger.getLogger(FileDownload.class.getName());
-    private final FileHandler fileHandler;
-
-    public FileDownload(FileHandler fileHandler) {
-        this.fileHandler = fileHandler;
+    private final DownloadHandler handler;
+    public FileDownload(DownloadHandler handler) {
+        this.handler = handler;
     }
-
     public String getFileNameFromUrl(String url) {
         return url.substring(url.lastIndexOf('/') + 1);
     }
-
     public void downloadFile(URL fileUrl, File destinationFile) {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
@@ -35,29 +32,20 @@ public class FileDownload {
                                 public void onProgressUpdate(int percentage) {
                                     // Оновлення прогресу на основному потоці
                                     new Handler(Looper.getMainLooper()).post(() -> {
-                                        fileHandler.setProgress(percentage);
-                                        LOGGER.info("Завантаження: " + percentage + "%");
-                                        if (percentage == 100) fileHandler.onFinish();
+                                        handler.setProgress(percentage);
+                                        if (percentage == 100) handler.onFinish();
                                     });
                                 }
 
                                 @Override
                                 public void onError() {
                                     // Оновлення статусу на основному потоці
-                                    new Handler(Looper.getMainLooper()).post(() -> {
-                                       // fileHandler.setProgress("Помилка під час завантаження");
-                                        LOGGER.severe("Помилка під час завантаження");
-                                    });
+                                    new Handler(Looper.getMainLooper()).post(() -> handler.showDetails("Error during download"));
                                 }
 
                                 @Override
                                 public void onFinish() {
                                     // Оновлення статусу на основному потоці
-                                    new Handler(Looper.getMainLooper()).post(() -> {
-                                       // fileHandler.setProgress("Завантаження завершено");
-                                        LOGGER.info("Завантаження завершено");
-                                        fileHandler.showDirectory(null);
-                                    });
                                 }
                             }))
                             .build();
@@ -71,39 +59,40 @@ public class FileDownload {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                LOGGER.severe("Помилка запиту: " + e.getMessage());
+                handler.showDetails(e.getMessage());
                 // Оновлення статусу на основному потоці у випадку помилки
-                new Handler(Looper.getMainLooper()).post(() -> {
-                   // fileHandler.setProgress("Помилка запиту");
-                });
+                new Handler(Looper.getMainLooper()).post(() -> handler.showDetails("Request error"));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    LOGGER.severe("Помилка відповіді сервера");
-                    return;
-                }
-
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                if (!response.isSuccessful()) handler.showDetails("Server response error");
                 // Зберігаємо завантажений файл
-                try (InputStream inputStream = response.body().byteStream();
-                     FileOutputStream outputStream = new FileOutputStream(destinationFile)) {
+                try {
+                    assert response.body() != null;
+                    try (InputStream inputStream = response.body().byteStream();
+                             FileOutputStream outputStream = new FileOutputStream(destinationFile)) {
 
-                    byte[] buffer = new byte[2048];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
+                        byte[] buffer = new byte[2048];
+                        int bytesRead;
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                        }
+                        // Виклик onFinish на основному потоці
+                        new Handler(Looper.getMainLooper()).post(handler::onFinish);
                     }
-
-                    LOGGER.info("Файл збережено: " + destinationFile.getAbsolutePath());
-                    // Виклик onFinish на основному потоці
-                    new Handler(Looper.getMainLooper()).post(() -> {
-                        fileHandler.onFinish();
-                    });
                 } catch (IOException e) {
-                    LOGGER.severe("Помилка запису файлу: " + e.getMessage());
+                    handler.showDetails( e.getMessage());
                 }
             }
         });
+    }
+
+    public interface DownloadHandler {
+        void setProgress(int progress);
+
+        void showDetails(String info);
+
+        void onFinish();
     }
 }

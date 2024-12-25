@@ -39,7 +39,9 @@ import com.example.qrcode.QRCode;
 import java.io.File;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -371,12 +373,22 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         }
     }
     @Override
-    public void setProgressShow(String messageId,int progress){
+    public void setProgressShow(String messageId,int progress,String info){
         for (int i = 0; i < messages.size(); i++) {
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
+                if(progress==100){
+                    Date currentDate = new Date();
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+                    String formattedDate = formatter.format(currentDate);
+                    message.setTimestamp(formattedDate);
+                    manager.updateMessage(message);
+                }
+                if(info.startsWith("ERROR")){
+                    message.setTimestamp(info);
+                    manager.updateMessage(message);
+                }
                 message.setProgress(progress);
-                //manager.updateMessage(message);
                 adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                 break; // Завершуємо цикл, оскільки повідомлення знайдено
             }

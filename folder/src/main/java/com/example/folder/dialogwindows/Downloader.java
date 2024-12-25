@@ -12,17 +12,19 @@ import com.example.folder.file.FileOMG;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Date;
 
-public class Downloader implements FileHandler {
+public class Downloader implements FileDownload.DownloadHandler {
 
-    Context context;
-    Activity activity;
-    FileOMG fileOMG;
-    Folder folder;
-    String fileName;
+    private final Context context;
+    private final Activity activity;
+    private final FileOMG fileOMG;
+    private final Folder folder;
+    private final String fileName;
     private final String directory;
     int position;
     String messageId;
+
     public Downloader(Context context, URL url, int position, String messageId) {
         File externalDir = new File(context.getExternalFilesDir(null), "cube");
         if (!externalDir.exists()) {
@@ -33,10 +35,10 @@ public class Downloader implements FileHandler {
         this.directory = externalDir.getAbsolutePath();
         this.context = context;
         folder = (Folder) context;
-        this.activity=(Activity) context;
-        this.fileOMG=(FileOMG)context;
+        this.activity = (Activity) context;
+        this.fileOMG = (FileOMG) context;
         this.position = position;
-        this.messageId=messageId;
+        this.messageId = messageId;
     }
 
 
@@ -44,41 +46,26 @@ public class Downloader implements FileHandler {
     public void setProgress(int progress) {
         // Оновлюємо прогрес у головному потоці
         if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //infoFile.setText(progress);
-                   fileOMG.setProgressShow(messageId,progress);
-                }
-            });
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, progress, ""));
         }
 
     }
 
     @Override
-    public void showDirectory(String analogDir) {
-
+    public void showDetails(String info) {
+        if (context instanceof Activity) {
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 0, info));
+        }
     }
 
-    @Override
-    public void closeDialog() {
-
-    }
 
     @Override
     public void onFinish() {
         try {
-
-            // Use a Handler to delay the execution without blocking the UI thread
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    FileDetect fileDetect = new FileDetect();
-                    folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
-
-
-                }
-            }, 1); // Delay of 100 milliseconds
+            new Handler().postDelayed(() -> {
+                FileDetect fileDetect = new FileDetect();
+                folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
+            }, 1);
         } catch (Exception e) {
             // Handle any exceptions here
         }

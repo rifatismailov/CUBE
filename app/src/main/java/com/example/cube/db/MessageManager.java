@@ -116,7 +116,7 @@ public class MessageManager {
         values.put(COLUMN_SIDE, message.getSide().toString());
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
-        values.put(COLUMN_TIMESTAMP, new Date().getTime());
+        values.put(COLUMN_TIMESTAMP, message.getTimestamp());
 
         database.insert(TABLE_MESSAGES, null, values);
     }
@@ -188,7 +188,9 @@ public class MessageManager {
         values.put(COLUMN_SIDE, message.getSide().toString());
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
-        values.put(COLUMN_TIMESTAMP, new Date().getTime());
+
+        values.put(COLUMN_TIMESTAMP, message.getTimestamp());
+        Log.e("Listener", "Time  "+message.getTimestamp());
 
         return database.update(TABLE_MESSAGES, values, COLUMN_MESSAGE_ID + " = ?", new String[]{message.getMessageId()});
     }
@@ -233,7 +235,8 @@ public class MessageManager {
                 message.setSide(Side.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SIDE))));
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
-                message.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                Log.e("Listener", "Time read "+cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
 
                 messages.add(message);
             } while (cursor.moveToNext());

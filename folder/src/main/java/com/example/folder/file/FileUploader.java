@@ -9,6 +9,7 @@ import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 public class FileUploader {
 
@@ -16,47 +17,37 @@ public class FileUploader {
     private FileOMG fileOMG;
     String messageId;
     Context context;
-    public FileUploader(FileHandler fileHandler, Context context, String messageId) {
+    private  String server_address; // Змініть IP на ваш
+    public FileUploader(FileHandler fileHandler, Context context, String messageId,String server_address) {
         this.fileHandler = fileHandler;
         this.context=context;
         this.fileOMG=(FileOMG)context;
         this.messageId=messageId;
+        this.server_address=server_address;
     }
 
-    private static final String SERVER_URL = "http://192.168.1.237:8020/api/files/upload"; // Змініть IP на ваш
+
 
     public void uploadFile(File file)throws InterruptedException {
 
         OkHttpClient client = new OkHttpClient();
-        //Thread.sleep(1000);
-
-        //fileHandler.closeDialog();
-        // Створюємо ProgressRequestBody для моніторингу прогресу
         ProgressRequestBody fileBody = new ProgressRequestBody(file, "application/octet-stream", new ProgressRequestBody.UploadCallbacks() {
             @Override
             public void onProgressUpdate(int percentage)  {
-               // fileHandler.setProgress("Завантаження: " + percentage + "%");
-                // Оновлюємо прогрес у головному потоці
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            fileOMG.setProgressShow(messageId,percentage);
-                        }
-                    });
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,percentage,""));
                 }
-
-               // if(percentage==100) fileHandler.closeDialog();
             }
 
             @Override
             public void onError() {
-              //  fileHandler.setProgress("Помилка під час завантаження");
+                if (context instanceof Activity) {
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: to sending"));
+                }
             }
 
             @Override
             public void onFinish() {
-           //     fileHandler.setProgress("Завантаження завершено");
             }
         });
 
@@ -68,7 +59,7 @@ public class FileUploader {
 
         // Створюємо запит
         Request request = new Request.Builder()
-                .url(SERVER_URL)
+                .url(server_address)
                 .post(requestBody)
                 .build();
 
@@ -76,13 +67,16 @@ public class FileUploader {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                System.out.println("Помилка запиту");
+                if (context instanceof Activity) {
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: "+e));
+                }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    System.out.println("Помилка відповіді сервера");
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: server is not responding."));
+
                 } else {
                     System.out.println("Відповідь сервера: " + response.body().string());
                 }
