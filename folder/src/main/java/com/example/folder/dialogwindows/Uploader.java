@@ -1,33 +1,28 @@
-package com.example.folder.file;
+package com.example.folder.dialogwindows;
 
 import android.app.Activity;
 import android.content.Context;
 
+import com.example.folder.file.FileOMG;
 import com.example.folder.file.progress.ProgressRequestBody;
 
 import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
-public class FileUploader {
-
-    private FileHandler fileHandler;
+public class Uploader {
     private FileOMG fileOMG;
     String messageId;
     Context context;
     private  String server_address; // Змініть IP на ваш
-    public FileUploader(FileHandler fileHandler, Context context, String messageId,String server_address) {
-        this.fileHandler = fileHandler;
+    public Uploader(Context context, String messageId, String server_address) {
         this.context=context;
         this.fileOMG=(FileOMG)context;
         this.messageId=messageId;
         this.server_address=server_address;
     }
-
-
-
+    
     public void uploadFile(File file)throws InterruptedException {
 
         OkHttpClient client = new OkHttpClient();

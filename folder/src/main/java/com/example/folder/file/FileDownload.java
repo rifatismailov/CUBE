@@ -27,15 +27,6 @@ public class FileDownload {
         this.handler = handler;
     }
 
-    /**
-     * Отримує ім'я файлу з URL.
-     *
-     * @param url URL файлу.
-     * @return Ім'я файлу.
-     */
-    public String getFileNameFromUrl(String url) {
-        return url.substring(url.lastIndexOf('/') + 1);
-    }
 
     /**
      * Завантажує файл з вказаного URL у зазначену папку.
