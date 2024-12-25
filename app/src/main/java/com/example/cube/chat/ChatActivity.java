@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.folder.Folder;
 import com.example.folder.dialogwindows.Open;
+import com.example.folder.file.FileOMG;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
 
@@ -46,7 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG {
+public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG, FileOMG {
     private ActivityChatBinding binding;
     private MessageManager manager;
     private MessagesAdapter adapter;
@@ -239,11 +240,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void addFile(String url, String has) {
+    public void addFile(String messageId,String url, String has) {
         try {
             Message message;
             FileData fileData;
-            String messageId = UUID.randomUUID().toString();
             String fileName = new File(url).getName();
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
                 fileData = new FileData().convertImage(url);
@@ -370,4 +370,17 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
         }
     }
+    @Override
+    public void setProgressShow(String messageId,int progress){
+        for (int i = 0; i < messages.size(); i++) {
+            Message message = messages.get(i);
+            if (message.getMessageId().equals(messageId)) {
+                message.setProgress(progress);
+                //manager.updateMessage(message);
+                adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
+                break; // Завершуємо цикл, оскільки повідомлення знайдено
+            }
+        }
+    }
+
 }

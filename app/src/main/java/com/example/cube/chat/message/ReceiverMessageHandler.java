@@ -14,6 +14,9 @@ import com.example.textvisualization.visualization.Watcher;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ReceiverMessageHandler {
     private Context context;
     final int DELETE = 2;
@@ -84,13 +87,23 @@ public class ReceiverMessageHandler {
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
-        if (message.getFeeling() >= 0) {
-            viewHolder.binding.feeling.setImageResource(message.getFeeling());
+        // Загальне налаштування feelLayout
+        if (message.getFeeling() >= 0 || message.getProgress()>0) {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-            viewHolder.binding.feeling.setVisibility(View.VISIBLE);
         } else {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
-            viewHolder.binding.feeling.setVisibility(View.GONE);
+        }
+        viewHolder.binding.messageNotifier.setProgressRadius(30);
+
+
+        if(message.getProgress()==100){
+            List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
+            viewHolder.binding.messageNotifier.setHashes(hashes);
+            viewHolder.binding.messageNotifier.setProgress(0);
+        }else {
+            List<String> hashes = Arrays.asList( "abcdef123456", "123456abcdef");
+            viewHolder.binding.messageNotifier.setHashes(hashes);
+            viewHolder.binding.messageNotifier.setProgress(message.getProgress());
         }
 
 

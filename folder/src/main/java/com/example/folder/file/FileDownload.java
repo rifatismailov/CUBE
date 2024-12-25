@@ -1,6 +1,5 @@
 package com.example.folder.file;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -16,10 +15,10 @@ import java.util.logging.Logger;
 
 public class FileDownload {
     private static final Logger LOGGER = Logger.getLogger(FileDownload.class.getName());
-    private final DoHandler doHandler;
+    private final FileHandler fileHandler;
 
-    public FileDownload(DoHandler doHandler) {
-        this.doHandler = doHandler;
+    public FileDownload(FileHandler fileHandler) {
+        this.fileHandler = fileHandler;
     }
 
     public String getFileNameFromUrl(String url) {
@@ -36,9 +35,9 @@ public class FileDownload {
                                 public void onProgressUpdate(int percentage) {
                                     // Оновлення прогресу на основному потоці
                                     new Handler(Looper.getMainLooper()).post(() -> {
-                                        doHandler.setProgress("Завантаження: " + percentage + "%");
+                                        fileHandler.setProgress(percentage);
                                         LOGGER.info("Завантаження: " + percentage + "%");
-                                        if (percentage == 100) doHandler.onFinish();
+                                        if (percentage == 100) fileHandler.onFinish();
                                     });
                                 }
 
@@ -46,7 +45,7 @@ public class FileDownload {
                                 public void onError() {
                                     // Оновлення статусу на основному потоці
                                     new Handler(Looper.getMainLooper()).post(() -> {
-                                        doHandler.setProgress("Помилка під час завантаження");
+                                       // fileHandler.setProgress("Помилка під час завантаження");
                                         LOGGER.severe("Помилка під час завантаження");
                                     });
                                 }
@@ -55,9 +54,9 @@ public class FileDownload {
                                 public void onFinish() {
                                     // Оновлення статусу на основному потоці
                                     new Handler(Looper.getMainLooper()).post(() -> {
-                                        doHandler.setProgress("Завантаження завершено");
+                                       // fileHandler.setProgress("Завантаження завершено");
                                         LOGGER.info("Завантаження завершено");
-                                        doHandler.showDirectory(null);
+                                        fileHandler.showDirectory(null);
                                     });
                                 }
                             }))
@@ -75,7 +74,7 @@ public class FileDownload {
                 LOGGER.severe("Помилка запиту: " + e.getMessage());
                 // Оновлення статусу на основному потоці у випадку помилки
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    doHandler.setProgress("Помилка запиту");
+                   // fileHandler.setProgress("Помилка запиту");
                 });
             }
 
@@ -99,7 +98,7 @@ public class FileDownload {
                     LOGGER.info("Файл збережено: " + destinationFile.getAbsolutePath());
                     // Виклик onFinish на основному потоці
                     new Handler(Looper.getMainLooper()).post(() -> {
-                        doHandler.onFinish();
+                        fileHandler.onFinish();
                     });
                 } catch (IOException e) {
                     LOGGER.severe("Помилка запису файлу: " + e.getMessage());

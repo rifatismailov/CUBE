@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
 import com.example.emoji.emoji.MyEmoji;
+import com.example.folder.dialogwindows.Downloader;
 import com.example.folder.dialogwindows.Open;
 
 import java.io.File;
@@ -108,7 +109,7 @@ public class ClickListeners {
                         URL url = new URL(message.getUrl().toString()); // Змініть IP на ваш
                         Log.e("Listener",url.toString());
 
-                        new Open(context, url,position);
+                        new Downloader(context, url,position,message.getMessageId());
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

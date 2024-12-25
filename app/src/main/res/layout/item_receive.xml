@@ -162,33 +162,40 @@
         </LinearLayout>
 
 
+        <!-- Додаткові індикатори -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="1dp"
+            android:layout_marginEnd="5dp"
             android:orientation="horizontal">
 
             <LinearLayout
                 android:id="@+id/feel_layout"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="@drawable/emoji_style"
-                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
                 android:orientation="horizontal"
                 android:visibility="invisible">
-
                 <ImageView
                     android:id="@+id/feeling"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_gravity="center"
                     android:visibility="invisible" />
-            </LinearLayout>
+                <com.example.cube.draw.MessageNotifierView
+                    android:id="@+id/messageNotifier"
+                    android:layout_width="100dp"
+                    android:layout_height="25dp"
+                    app:alignStart="false"
+                    app:spacing="10dp"
+                    />
 
+
+
+
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

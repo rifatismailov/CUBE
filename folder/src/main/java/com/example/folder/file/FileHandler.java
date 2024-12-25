@@ -1,7 +1,7 @@
 package com.example.folder.file;
 
-public interface DoHandler {
-    void setProgress(String progress);
+public interface FileHandler {
+    void setProgress(int progress);
 
     void showDirectory(String analogDir);
 

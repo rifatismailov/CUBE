@@ -36,6 +36,7 @@ public class Message implements Serializable {
     private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
     private String messageStatus;
+    private int progress;
 
 
     public Message() {
@@ -367,5 +368,13 @@ public class Message implements Serializable {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
     }
 }

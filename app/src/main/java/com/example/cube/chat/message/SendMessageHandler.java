@@ -5,20 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.view.View;
-
-import com.example.cube.R;
-import com.example.cube.chat.preview.DocxPreview;
-import com.example.cube.chat.preview.PdfPreview;
-import com.example.cube.chat.preview.WordPreview;
 import com.example.cube.control.Check;
 import com.example.cube.holder.SentViewHolder;
 import com.example.textvisualization.visualization.Watcher;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -108,7 +101,17 @@ public class SendMessageHandler {
         } else {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
         }
+        viewHolder.binding.messageNotifier.setProgressRadius(30);
 
+        if(message.getProgress()==100){
+            List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
+
+            viewHolder.binding.messageNotifier.setHashes(hashes);
+
+            viewHolder.binding.messageNotifier.setProgress(0);
+        }else {
+            viewHolder.binding.messageNotifier.setProgress(message.getProgress());
+        }
 
         new ClickListeners().setClickListeners(context, viewHolder, message);
 

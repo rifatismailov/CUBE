@@ -16,9 +16,10 @@ import android.widget.TextView;
 
 import com.example.folder.Folder;
 import com.example.folder.R;
-import com.example.folder.file.DoHandler;
+import com.example.folder.file.FileHandler;
 import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileDownload;
+import com.example.folder.file.FileOMG;
 import com.example.folder.file.FileUploader;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -37,7 +39,7 @@ import java.util.logging.Logger;
  * @convertFile За задумкою всі ці методи мають окремі класи  як @ConvertImage
  * @ConvertFile яка будуть конвертувати файли
  */
-public class Open implements AdapterView.OnItemClickListener, DoHandler {
+public class Open implements AdapterView.OnItemClickListener, FileHandler {
     private static final Logger LOGGER = Logger.getLogger(Open.class.getName());
 
     AlertDialog alertDialog;
@@ -53,7 +55,8 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
     Activity activity;
     int position;
     String fileName;
-
+    FileOMG fileOMG;
+    String messageId;
     public Open(Context context) {
         this.directory = DIR;
         this.context = context;
@@ -62,7 +65,7 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
         DialogShow();
     }
 
-    public Open(Context context, URL url, int position) {
+    public Open(Context context, URL url, int position, String messageId) {
         File externalDir = new File(context.getExternalFilesDir(null), "cube");
         if (!externalDir.exists()) {
             boolean mkdirs = externalDir.mkdirs();
@@ -75,7 +78,11 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
         folder = (Folder) context;
         this.position = position;
         DialogShow();
+        fileOMG =(FileOMG)context;
+        this.messageId=messageId;
     }
+
+
 
     private void DialogShow() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
@@ -152,14 +159,20 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
         // Оновлення шляху
         String selectedPath = directory + "/" + searchAdapter.getItem(position).getNumber();
         File selectedFile = new File(selectedPath);
+        messageId = UUID.randomUUID().toString();
 
         // Перевірка, чи це файл або папка
         if (selectedFile.isFile()) {
             // Якщо це файл, викликаємо uploadFile
-            FileUploader fileUploader = new FileUploader(this);
+            FileUploader fileUploader = new FileUploader(this, context,messageId);
             File file = new File(selectedPath);
-            fileUploader.uploadFile(file);
+            try {
+                fileUploader.uploadFile(file);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             directory = selectedPath;
+            closeDialog();
         } else if (selectedFile.isDirectory()) {
             // Якщо це папка, показуємо її вміст
             directory = selectedPath;
@@ -168,22 +181,23 @@ public class Open implements AdapterView.OnItemClickListener, DoHandler {
             // Непередбачений випадок
             Log.e("onItemClick", "Не вдалося визначити тип: " + selectedPath);
         }
+
     }
 
 
     public void closeDialog() {
         FileDetect fileDetect = new FileDetect();
         alertDialog.cancel();
-        folder.addFile(directory, fileDetect.getFileHash(directory, "SHA-256"));
+        folder.addFile(messageId,directory, fileDetect.getFileHash(directory, "SHA-256"));
     }
-
-    public void setProgress(String progress) {
+    @Override
+    public void setProgress(int progress) {
         // Оновлюємо прогрес у головному потоці
         if (context instanceof Activity) {
             ((Activity) context).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    infoFile.setText(progress);
+                    infoFile.setText(progress+" %");
                 }
             });
         }
