@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,6 +19,7 @@ import androidx.annotation.RequiresApi;
 import com.example.folder.Folder;
 import com.example.folder.R;
 import com.example.folder.file.FileDetect;
+import com.example.folder.upload.FileEncryption;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,12 +38,12 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     private static final String ALGORITHM = "AES";
 
     private final Context context;
-    private final List<Search> arrayList = new ArrayList<>();
+    private final List<Explorer> arrayList = new ArrayList<>();
     private final Folder folder;
     private final String DIR = Environment.getExternalStorageDirectory().toString();
     private final String messageId;
     private AlertDialog alertDialog;
-    private SearchAdapter searchAdapter;
+    private ExplorerAdapter explorerAdapter;
     private ListView listView;
     private String directory;
     private ImageButton back;
@@ -108,15 +108,15 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
             for (String item : dirContents) {
                 File file = new File(path + "/" + item);
                 if (file.isDirectory()) {
-                    arrayList.add(new Search(item, "time", "about", R.drawable.ic_folder, false));
+                    arrayList.add(new Explorer(item, "time", "about", R.drawable.ic_folder, false));
                 } else {
-                    arrayList.add(new Search(item, "time", "about", R.drawable.ic_file_other, false));
+                    arrayList.add(new Explorer(item, "time", "about", R.drawable.ic_file_other, false));
                 }
             }
         }
 
-        searchAdapter = new SearchAdapter(context, R.layout.iteam_row, arrayList);
-        listView.setAdapter(searchAdapter);
+        explorerAdapter = new ExplorerAdapter(context, R.layout.iteam_row, arrayList);
+        listView.setAdapter(explorerAdapter);
     }
 
     /**
@@ -146,7 +146,7 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String selectedPath = directory + "/" + Objects.requireNonNull(searchAdapter.getItem(position)).getNumber();
+        String selectedPath = directory + "/" + Objects.requireNonNull(explorerAdapter.getItem(position)).getNumber();
         File selectedFile = new File(selectedPath);
         if (selectedFile.isFile()) {
             uploadFile(selectedFile);
@@ -168,9 +168,6 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
         fileName = file.getName();
         String serverUrl = "http://192.168.1.237:8020/api/files/upload";
 
-        // Закриваємо діалог одразу
-        alertDialog.cancel();
-
         // Виконуємо шифрування у фоновому потоці
         new Thread(() -> {
             try {
@@ -180,12 +177,8 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
                 ((Activity) context).runOnUiThread(() -> onFinish(encryptedFile));
                 // Шифруємо файл
                 fileEncryption.fileEncryption();
-
-                // Передаємо результат у головний потік
-
             } catch (Exception e) {
                 Log.e("uploadFile", "Помилка завантаження файлу", e);
-
                 // Повідомлення про помилку в головному потоці
                 ((Activity) context).runOnUiThread(() ->
                         Toast.makeText(context, "Помилка завантаження файлу", Toast.LENGTH_SHORT).show()

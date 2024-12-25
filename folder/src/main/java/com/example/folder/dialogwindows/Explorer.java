@@ -1,6 +1,6 @@
 package com.example.folder.dialogwindows;
 
-public class Search {
+public class Explorer {
     public boolean isChecked;
     public boolean box;
     private String nomber;
@@ -10,7 +10,7 @@ public class Search {
     private int image;
 
 
-    public Search(String nomber, String time, String information, int image, boolean check) {
+    public Explorer(String nomber, String time, String information, int image, boolean check) {
         this.nomber = nomber;
         this.time = time;
         this.information = information;

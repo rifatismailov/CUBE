@@ -1,4 +1,4 @@
-package com.example.folder.dialogwindows;
+package com.example.folder.download;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,7 +6,6 @@ import android.os.Handler;
 
 import com.example.folder.Folder;
 import com.example.folder.file.FileDetect;
-import com.example.folder.file.FileDownload;
 import com.example.folder.file.FileOMG;
 
 import java.io.File;

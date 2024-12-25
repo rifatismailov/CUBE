@@ -1,4 +1,4 @@
-package com.example.folder.dialogwindows;
+package com.example.folder.upload;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,12 +9,10 @@ import androidx.annotation.RequiresApi;
 import com.example.folder.file.FileOMG;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.Files;
+import java.util.Base64;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
@@ -30,19 +28,23 @@ public class FileEncryption {
     private String encryptedFileName;
     private File inputFile;
     private SecretKey secretKey;
+
     public FileEncryption(Context context, String messageId, String server_address) {
         this.context = context;
         this.fileOMG = (FileOMG) context;
         this.messageId = messageId;
         this.server_address = server_address;
 
-    }/**
-     * @param inputFile  Оригінальний файл для шифрування.
-     * @param secretKey  Секретний ключ для шифрування.
-     * */
+    }
+
+    /**
+     * Отримуємо данні для шифрування та повертаємо назву зашифрованого фала .
+     * @param inputFile Оригінальний файл для шифрування.
+     * @param secretKey Секретний ключ для шифрування.
+     */
     public String getEncFile(File inputFile, SecretKey secretKey) throws Exception {
-        this.inputFile=inputFile;
-        this.secretKey=secretKey;
+        this.inputFile = inputFile;
+        this.secretKey = secretKey;
         encryptedFileName = generateEncryptedFileName(inputFile);
         return encryptedFileName;
     }
@@ -50,7 +52,6 @@ public class FileEncryption {
     /**
      * Зберігає файл із шифруванням та відстеженням прогресу.
      *
-
      * @throws Exception Якщо виникає помилка при шифруванні або збереженні файлу.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -113,13 +114,19 @@ public class FileEncryption {
         }
 
     }
-    public String getFileType(File file) throws Exception {
-        return Files.probeContentType(file.toPath());
+    private static final String TRANSFORMATION = "AES"; // Трансформація (AES)
+
+    public static String encrypt(String input, SecretKey secretKey) throws Exception {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        // Шифруємо текст
+        byte[] encryptedBytes = cipher.doFinal(input.getBytes());
+        // Повертаємо результат у вигляді рядка, закодованого в Base64
+        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
     public String generateEncryptedFileName(File inputFile) throws Exception {
         // Отримуємо тип файлу або розширення
-        String fileType = Files.probeContentType(inputFile.toPath());
-        String extension = getFileExtension(inputFile); // Альтернативний варіант отримати розширення
+        String extension = encrypt(getFileExtension(inputFile),secretKey); // Альтернативний варіант отримати розширення
 
         // Генеруємо нову назву файлу
         return inputFile.getParent() + File.separator +

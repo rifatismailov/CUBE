@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
 import com.example.emoji.emoji.MyEmoji;
-import com.example.folder.dialogwindows.Downloader;
+import com.example.folder.download.Downloader;
 
 import java.io.File;
 import java.net.MalformedURLException;

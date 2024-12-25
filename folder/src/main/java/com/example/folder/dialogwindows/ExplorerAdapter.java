@@ -17,12 +17,12 @@ import com.example.folder.R;
 
 import java.util.List;
 
-public class SearchAdapter extends ArrayAdapter<Search> {
-    private List<Search> mList;
+public class ExplorerAdapter extends ArrayAdapter<Explorer> {
+    private List<Explorer> mList;
     private Context mContext;
-    Search search;
+    Explorer explorer;
     private int resourceLayout;
-    public SearchAdapter(@NonNull Context context, int resource, List<Search> objects){
+    public ExplorerAdapter(@NonNull Context context, int resource, List<Explorer> objects){
 
         super(context,resource,objects);
         this.mList=objects;
@@ -37,15 +37,15 @@ public class SearchAdapter extends ArrayAdapter<Search> {
         View view=convertView;
         if(view==null)
             view= LayoutInflater.from(mContext).inflate(resourceLayout,null);
-           search =mList.get(position);
+           explorer =mList.get(position);
         ImageView image=view.findViewById(R.id.imageView);
-        image.setImageResource(search.getImage());
+        image.setImageResource(explorer.getImage());
         TextView textNomber=view.findViewById(R.id.txtNomber);
-        textNomber.setText(search.getNumber());
+        textNomber.setText(explorer.getNumber());
         TextView textEdad=view.findViewById(R.id.txtViewEdad);
-        textEdad.setText(search.getTime());
+        textEdad.setText(explorer.getTime());
         TextView infirmation=view.findViewById(R.id.inform);
-        infirmation.setText(search.getInformation());
+        infirmation.setText(explorer.getInformation());
 
         final CheckBox checkBox=view.findViewById(R.id.check);
         // пока Чек бокс мы не будет задействовать он нам будет нужен попоже
