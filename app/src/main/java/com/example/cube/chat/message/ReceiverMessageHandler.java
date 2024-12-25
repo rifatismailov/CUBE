@@ -19,8 +19,7 @@ import java.util.List;
 
 public class ReceiverMessageHandler {
     private Context context;
-    final int DELETE = 2;
-    private ReceiverViewHolder viewHolder;
+
 
     public ReceiverMessageHandler(Context context) {
         this.context = context;
@@ -28,9 +27,6 @@ public class ReceiverMessageHandler {
 
     @SuppressLint("SetTextI18n")
     public void setMessage(ReceiverViewHolder viewHolder, Message message) {
-        viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
-        this.viewHolder = viewHolder;
-
         viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
         if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
             viewHolder.binding.image.setVisibility(View.VISIBLE);

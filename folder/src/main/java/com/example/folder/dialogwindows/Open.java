@@ -1,5 +1,6 @@
 package com.example.folder.dialogwindows;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -40,23 +41,21 @@ import java.util.logging.Logger;
  * @ConvertFile яка будуть конвертувати файли
  */
 public class Open implements AdapterView.OnItemClickListener, FileHandler {
-    private static final Logger LOGGER = Logger.getLogger(Open.class.getName());
 
-    AlertDialog alertDialog;
-    Context context;
-    private List<Search> arrayList = new ArrayList<>();
+    private AlertDialog alertDialog;
+    private final Context context;
+    private final List<Search> arrayList = new ArrayList<>();
     private SearchAdapter searchAdapter;
     private ListView listView;
-    String directory;
-    ImageButton back;
-    Folder folder;
-    TextView infoFile;
+    private String directory;
+    private ImageButton back;
+    private final Folder folder;
+    private TextView infoFile;
     public final String DIR = Environment.getExternalStorageDirectory().toString();
-    Activity activity;
-    int position;
-    String fileName;
-    FileOMG fileOMG;
-    String messageId;
+    public Activity activity;
+    public int position;
+    public String fileName;
+    public String messageId;
     public Open(Context context) {
         this.directory = DIR;
         this.context = context;
@@ -103,12 +102,12 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
         } else {
             sDirList = arrayDir(analogDir);
         }
-        for (int i = 0; i < sDirList.length; i++) {
-            File file = new File(analogDir + "/" + sDirList[i]);
+        for (String s : sDirList) {
+            File file = new File(analogDir + "/" + s);
             if (!file.isFile()) {
-                arrayList.add(new Search(sDirList[i], "time", "about", R.drawable.ic_folder, false));
+                arrayList.add(new Search(s, "time", "about", R.drawable.ic_folder, false));
             } else {
-                arrayList.add(new Search(sDirList[i], "time", "about", R.drawable.ic_file_other, false));
+                arrayList.add(new Search(s, "time", "about", R.drawable.ic_file_other, false));
             }
         }
         searchAdapter = new SearchAdapter(context, R.layout.iteam_row, arrayList);
@@ -119,18 +118,18 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
 
     private void back() {
         try {
-            String newDirectory = "";
+            StringBuilder newDirectory = new StringBuilder();
             String[] parts = directory.split("/");
             for (int i = 0; i < parts.length - 1; i++) {
-                newDirectory = newDirectory + "/" + parts[i];
+                newDirectory.append("/").append(parts[i]);
             }
             if (newDirectory.length() < DIR.length()) {
                 showDirectory(DIR);
                 directory = DIR;
             } else {
                 if (newDirectory.length() > DIR.length()) {
-                    showDirectory(newDirectory);
-                    directory = newDirectory;
+                    showDirectory(newDirectory.toString());
+                    directory = newDirectory.toString();
                 } else showDirectory(DIR);
             }
         } catch (Exception e) {
@@ -142,7 +141,7 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Оновлення шляху
-        String selectedPath = directory + "/" + searchAdapter.getItem(position).getNumber();
+        String selectedPath = directory + "/" + Objects.requireNonNull(searchAdapter.getItem(position)).getNumber();
         File selectedFile = new File(selectedPath);
         messageId = UUID.randomUUID().toString();
 
@@ -160,7 +159,6 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
             directory = selectedPath;
             closeDialog();
         } else if (selectedFile.isDirectory()) {
-            // Якщо це папка, показуємо її вміст
             directory = selectedPath;
             showDirectory(directory);
         } else {
@@ -176,16 +174,12 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
         alertDialog.cancel();
         folder.addFile(messageId,directory, fileDetect.getFileHash(directory, "SHA-256"));
     }
+    @SuppressLint("SetTextI18n")
     @Override
     public void setProgress(int progress) {
         // Оновлюємо прогрес у головному потоці
         if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    infoFile.setText(progress+" %");
-                }
-            });
+            ((Activity) context).runOnUiThread(() -> infoFile.setText(progress+" %"));
         }
 
     }
@@ -193,34 +187,21 @@ public class Open implements AdapterView.OnItemClickListener, FileHandler {
     public void onFinish() {
         try {
             if (!activity.isFinishing()) { // Check if Activity is still valid
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        alertDialog.show(); // Show dialog on the UI thread
-                    }
+                activity.runOnUiThread(() -> {
+                    alertDialog.show(); // Show dialog on the UI thread
                 });
             }
 
-            // Use a Handler to delay the execution without blocking the UI thread
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    FileDetect fileDetect = new FileDetect();
-                    folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
-                    LOGGER.severe("Завершено завантаження");
-
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            alertDialog.cancel(); // Cancel dialog on the UI thread
-                            listView.clearFocus(); // Clear focus on the UI thread
-                        }
-                    });
-                }
-            }, 1); // Delay of 100 milliseconds
+            new Handler().postDelayed(() -> {
+                FileDetect fileDetect = new FileDetect();
+                folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
+                activity.runOnUiThread(() -> {
+                    alertDialog.cancel();
+                    listView.clearFocus();
+                });
+            }, 1);
         } catch (Exception e) {
-            // Handle any exceptions here
-            LOGGER.severe("Error in onFinish: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
