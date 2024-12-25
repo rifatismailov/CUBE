@@ -48,9 +48,7 @@ import java.util.concurrent.Executors;
 
 public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG {
     private ActivityChatBinding binding;
-    private DatabaseHelper dbHelper;
     private MessageManager manager;
-    private SQLiteDatabase db;
     private MessagesAdapter adapter;
     private ArrayList<Message> messages;
     private String senderId;       // ІД відправника
@@ -97,8 +95,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHelper = new DatabaseHelper(this);
-        db = dbHelper.getWritableDatabase();
+        //DatabaseHelper dbHelper = new DatabaseHelper(this);
+        SQLiteDatabase db = new DatabaseHelper(this).getWritableDatabase();
         manager = new MessageManager(db);
 
 
@@ -179,9 +177,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
-        for (Message message : messagesdb) {
-            messages.add(message);
-        }
+        messages.addAll(messagesdb);
         runOnUiThread(() -> {
             adapter.notifyItemInserted(messages.size()); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size()); // Прокрутити до нового елемента
@@ -281,8 +277,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void updateItemAsync(int position, @NonNull String url, String has) {
         Message message = messages.get(position);
         update_execService.execute(() -> {
-            /**ОБЛАСТЬ ЦЬОГО КОДУ ТРЕБА ПЕРЕРРОБИТИ ТАК ЯК МИ СТВОРЮЄМО НОВИЙ ОБЄКТ Message А ЦЕ НЕ КОРЕКТНО ТОМУ ЩО КОЖНЕ ПОВІДОМЛЕННЯ МАЄ ID НОМЕР
-             * ЗА ЯКИМ З НИМ МОЖНО ВЗАЄМОДІЯТИ */
+
             try {
                 String fileName = new File(url).getName();
                 FileData fileData;
@@ -319,6 +314,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private boolean isRecyclerViewAtBottom() {
         // Отримуємо поточну позицію прокручування
         LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
+        assert layoutManager != null;
         int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
         int totalItemCount = layoutManager.getItemCount();
 
@@ -340,10 +336,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         message.setReceiverId(receiverId);
         manager.addMessage(message);
         messages.add(message);
-        runOnUiThread(() -> {
-            autoScroll(message);
-
-        });
+        runOnUiThread(() -> autoScroll(message));
     }
 
     @Override
@@ -352,9 +345,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         message.setReceiverId(receiverId);
         manager.addMessage(message);
         messages.add(message);
-        runOnUiThread(() -> {
-            autoScroll(message);
-        });
+        runOnUiThread(() -> autoScroll(message));
     }
 
     @Override
