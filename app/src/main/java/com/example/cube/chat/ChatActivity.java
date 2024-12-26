@@ -297,6 +297,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setTypeFile(fileData.getFileType(new File(url)));
                 message.setHas(has);
                 message.setDataCreate(fileData.getFileDate(new File(url)));
+                //Log.e("Listener", "rMessage "+message.getMessage());
 
                 // Оновлюємо адаптер у головному потоці після обробки
                 runOnUiThread(() -> {

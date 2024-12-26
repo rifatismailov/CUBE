@@ -176,6 +176,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
+                android:gravity="right|center"
+
                 android:orientation="horizontal"
                 android:visibility="invisible">
                 <TextView
@@ -184,19 +186,19 @@
                     android:layout_height="wrap_content"
                     android:text="Time"
                     android:fontFamily="@font/ibmplexsans_medium"
-                    android:gravity="left"
                     android:textColor="#676a6b"
+                    android:gravity="right"
+
                     android:textSize="14sp" />
                 <ImageView
                     android:id="@+id/feeling"
-                    android:layout_width="25dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="25dp"
-                    android:layout_gravity="center"
                     android:visibility="invisible" />
                 <com.example.cube.draw.MessageNotifierView
                     android:id="@+id/messageNotifier"
-                    android:layout_width="100dp"
-                    android:layout_height="25dp"
+                    android:layout_width="50sp"
+                    android:layout_height="25sp"
                     app:alignStart="false"
                     app:spacing="10dp"
                     />

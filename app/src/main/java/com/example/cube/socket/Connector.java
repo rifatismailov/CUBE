@@ -31,7 +31,6 @@ public class Connector {
     private ExecutorService listenerExecutor; // Виконавець для слухача повідомлень
     private ExecutorService senderExecutor;   // Виконавець для надсилання повідомлень
     private final List<String> saveData = new ArrayList<>(); // Буфер для збереження даних у разі помилок
-
     private final Listener listener; // Інтерфейс для сповіщення про стан
     private String userId;           // Ідентифікатор користувача
     private boolean connectUSER = false; // Стан реєстрації користувача

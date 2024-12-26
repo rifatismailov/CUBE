@@ -104,9 +104,16 @@ public class SendMessageHandler {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
         }
         viewHolder.binding.messageNotifier.setProgressRadius(30);
-        viewHolder.binding.time.setText(message.getTimestamp());
+        if (message.getTimestamp() != null) {
+            String[] time = message.getTimestamp().split(" ");
+            viewHolder.binding.time.setText(time[1]);
+        }
+
         if (message.getProgress() == 100) {
-            viewHolder.binding.time.setText(message.getTimestamp());
+            if (message.getTimestamp() != null) {
+                String[] time = message.getTimestamp().split(" ");
+                viewHolder.binding.time.setText(time[1]);
+            }
             List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);

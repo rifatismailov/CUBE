@@ -57,7 +57,7 @@ public class OperationMSG {
                 FileData fileData = new FileData().convertFilePreview(fileUrl, fileHash);
 
                 Message message = new Message(rMessage, Uri.parse(envelope.getFileUrl()), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Receiver, messageID);
-                Log.e("Listener", "MessageListener");
+                //Log.e("Listener", "rMessage "+rMessage);
                 message.setUrl(Uri.parse(fileUrl));
                 message.setHas(fileHash);
                 message.setFileName(fileUrl);
@@ -112,11 +112,13 @@ public class OperationMSG {
             String rURL = Encryption.AES.encrypt(urls, receiverKey);
             String rHAS = Encryption.AES.encrypt(has, receiverKey);
             String operation;
-            if (url.endsWith(".jpg") || url.endsWith(".png")) {
-                operation = FIELD.IMAGE.getFIELD();
-            } else {
-                operation = FIELD.FILE.getFIELD();
-            }
+//            if (url.endsWith(".jpg") || url.endsWith(".png")) {
+//                operation = FIELD.IMAGE.getFIELD();
+//            } else {
+//                operation = FIELD.FILE.getFIELD();
+//            }
+            //після шифрування нам не відомо який формат файлу
+            operation = FIELD.FILE.getFIELD();
             Envelope envelope = new Envelope(senderId, receiverId, operation, rMessage, rURL, rHAS, messageId);
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
