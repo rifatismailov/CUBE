@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SendMessageHandler {
-    private Context context;
+    private final Context context;
 
     public SendMessageHandler(Context context) {
         this.context = context;
@@ -26,68 +26,84 @@ public class SendMessageHandler {
     @SuppressLint("SetTextI18n")
     public void setMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
-        if (message.getCheck().equals(Check.Image) && !message.getMessage().isEmpty()) {
-            viewHolder.binding.image.setVisibility(View.VISIBLE);
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.file.setVisibility(View.GONE);
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
-            Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-            if (message.getImageWidth() > 2000)
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
-            else
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
-            viewHolder.binding.message.setText(message.getMessage());
-        } else if (message.getCheck().equals(Check.Image) && message.getMessage().isEmpty()) {
-            viewHolder.binding.image.setVisibility(View.VISIBLE);
-            viewHolder.binding.message.setVisibility(View.GONE);
-            viewHolder.binding.file.setVisibility(View.GONE);
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
 
-            Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+        switch (message.getCheck()) {
+            case Image:
+                handleImageMessage(viewHolder, message);
+                break;
 
-            if (message.getImageWidth() > 2000)
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 4, message.getImageHeight() / 4, false));
-            else
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth() / 2, message.getImageHeight() / 2, false));
-        } else if (message.getCheck().equals(Check.File)) {
-            viewHolder.binding.file.setVisibility(View.VISIBLE);
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.image.setVisibility(View.VISIBLE);
+            case File:
+                handleFileMessage(viewHolder, message);
+                break;
 
-            if (message.getImage() != null) {
-                Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
-                viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth(), message.getImageHeight(), false));
-            }
-            viewHolder.binding.fileHash.setText(message.getHas());
-            viewHolder.binding.fileType.setText(message.getTypeFile());
-            viewHolder.binding.fileSize.setText(message.getFileSize());
-            viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
-            viewHolder.binding.file.setText(message.getFileName());
-            viewHolder.binding.message.setText(message.getMessage());
-        } else {
-            viewHolder.binding.image.setVisibility(View.GONE);
-            viewHolder.binding.file.setVisibility(View.GONE);
-            viewHolder.binding.aboutFile.setVisibility(View.GONE);
-
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.message.setText(message.getMessage());
+            default:
+                handleTextMessage(viewHolder, message);
+                break;
         }
 
-        // Оновлюємо messageNotifier
-        if (message.getMessageStatus() != null && message.getMessageStatus().equals("server")) {
+        updateMessageNotifier(viewHolder, message);
+        updateFeelLayout(viewHolder, message);
+        updateTimestamp(viewHolder, message);
+        updateProgress(viewHolder, message);
+
+        new ClickListeners().setClickListeners(context, viewHolder, message);
+    }
+
+    private void handleImageMessage(SentViewHolder viewHolder, Message message) {
+        viewHolder.binding.image.setVisibility(View.VISIBLE);
+        viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
+        Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+        int scaledWidth = message.getImageWidth() > 2000 ? message.getImageWidth() / 4 : message.getImageWidth() / 2;
+        int scaledHeight = message.getImageHeight() > 2000 ? message.getImageHeight() / 4 : message.getImageHeight() / 2;
+        viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false));
+
+        if (message.getMessage() != null && !message.getMessage().isEmpty()) {
+            viewHolder.binding.message.setVisibility(View.VISIBLE);
+            viewHolder.binding.message.setText(message.getMessage());
+            viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
+        } else {
+            viewHolder.binding.messageLayout.setVisibility(View.GONE);
+            viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
+        }
+    }
+
+    private void handleFileMessage(SentViewHolder viewHolder, Message message) {
+        viewHolder.binding.file.setVisibility(View.VISIBLE);
+        viewHolder.binding.message.setVisibility(View.VISIBLE);
+        viewHolder.binding.image.setVisibility(View.VISIBLE);
+
+        if (message.getImage() != null) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
+            viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth(), message.getImageHeight(), false));
+        }
+
+        viewHolder.binding.fileHash.setText(message.getHas());
+        viewHolder.binding.fileType.setText(message.getTypeFile());
+        viewHolder.binding.fileSize.setText(message.getFileSize());
+        viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
+        viewHolder.binding.file.setText(message.getFileName());
+        viewHolder.binding.message.setText(message.getMessage());
+    }
+
+    private void handleTextMessage(SentViewHolder viewHolder, Message message) {
+        viewHolder.binding.image.setVisibility(View.GONE);
+        viewHolder.binding.file.setVisibility(View.GONE);
+        viewHolder.binding.aboutFile.setVisibility(View.GONE);
+
+        viewHolder.binding.message.setVisibility(View.VISIBLE);
+        viewHolder.binding.message.setText(message.getMessage());
+    }
+
+    private void updateMessageNotifier(SentViewHolder viewHolder, Message message) {
+        if ("server".equals(message.getMessageStatus())) {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
             viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
             viewHolder.binding.messageNotifier.setHashes(hashes);
             viewHolder.binding.feeling.setVisibility(View.GONE);
-            ShapeAppearanceModel shapeAppearanceModel = new ShapeAppearanceModel()
-                    .toBuilder()
-                    .setTopLeftCorner(CornerFamily.ROUNDED, 58f) // Верхній лівий кут
-                    .setTopRightCorner(CornerFamily.ROUNDED, 0f) // Верхній правий кут
-                    .setBottomLeftCorner(CornerFamily.ROUNDED, 10f)  // Нижній лівий кут (прямий)
-                    .setBottomRightCorner(CornerFamily.ROUNDED, 10f) // Нижній правий кут (прямий)
-                    .build();
-            viewHolder.binding.image.setShapeAppearanceModel(shapeAppearanceModel);
-            // viewHolder.binding.cardView.setCar
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
         } else if (message.getFeeling() >= 0) {
             viewHolder.binding.feeling.setImageResource(message.getFeeling());
             viewHolder.binding.feeling.setVisibility(View.VISIBLE);
@@ -96,34 +112,38 @@ public class SendMessageHandler {
             viewHolder.binding.feeling.setVisibility(View.GONE);
             viewHolder.binding.messageNotifier.setVisibility(View.GONE);
         }
+    }
 
-// Загальне налаштування feelLayout
-        if (message.getFeeling() >= 0 || (message.getMessageStatus() != null && message.getMessageStatus().equals("server"))) {
+    private void updateFeelLayout(SentViewHolder viewHolder, Message message) {
+        if (message.getFeeling() >= 0 || "server".equals(message.getMessageStatus())) {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
         } else {
             viewHolder.binding.feelLayout.setVisibility(View.GONE);
         }
-        viewHolder.binding.messageNotifier.setProgressRadius(30);
+    }
+
+    private void updateTimestamp(SentViewHolder viewHolder, Message message) {
         if (message.getTimestamp() != null) {
             String[] time = message.getTimestamp().split(" ");
             viewHolder.binding.time.setText(time[1]);
         }
+    }
 
+    private void updateProgress(SentViewHolder viewHolder, Message message) {
         if (message.getProgress() == 100) {
-            if (message.getTimestamp() != null) {
-                String[] time = message.getTimestamp().split(" ");
-                viewHolder.binding.time.setText(time[1]);
-            }
-            List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
-
-            viewHolder.binding.messageNotifier.setHashes(hashes);
-
             viewHolder.binding.messageNotifier.setProgress(0);
         } else {
             viewHolder.binding.messageNotifier.setProgress(message.getProgress());
         }
+    }
 
-        new ClickListeners().setClickListeners(context, viewHolder, message);
-
+    private ShapeAppearanceModel createShapeModel(float topLeft, float topRight, float bottomLeft, float bottomRight) {
+        return new ShapeAppearanceModel()
+                .toBuilder()
+                .setTopLeftCorner(CornerFamily.ROUNDED, topLeft)
+                .setTopRightCorner(CornerFamily.ROUNDED, topRight)
+                .setBottomLeftCorner(CornerFamily.ROUNDED, bottomLeft)
+                .setBottomRightCorner(CornerFamily.ROUNDED, bottomRight)
+                .build();
     }
 }

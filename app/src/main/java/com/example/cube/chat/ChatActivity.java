@@ -218,6 +218,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private void send(Message message) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
+        message.setTimestamp(getTime());
         manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
@@ -248,8 +249,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             FileData fileData;
             String fileName = new File(url).getName();
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
+                String messageTxt = binding.messageBox.getText().toString();
+                if (!messageTxt.isEmpty()) {
+                    binding.messageBox.setText("");
+                }
                 fileData = new FileData().convertImage(url);
-                message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
+                message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
                 fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 message = new Message("There will be information about your message ", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
@@ -367,6 +372,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
                 message.setMessageStatus(messageStatus);
+                message.setTimestamp(getTime());
                 manager.updateMessage(message);
                 adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                 break; // Завершуємо цикл, оскільки повідомлення знайдено
@@ -379,10 +385,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
                 if(progress==100){
-                    Date currentDate = new Date();
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
-                    String formattedDate = formatter.format(currentDate);
-                    message.setTimestamp(formattedDate);
+
+                    message.setTimestamp(getTime());
                     manager.updateMessage(message);
                 }
                 if(info.startsWith("ERROR")){
@@ -394,6 +398,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 break; // Завершуємо цикл, оскільки повідомлення знайдено
             }
         }
+    }
+    private String getTime(){
+        Date currentDate = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+        return formatter.format(currentDate);
     }
 
 }
