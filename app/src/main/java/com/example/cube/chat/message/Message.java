@@ -36,7 +36,7 @@ public class Message implements Serializable {
     private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
     private String messageStatus;
-    private int progress;
+    private int progress ;
 
 
     public Message() {
@@ -133,9 +133,10 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
             this.check = Check.Image;
-        }else {
+        } else {
             this.check = Check.File;
-        }    }
+        }
+    }
 
     /**
      * Конструктор для створення повідомлення із зображенням у байтовому форматі.
@@ -155,7 +156,7 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
             this.check = Check.Image;
-        }else {
+        } else {
             this.check = Check.File;
         }
         this.side = side;
@@ -180,7 +181,7 @@ public class Message implements Serializable {
         this.imageHeight = imageHeight;
         if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
             this.check = Check.Image;
-        }else {
+        } else {
             this.check = Check.File;
         }
         this.side = side;
@@ -309,7 +310,7 @@ public class Message implements Serializable {
         this.selectedUrl = selectedUrl;
         if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
             this.check = Check.Image;
-        }else {
+        } else {
             this.check = Check.File;
         }
     }

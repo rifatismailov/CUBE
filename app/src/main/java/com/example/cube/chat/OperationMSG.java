@@ -107,9 +107,13 @@ public class OperationMSG {
 
     public void onSendFile(String senderId, String receiverId, String message, String url, String has, String receiverKey, String messageId) {
         try {
+            String filename= new File(url).getName();
+            Log.e("FileEncryption"," filename "+ filename);
             String urls = "http://192.168.1.237:8020/api/files/download/" + new File(url).getName(); // Змініть IP на ваш
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             String rURL = Encryption.AES.encrypt(urls, receiverKey);
+            Log.e("FileEncryption"," rURL "+rURL);
+
             String rHAS = Encryption.AES.encrypt(has, receiverKey);
             String operation;
 //            if (url.endsWith(".jpg") || url.endsWith(".png")) {

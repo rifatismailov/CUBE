@@ -254,7 +254,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     binding.messageBox.setText("");
                 }
                 fileData = new FileData().convertImage(url);
-                message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
+                message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
                 fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 message = new Message("There will be information about your message ", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
@@ -265,6 +265,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setHas(has);
             message.setDataCreate(fileData.getFileDate(new File(url)));
             addMessageFile(message);
+            Log.e("FileEncryption"," addFile "+encFile);
+
             new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, has, receiverKey, messageId);
 
         } catch (Exception e) {
@@ -349,11 +351,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void readMessageFile(Message message) {
-        message.setSenderId(senderId);
-        message.setReceiverId(receiverId);
-        manager.addMessage(message);
-        messages.add(message);
-        runOnUiThread(() -> autoScroll(message));
+
+            message.setSenderId(senderId);
+            message.setReceiverId(receiverId);
+            manager.addMessage(message);
+            messages.add(message);
+            runOnUiThread(() -> autoScroll(message));
+
     }
 
     @Override
@@ -381,6 +385,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
     @Override
     public void setProgressShow(String messageId,int progress,String info){
+
         for (int i = 0; i < messages.size(); i++) {
             Message message = messages.get(i);
             if (message.getMessageId().equals(messageId)) {
@@ -388,10 +393,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
                     message.setTimestamp(getTime());
                     manager.updateMessage(message);
+                    adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
+
                 }
                 if(info.startsWith("ERROR")){
                     message.setTimestamp(info);
                     manager.updateMessage(message);
+                    adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
+
                 }
                 message.setProgress(progress);
                 adapter.notifyItemChanged(i); // Оновлюємо лише один елемент

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 
 import com.example.cube.control.Check;
@@ -27,35 +28,39 @@ public class SendMessageHandler {
     public void setMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
 
+        Log.e("Listener", "Progress " + message.getProgress());
+
+
         switch (message.getCheck()) {
             case Image:
                 handleImageMessage(viewHolder, message);
                 break;
-
             case File:
                 handleFileMessage(viewHolder, message);
                 break;
-
             default:
                 handleTextMessage(viewHolder, message);
                 break;
         }
-
-        updateMessageNotifier(viewHolder, message);
-        updateFeelLayout(viewHolder, message);
-        updateTimestamp(viewHolder, message);
-        updateProgress(viewHolder, message);
-
+//        updateTimestamp(viewHolder, message);
+//        updateProgress(viewHolder, message);
+//        updateMessageNotifier(viewHolder, message);
+//        updateFeelLayout(viewHolder, message);
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
-
+private void alltoDo(SentViewHolder viewHolder, Message message){
+    updateTimestamp(viewHolder, message);
+    updateProgress(viewHolder, message);
+    updateMessageNotifier(viewHolder, message);
+    updateFeelLayout(viewHolder, message);
+}
     private void handleImageMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
 
         Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
         int scaledWidth = message.getImageWidth() > 2000 ? message.getImageWidth() / 4 : message.getImageWidth() / 2;
-        int scaledHeight = message.getImageHeight() > 2000 ? message.getImageHeight() / 4 : message.getImageHeight() / 2;
+        int scaledHeight = message.getImageWidth() > 2000 ? message.getImageHeight() / 4 : message.getImageHeight() / 2;
         viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false));
 
         if (message.getMessage() != null && !message.getMessage().isEmpty()) {
@@ -68,24 +73,40 @@ public class SendMessageHandler {
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
         }
+        alltoDo(viewHolder,message);
     }
 
     private void handleFileMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.file.setVisibility(View.VISIBLE);
         viewHolder.binding.message.setVisibility(View.VISIBLE);
         viewHolder.binding.image.setVisibility(View.VISIBLE);
+        viewHolder.binding.aboutFile.setVisibility(View.VISIBLE);
 
         if (message.getImage() != null) {
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
             viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, message.getImageWidth(), message.getImageHeight(), false));
         }
 
-        viewHolder.binding.fileHash.setText(message.getHas());
-        viewHolder.binding.fileType.setText(message.getTypeFile());
-        viewHolder.binding.fileSize.setText(message.getFileSize());
-        viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
-        viewHolder.binding.file.setText(message.getFileName());
-        viewHolder.binding.message.setText(message.getMessage());
+        if (!viewHolder.binding.fileHash.getText().toString().equals(message.getHas())) {
+            viewHolder.binding.fileHash.setText(message.getHas());
+        }
+        if (!viewHolder.binding.fileType.getText().toString().equals(message.getTypeFile())) {
+            viewHolder.binding.fileType.setText(message.getTypeFile());
+        }
+        if (!viewHolder.binding.fileSize.getText().toString().equals(message.getFileSize())) {
+            viewHolder.binding.fileSize.setText(message.getFileSize());
+        }
+        if (!viewHolder.binding.fileDateCreate.getText().toString().equals(message.getDataCreate())) {
+            viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
+        }
+        if (!viewHolder.binding.file.getText().toString().equals(message.getFileName())) {
+            viewHolder.binding.file.setText(message.getFileName());
+        }
+        if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
+            viewHolder.binding.message.setText(message.getMessage());
+        }
+        alltoDo(viewHolder,message);
+
     }
 
     private void handleTextMessage(SentViewHolder viewHolder, Message message) {
@@ -93,8 +114,12 @@ public class SendMessageHandler {
         viewHolder.binding.file.setVisibility(View.GONE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
 
-        viewHolder.binding.message.setVisibility(View.VISIBLE);
-        viewHolder.binding.message.setText(message.getMessage());
+        if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
+            viewHolder.binding.message.setVisibility(View.VISIBLE);
+            viewHolder.binding.message.setText(message.getMessage());
+        }
+        alltoDo(viewHolder,message);
+
     }
 
     private void updateMessageNotifier(SentViewHolder viewHolder, Message message) {

@@ -174,6 +174,8 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
                 FileEncryption fileEncryption = new FileEncryption(context, messageId, serverUrl);
                 SecretKey secretKey = new SecretKeySpec(senderKey.getBytes(), ALGORITHM);
                 String encryptedFile = fileEncryption.getEncFile(file, secretKey);
+                Log.e("FileEncryption"," encryptedFileName "+encryptedFile);
+
                 ((Activity) context).runOnUiThread(() -> onFinish(encryptedFile));
                 // Шифруємо файл
                 fileEncryption.fileEncryption();
@@ -191,7 +193,10 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     /**
      * Закриття діалогового вікна та оновлення інформації у батьківському компоненті.
      */
+
     public void onFinish(String encFile) {
+
+
         FileDetect fileDetect = new FileDetect();
         folder.addFile(messageId, directory + "/" + fileName, encFile, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
         alertDialog.cancel();

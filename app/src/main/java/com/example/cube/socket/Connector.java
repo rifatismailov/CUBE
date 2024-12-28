@@ -242,19 +242,17 @@ public class Connector {
      *             3. У разі проблем, повторно ініціалізує виконавець та надсилає всі збережені дані.
      */
     public synchronized void sendData(String data) {
+
         if (!senderExecutor.isShutdown() && !senderExecutor.isTerminated()) {
             senderExecutor.execute(() -> {
                 if (output != null && !socket.isClosed() && socket.isConnected()) {
                     // Надсилання збережених даних із черги, якщо є
-                    if (!saveData.isEmpty()) {
-                        for (String sData : saveData) {
-                            output.println(sData);
-                        }
-                        saveData.clear(); // Очищення черги після успішної відправки
-                    }
+                    sendSaveData();
                     // Надсилання нових даних
                     output.println(data);
                 } else {
+                    saveData.add(data);
+                    listener.setLogs("[INFO]", "Данні збережені.");
                     // Логування, якщо сокет недоступний
                     listener.setLogs("[INFO]", "Неможливо надіслати дані, сокет закритий.");
                 }
@@ -264,17 +262,22 @@ public class Connector {
             listener.setLogs("[INFO]", "Неможливо надіслати дані.");
             // Збереження даних у чергу
             saveData.add(data);
+            listener.setLogs("[INFO]", "Данні збережені.");
             // Зупинка існуючого виконавця
             stopSender();
             // Перезапуск виконавця
             senderExecutor = Executors.newFixedThreadPool(1);
             // Повторне надсилання збережених даних
-            if (!saveData.isEmpty()) {
-                for (String sData : saveData) {
-                    sendData(sData);
-                }
-                saveData.clear(); // Очищення черги після повторної відправки
+            sendSaveData();
+        }
+    }
+    private void sendSaveData(){
+        if (!saveData.isEmpty()) {
+            for (String sData : saveData) {
+                sendData(sData);
+                listener.setLogs("[INFO]", "Надіслання даних "+sData);
             }
+            saveData.clear(); // Очищення черги після повторної відправки
         }
     }
 

@@ -57,26 +57,26 @@ public class Listener implements Connector.Listener {
             if (message != null) {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
-                Log.e("Listener","A "+envelope.toJson().toString());
+               // Log.e("Listener","A "+envelope.toJson().toString());
 
                 // Якщо повідомлення від нас самих (SenderId і ReceiverId однакові).
                 if (userId.equals(envelope.getSenderId()) && listener.getReceiverId().equals(envelope.getReceiverId())) {
                     listener.onReceived(message);
                     //Thread.sleep(100); // 100 мс затримка
-                    Log.e("Listener","B "+envelope.toJson().toString());
+                //    Log.e("Listener","B "+envelope.toJson().toString());
 
 
                     // Якщо повідомлення для поточного користувача
                 } else if (listener.getReceiverId() != null && listener.getReceiverId().equals(envelope.getSenderId())) {
                     listener.onReceived(message);
-                    Log.e("Listener","C "+envelope.toJson().toString());
+              //      Log.e("Listener","C "+envelope.toJson().toString());
 
                     //Thread.sleep(100); // 100 мс затримка
 
                     // Якщо повідомлення не для поточного користувача, зберігаємо його
                 } else {
                     listener.saveMessage(envelope);
-                    Log.e("Listener","D "+envelope.toJson().toString());
+              //      Log.e("Listener","D "+envelope.toJson().toString());
 
                 }
             }

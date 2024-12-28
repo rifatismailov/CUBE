@@ -3,6 +3,7 @@ package com.example.folder.upload;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -12,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -72,6 +74,7 @@ public class FileEncryption {
         int processedBytes = 0;
 
         // Створюємо нову назву для зашифрованого файлу
+        Log.e("FileEncryption"," encryptedFileName "+encryptedFileName);
 
         // 3. Запис шифрованих байтів у новий файл
         try (FileOutputStream fos = new FileOutputStream(encryptedFileName);
@@ -85,9 +88,12 @@ public class FileEncryption {
 
                 // Оновлення прогресу
                 int progress = (int) ((processedBytes / (double) totalBytes) * 100);
+//                if (context instanceof Activity) {
+//                    ((Activity) context).runOnUiThread(() ->
+//                            fileOMG.setProgressShow(messageId, progress, ""));
+//                }
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() ->
-                            fileOMG.setProgressShow(messageId, progress, ""));
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, progress, ""));
                 }
             }
 
@@ -96,8 +102,7 @@ public class FileEncryption {
 
             // Повідомляємо про успішне завершення
             if (context instanceof Activity) {
-                ((Activity) context).runOnUiThread(() ->
-                        fileOMG.setProgressShow(messageId, 100, "Шифрування завершено"));
+                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 100, "Шифрування завершено"));
             }
 
             // Додатково: передача файлу на сервер (необов'язково)
@@ -108,29 +113,32 @@ public class FileEncryption {
             e.printStackTrace();
             // Обробка помилки
             if (context instanceof Activity) {
-                ((Activity) context).runOnUiThread(() ->
-                        fileOMG.setProgressShow(messageId, 0, "Помилка шифрування"));
+                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 0, "Помилка шифрування"));
             }
         }
 
     }
     private static final String TRANSFORMATION = "AES"; // Трансформація (AES)
 
-    public static String encrypt(String input, SecretKey secretKey) throws Exception {
+    // Метод для шифрування даних без спеціальних символів
+    public String encrypt(String input, SecretKey secretKey) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         // Шифруємо текст
-        byte[] encryptedBytes = cipher.doFinal(input.getBytes());
-        // Повертаємо результат у вигляді рядка, закодованого в Base64
-        return Base64.getEncoder().encodeToString(encryptedBytes);
+        byte[] encryptedBytes = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
+        // Повертаємо результат у вигляді рядка, закодованого у власному форматі
+        return encodeToCustomBase(encryptedBytes);
     }
-    public String generateEncryptedFileName(File inputFile) throws Exception {
-        // Отримуємо тип файлу або розширення
-        String extension = encrypt(getFileExtension(inputFile),secretKey); // Альтернативний варіант отримати розширення
 
-        // Генеруємо нову назву файлу
-        return inputFile.getParent() + File.separator +
-                "enc-" + UUID.randomUUID().toString() + (extension.isEmpty() ? "" : "." + extension);
+    // Метод для дешифрування даних
+    public String decrypt(String encryptedData, SecretKey secretKey) throws Exception {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        // Декодуємо власний формат до байтів
+        byte[] decodedBytes = decodeFromCustomBase(encryptedData);
+        // Дешифруємо байти
+        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
     // Метод для отримання розширення файлу
@@ -138,5 +146,33 @@ public class FileEncryption {
         String fileName = file.getName();
         int dotIndex = fileName.lastIndexOf('.');
         return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
+    }
+
+    public String generateEncryptedFileName(File inputFile) throws Exception {
+        // Отримуємо тип файлу або розширення
+        String extension = encrypt(getFileExtension(inputFile), secretKey);
+        // Генеруємо нову назву файлу
+        return inputFile.getParent() + File.separator +
+                "enc-" + UUID.randomUUID().toString() + (extension.isEmpty() ? "" : "." + extension);
+    }
+
+    // Метод для кодування байтів у власний формат
+    private String encodeToCustomBase(byte[] data) {
+        StringBuilder encoded = new StringBuilder();
+        for (byte b : data) {
+            encoded.append(String.format("%02x", b & 0xff));
+        }
+        return encoded.toString();
+    }
+
+    // Метод для декодування з власного формату
+    private byte[] decodeFromCustomBase(String data) {
+        int len = data.length();
+        byte[] decoded = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            decoded[i / 2] = (byte) ((Character.digit(data.charAt(i), 16) << 4)
+                    + Character.digit(data.charAt(i + 1), 16));
+        }
+        return decoded;
     }
 }

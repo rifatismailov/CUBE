@@ -2,6 +2,7 @@ package com.example.cube.chat.message;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,18 +62,25 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         this.holder = holder;
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
-            new SendMessageHandler(context).setMessage((SentViewHolder) viewHolder, message);
+             new SendMessageHandler(context).setMessage((SentViewHolder) viewHolder, message);
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             new ReceiverMessageHandler(context).setMessage((ReceiverViewHolder) viewHolder, message);
         }
     }
+
     // Метод для оновлення конкретної позиції
     public void updateItem(int position, Message message) {
-        messages.set(position, message);
-        notifyItemChanged(position);
-        notifyDataSetChanged();// Оновлюємо конкретну позицію
+        try {
+            messages.set(position, message);
+            notifyItemChanged(position);
+        } catch (Exception e) {
+            Log.e("Listener",e.toString());
+        }
+
+        //notifyDataSetChanged();// Оновлюємо конкретну позицію
     }
+
     // Метод для видалення елемента
     public void removeItem(int position) {
         // Видаляємо елемент зі списку
@@ -84,6 +92,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             // Якщо видалено кілька елементів (якщо це потрібно).
         }
     }
+
     @Override
     public int getItemCount() {
         return messages.size();
