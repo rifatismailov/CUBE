@@ -126,6 +126,7 @@
 
         <!-- Повідомлення з текстом і файлом -->
         <LinearLayout
+            android:id="@+id/messageLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"

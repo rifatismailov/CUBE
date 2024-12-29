@@ -48,12 +48,14 @@ public class SendMessageHandler {
 //        updateFeelLayout(viewHolder, message);
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
-private void alltoDo(SentViewHolder viewHolder, Message message){
-    updateTimestamp(viewHolder, message);
-    updateProgress(viewHolder, message);
-    updateMessageNotifier(viewHolder, message);
-    updateFeelLayout(viewHolder, message);
-}
+
+    private void alltoDo(SentViewHolder viewHolder, Message message) {
+        updateTimestamp(viewHolder, message);
+        updateProgress(viewHolder, message);
+        updateMessageNotifier(viewHolder, message);
+        updateFeelLayout(viewHolder, message);
+    }
+
     private void handleImageMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
@@ -73,7 +75,7 @@ private void alltoDo(SentViewHolder viewHolder, Message message){
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
         }
-        alltoDo(viewHolder,message);
+        alltoDo(viewHolder, message);
     }
 
     private void handleFileMessage(SentViewHolder viewHolder, Message message) {
@@ -105,7 +107,7 @@ private void alltoDo(SentViewHolder viewHolder, Message message){
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
             viewHolder.binding.message.setText(message.getMessage());
         }
-        alltoDo(viewHolder,message);
+        alltoDo(viewHolder, message);
 
     }
 
@@ -119,7 +121,7 @@ private void alltoDo(SentViewHolder viewHolder, Message message){
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
-        alltoDo(viewHolder,message);
+        alltoDo(viewHolder, message);
 
     }
 
