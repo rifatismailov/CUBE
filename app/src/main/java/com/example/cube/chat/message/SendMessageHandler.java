@@ -116,6 +116,7 @@ private void alltoDo(SentViewHolder viewHolder, Message message){
 
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
             viewHolder.binding.message.setVisibility(View.VISIBLE);
+            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
         alltoDo(viewHolder,message);

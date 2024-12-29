@@ -9,15 +9,16 @@ import androidx.annotation.RequiresApi;
 
 import com.example.folder.file.FileOMG;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.UUID;
-
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 
 public class FileEncryption {
@@ -36,11 +37,10 @@ public class FileEncryption {
         this.fileOMG = (FileOMG) context;
         this.messageId = messageId;
         this.server_address = server_address;
-
     }
 
     /**
-     * Отримуємо данні для шифрування та повертаємо назву зашифрованого фала .
+     * Отримуємо данні для шифрування та повертаємо назву зашифрованого файлу.
      * @param inputFile Оригінальний файл для шифрування.
      * @param secretKey Секретний ключ для шифрування.
      */
@@ -53,52 +53,36 @@ public class FileEncryption {
 
     /**
      * Зберігає файл із шифруванням та відстеженням прогресу.
-     *
      * @throws Exception Якщо виникає помилка при шифруванні або збереженні файлу.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void fileEncryption() throws Exception {
-
-
-        // 1. Зчитуємо вміст файлу в байтовий масив
-        byte[] fileBytes;
-        try (FileInputStream fis = new FileInputStream(inputFile)) {
-            fileBytes = fis.readAllBytes();
-        }
-
-        // 2. Підготовка до шифрування
+        // Підготовка до шифрування
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         byte[] buffer = new byte[BUFFER_SIZE];
-        int totalBytes = fileBytes.length;
-        int processedBytes = 0;
+        long totalBytes = inputFile.length();
+        long processedBytes = 0;
 
         // Створюємо нову назву для зашифрованого файлу
-        Log.e("FileEncryption"," encryptedFileName "+encryptedFileName);
+        Log.e("FileEncryption", "encryptedFileName " + encryptedFileName);
 
-        // 3. Запис шифрованих байтів у новий файл
-        try (FileOutputStream fos = new FileOutputStream(encryptedFileName);
-             ByteArrayInputStream byteIn = new ByteArrayInputStream(fileBytes)) {
+        // Запис шифрованих байтів у новий файл
+        try (InputStream fis = new FileInputStream(inputFile);
+             OutputStream fos = new FileOutputStream(encryptedFileName);
+             CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
 
             int bytesRead;
-            while ((bytesRead = byteIn.read(buffer)) != -1) {
-                byte[] encryptedChunk = cipher.update(buffer, 0, bytesRead); // Шифруємо блок
-                fos.write(encryptedChunk); // Записуємо шифровані байти у файл
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                cos.write(buffer, 0, bytesRead);
                 processedBytes += bytesRead;
 
                 // Оновлення прогресу
                 int progress = (int) ((processedBytes / (double) totalBytes) * 100);
-//                if (context instanceof Activity) {
-//                    ((Activity) context).runOnUiThread(() ->
-//                            fileOMG.setProgressShow(messageId, progress, ""));
-//                }
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, progress, ""));
                 }
             }
-
-            // Завершуємо шифрування
-            fos.write(cipher.doFinal());
 
             // Повідомляємо про успішне завершення
             if (context instanceof Activity) {
@@ -116,8 +100,8 @@ public class FileEncryption {
                 ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 0, "Помилка шифрування"));
             }
         }
-
     }
+
     private static final String TRANSFORMATION = "AES"; // Трансформація (AES)
 
     // Метод для шифрування даних без спеціальних символів
