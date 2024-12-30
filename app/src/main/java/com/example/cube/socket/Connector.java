@@ -76,7 +76,13 @@ public class Connector {
     public synchronized void setUserId(String userId) {
         this.userId = userId;
     }
+    private synchronized void setStatusCONNECT(boolean statusCONNECT){
+        this.statusCONNECT=statusCONNECT;
+    }
 
+    private synchronized boolean getStatusCONNECT(){
+        return  statusCONNECT;
+    }
     /**
      * Підключення до сервера. Автоматично намагається перепідключитися у разі помилки.
      * <p>
@@ -107,7 +113,7 @@ public class Connector {
                     // Реєстрація користувача після підключення
                     registration();
                     checkCONNECT = 0; // Скидання лічильника невдалих підключень
-                    statusCONNECT = false; // Статус підключення (false – не підключено)
+                    setStatusCONNECT(false); // Статус підключення (false – не підключено)
 
                     // Відновлення перевірки з'єднання
                     checker();
@@ -184,7 +190,7 @@ public class Connector {
                 }
 
                 // Перевірка статусу підключення
-                if (statusCONNECT) {
+                if (getStatusCONNECT()) {
                     checkCONNECT = 0; // Підключення успішне, скидаємо лічильник
                 } else {
                     checkCONNECT++; // Підключення не успішне, збільшуємо лічильник
@@ -201,7 +207,7 @@ public class Connector {
                 ping();
 
                 // Скидання статусу підключення
-                statusCONNECT = false;
+                setStatusCONNECT(false);
             } catch (Exception e) {
                 // Логування помилки при перевірці
                 Log.e("CONNECTOR", "Помилка під час перевірки " + e);
@@ -304,7 +310,7 @@ public class Connector {
                     if (message.contains("CONNECT_SUCCESSFUL")) {
                         // Сервер підтвердив успішне підключення
                         listener.setLogs("[INFO]", "Сервер на зв'язку....");
-                        statusCONNECT = true;
+                        setStatusCONNECT(true);
                     } else if (message.contains("CONNECT__FAILED")) {
                         // Сервер не дозволив підключення
                         if (userId != null && !userId.equals("null")) {
