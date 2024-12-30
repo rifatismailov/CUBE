@@ -76,13 +76,15 @@ public class Connector {
     public synchronized void setUserId(String userId) {
         this.userId = userId;
     }
-    private synchronized void setStatusCONNECT(boolean statusCONNECT){
-        this.statusCONNECT=statusCONNECT;
+
+    private synchronized void setStatusCONNECT(boolean statusCONNECT) {
+        this.statusCONNECT = statusCONNECT;
     }
 
-    private synchronized boolean getStatusCONNECT(){
-        return  statusCONNECT;
+    private synchronized boolean getStatusCONNECT() {
+        return statusCONNECT;
     }
+
     /**
      * Підключення до сервера. Автоматично намагається перепідключитися у разі помилки.
      * <p>
@@ -123,12 +125,7 @@ public class Connector {
                     listenerExecutor.execute(this::listener);
 
                     // Надсилання збережених даних (якщо є) після успішного підключення
-                    if (!saveData.isEmpty()) {
-                        for (String sData : saveData) {
-                            sendData(sData);
-                            saveData.remove(sData);
-                        }
-                    }
+                    // sendSaveData();
 
                     break; // Вихід з циклу при успішному підключенні
                 } catch (IOException e) {
@@ -143,7 +140,7 @@ public class Connector {
 
     private void sleeper() {
         try {
-            sleep(5000); // Очікування 5 секунд перед повторною спробою
+            sleep(2000); // Очікування 5 секунд перед повторною спробою
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
@@ -220,7 +217,7 @@ public class Connector {
      * Реєстрація користувача на сервері.
      */
     private void registration() {
-        sendData(REGISTRATION_COMMAND);
+        sendEnvelope(REGISTRATION_COMMAND);
         connectUSER = true;
     }
 
@@ -228,7 +225,7 @@ public class Connector {
      * Надсилання команди для перевірки зв'язку (PING).
      */
     private void ping() {
-        sendData(PING_COMMAND);
+        sendEnvelope(PING_COMMAND);
     }
 
     /**
@@ -247,19 +244,13 @@ public class Connector {
      *             2. Використовує чергу `saveData` для збереження невдалих спроб надсилання.
      *             3. У разі проблем, повторно ініціалізує виконавець та надсилає всі збережені дані.
      */
-    public synchronized void sendData(String data) {
-
+    public synchronized void sendEnvelope(String data) {
         if (!senderExecutor.isShutdown() && !senderExecutor.isTerminated()) {
             senderExecutor.execute(() -> {
                 if (output != null && !socket.isClosed() && socket.isConnected()) {
-                    // Надсилання збережених даних із черги, якщо є
-                    sendSaveData();
                     // Надсилання нових даних
                     output.println(data);
                 } else {
-                    saveData.add(data);
-                    listener.setLogs("[INFO]", "Данні збережені.");
-                    // Логування, якщо сокет недоступний
                     listener.setLogs("[INFO]", "Неможливо надіслати дані, сокет закритий.");
                 }
             });
@@ -273,15 +264,48 @@ public class Connector {
             stopSender();
             // Перезапуск виконавця
             senderExecutor = Executors.newFixedThreadPool(1);
-            // Повторне надсилання збережених даних
-            sendSaveData();
+
         }
     }
-    private void sendSaveData(){
+
+
+    public synchronized void sendData(String data) {
+        saveData.add(data);
+        //listener.setLogs("[INFO]", "Збереження даних");
+
+//        if (!senderExecutor.isShutdown() && !senderExecutor.isTerminated()) {
+//            senderExecutor.execute(() -> {
+//                if (output != null && !socket.isClosed() && socket.isConnected()) {
+//                    // Надсилання збережених даних із черги, якщо є
+//                    sendSaveData();
+//                    // Надсилання нових даних
+//                    output.println(data);
+//                } else {
+//                    saveData.add(data);
+//                    listener.setLogs("[INFO]", "Данні збережені.");
+//                    // Логування, якщо сокет недоступний
+//                    listener.setLogs("[INFO]", "Неможливо надіслати дані, сокет закритий.");
+//                }
+//            });
+//        } else {
+//            // Логування, якщо виконавець недоступний
+//            listener.setLogs("[INFO]", "Неможливо надіслати дані.");
+//            // Збереження даних у чергу
+//            saveData.add(data);
+//            listener.setLogs("[INFO]", "Данні збережені.");
+//            // Зупинка існуючого виконавця
+//            stopSender();
+//            // Перезапуск виконавця
+//            senderExecutor = Executors.newFixedThreadPool(1);
+//            // Повторне надсилання збережених даних
+//            sendSaveData();
+//        }
+    }
+
+    private void sendSaveData() {
         if (!saveData.isEmpty()) {
             for (String sData : saveData) {
-                sendData(sData);
-                listener.setLogs("[INFO]", "Надіслання даних "+sData);
+                sendEnvelope(sData);
             }
             saveData.clear(); // Очищення черги після повторної відправки
         }
@@ -311,6 +335,8 @@ public class Connector {
                         // Сервер підтвердив успішне підключення
                         listener.setLogs("[INFO]", "Сервер на зв'язку....");
                         setStatusCONNECT(true);
+                        // Надсилання збережених даних (якщо є) після успішного підключення
+                        sendSaveData();
                     } else if (message.contains("CONNECT__FAILED")) {
                         // Сервер не дозволив підключення
                         if (userId != null && !userId.equals("null")) {

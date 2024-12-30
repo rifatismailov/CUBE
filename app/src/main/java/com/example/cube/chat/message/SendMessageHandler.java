@@ -42,10 +42,7 @@ public class SendMessageHandler {
                 handleTextMessage(viewHolder, message);
                 break;
         }
-//        updateTimestamp(viewHolder, message);
-//        updateProgress(viewHolder, message);
-//        updateMessageNotifier(viewHolder, message);
-//        updateFeelLayout(viewHolder, message);
+
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
 
@@ -69,6 +66,24 @@ public class SendMessageHandler {
             viewHolder.binding.messageLayout.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
+        }
+        if (!viewHolder.binding.fileHash.getText().toString().equals(message.getHas())) {
+            viewHolder.binding.fileHash.setText(message.getHas());
+        }
+        if (!viewHolder.binding.fileType.getText().toString().equals(message.getTypeFile())) {
+            viewHolder.binding.fileType.setText(message.getTypeFile());
+        }
+        if (!viewHolder.binding.fileSize.getText().toString().equals(message.getFileSize())) {
+            viewHolder.binding.fileSize.setText(message.getFileSize());
+        }
+        if (!viewHolder.binding.fileDateCreate.getText().toString().equals(message.getDataCreate())) {
+            viewHolder.binding.fileDateCreate.setText(message.getDataCreate());
+        }
+        if (!viewHolder.binding.file.getText().toString().equals(message.getFileName())) {
+            viewHolder.binding.file.setText(message.getFileName());
+        }
+        if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
+            viewHolder.binding.message.setText(message.getMessage());
         }
         aLLtoDoImage(viewHolder, message);
     }
