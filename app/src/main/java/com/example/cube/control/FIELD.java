@@ -6,6 +6,7 @@ public enum FIELD {
     RECEIVER_ID("receiverId"),
     MESSAGE_ID("messageId"),
     MESSAGE("message"),
+    SAVE_MESSAGE("save_message"),
     IMAGE("image"),
     FILE("file"),
     OPERATION("operation"),
@@ -36,7 +37,9 @@ public enum FIELD {
     CUBE_PORT_TO_SERVER("CUBE_PORT_TO_SERVER"),
     CUBE_ID_RECIVER("CUBE_ID_RECIVER"),
     CUBE_SEND_TO_SERVER("CUBE_SEND_TO_SERVER"),
-    CUBE_RECEIVED_MESSAGE("CUBE_RECEIVED_MESSAGE");
+    CUBE_RECEIVED_MESSAGE("CUBE_RECEIVED_MESSAGE"),
+    IP("ip"),
+    PORT("port");
     private final String field;
 
     FIELD(String field) {
