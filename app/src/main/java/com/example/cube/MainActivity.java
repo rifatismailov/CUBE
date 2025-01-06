@@ -147,18 +147,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null && intent.getAction().equals("CUBE_RECEIVED_MESSAGE")) {
+            if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
                 if (message != null) {
-                    Log.e("MainActivity", "message: " + message);
-
                     onReceived(message);
                 }
 
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
                 if (save_message != null) {
-                    Log.e("MainActivity", "save_message: " + save_message);
-
                     saveMessage(save_message);
                 }
             }
