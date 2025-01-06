@@ -9,7 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="default_shimmer_color">#e3e1e3</color>
     <color name="demo_light_transparent">#16000000</color>
-    <color name="chat_toolbar">#191919</color>
+    <color name="chat_toolbar">#000</color>
     <color name="grey">#E3E3E3</color>
     <color name="blue">#22adff</color>
     <color name="colorSender">#f2fafe</color>
