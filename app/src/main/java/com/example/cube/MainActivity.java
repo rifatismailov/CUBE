@@ -147,14 +147,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
+            if (intent != null && intent.getAction().equals("CUBE_RECEIVED_MESSAGE")) {
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
                 if (message != null) {
+                    Log.e("MainActivity", "message: " + message);
+
                     onReceived(message);
                 }
 
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
                 if (save_message != null) {
+                    Log.e("MainActivity", "save_message: " + save_message);
+
                     saveMessage(save_message);
                 }
             }
@@ -214,9 +218,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         manager.readAccount();
         contactManager = new ContactManager(db);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerServer();
-        }
+
+        registerServer();
+
         startService();
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
@@ -309,7 +313,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void registerServer() {
         IntentFilter filter = new IntentFilter(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD());
         registerReceiver(serverMessageReceiver, filter, Context.RECEIVER_EXPORTED);
@@ -395,11 +398,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 return;
             }
             user.setSenderKey(key);
+
             // відправка публічного ключа отримувачу
             sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
             //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
+
+
         } else {
             try {
                 if (user.getReceiverPublicKey() == null) {

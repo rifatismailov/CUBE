@@ -98,12 +98,15 @@ public class IOService extends Service implements WebSocketClient.Listener {
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("message", message);
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+        Log.e("IOService", message);
     }
 
     private void saveMessage(String message) {
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("save_message", message);
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+        Log.e("IOService","saveMessage "+ message);
+
     }
 
 
