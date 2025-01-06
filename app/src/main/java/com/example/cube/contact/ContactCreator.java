@@ -1,4 +1,4 @@
-package com.example.cube;
+package com.example.cube.contact;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+
+import com.example.cube.R;
 
 import java.util.Objects;
 

@@ -37,6 +37,8 @@ public class FileEncryption {
         this.fileOMG = (FileOMG) context;
         this.messageId = messageId;
         this.server_address = server_address;
+        Log.e("Uploader", "FileEncryption: " + messageId);
+
     }
 
     /**
@@ -57,6 +59,8 @@ public class FileEncryption {
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void fileEncryption() throws Exception {
+        Log.e("FileEncryption", "encryptedFileName[ START ENCRYPT] " + encryptedFileName);
+
         // Підготовка до шифрування
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -65,12 +69,14 @@ public class FileEncryption {
         long processedBytes = 0;
 
         // Створюємо нову назву для зашифрованого файлу
-        Log.e("FileEncryption", "encryptedFileName " + encryptedFileName);
+
+        Log.e("FileEncryption", "encryptedFileName[ START SEND] " + encryptedFileName);
 
         // Запис шифрованих байтів у новий файл
         try (InputStream fis = new FileInputStream(inputFile);
              OutputStream fos = new FileOutputStream(encryptedFileName);
              CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
+            Log.e("FileEncryption", "encryptedFileName[ START SEND try CATH] " + encryptedFileName);
 
             int bytesRead;
             while ((bytesRead = fis.read(buffer)) != -1) {
@@ -91,9 +97,12 @@ public class FileEncryption {
 
             // Додатково: передача файлу на сервер (необов'язково)
             Uploader uploader = new Uploader(context, messageId, server_address);
+            Log.e("FileEncryption", "encryptedFileName[] " + encryptedFileName);
             uploader.uploadFile(new File(encryptedFileName));
 
         } catch (Exception e) {
+            Log.e("FileEncryption", "encryptedFileName[ Помилка шифрування] " + encryptedFileName+" [] "+e);
+
             e.printStackTrace();
             // Обробка помилки
             if (context instanceof Activity) {

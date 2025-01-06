@@ -2,6 +2,7 @@ package com.example.folder.upload;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import com.example.folder.file.FileOMG;
 import com.example.folder.file.progress.ProgressRequestBody;
@@ -21,9 +22,12 @@ public class Uploader {
         this.fileOMG=(FileOMG)context;
         this.messageId=messageId;
         this.server_address=server_address;
+        Log.e("FileEncryption", "Uploader: " + messageId);
+
     }
     
     public void uploadFile(File file)throws InterruptedException {
+        Log.e("FileEncryption", "uploadFile "+file);
 
         OkHttpClient client = new OkHttpClient();
         ProgressRequestBody fileBody = new ProgressRequestBody(file, "application/octet-stream", new ProgressRequestBody.UploadCallbacks() {
@@ -36,6 +40,8 @@ public class Uploader {
 
             @Override
             public void onError() {
+                Log.e("FileEncryption", "ERROR: to sending");
+
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: to sending"));
                 }
@@ -62,6 +68,8 @@ public class Uploader {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                Log.e("FileEncryption", "ERROR: " + e);
+
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: "+e));
                 }
@@ -73,7 +81,8 @@ public class Uploader {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: server is not responding."));
 
                 } else {
-                    System.out.println("Відповідь сервера: " + response.body().string());
+                    Log.e("FileEncryption", "Відповідь сервера: " + response.body().string());
+
                 }
             }
         });

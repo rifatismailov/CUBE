@@ -183,6 +183,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
         messages.addAll(messagesdb);
+        Log.e("Listener", "SIZE " + messagesdb.size());
+
         runOnUiThread(() -> {
             adapter.notifyDataSetChanged(); // Повідомити адаптер про всі зміни
             binding.recyclerView.smoothScrollToPosition(messages.size());
@@ -219,12 +221,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
     private void send(Message message) {
-        message.setSenderId(senderId);
-        message.setReceiverId(receiverId);
-        message.setTimestamp(getTime());
-        manager.addMessage(message);
-        messages.add(message);
+
         runOnUiThread(() -> {
+            message.setSenderId(senderId);
+            message.setReceiverId(receiverId);
+            message.setTimestamp(getTime());
+            manager.addMessage(message);
+            messages.add(message);
             new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey);
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
@@ -233,12 +236,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
 
-    private void addMessageFile(Message message) {
+    private void addMessageFile(Message message,String encFile) {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
         manager.addMessage(message);
         messages.add(message);
         runOnUiThread(() -> {
+            Log.e("FileEncryption", " addFile " + encFile);
+            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, message.getHas(), receiverKey, message.getMessageId());
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
         });
@@ -267,9 +272,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setTypeFile(fileData.getFileType(new File(url)));
             message.setHas(has);
             message.setDataCreate(fileData.getFileDate(new File(url)));
-            addMessageFile(message);
-            Log.e("FileEncryption", " addFile " + encFile);
-            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, has, receiverKey, messageId);
+            addMessageFile(message,encFile);
+
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);
         }
@@ -323,7 +327,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         return lastVisiblePosition == totalItemCount - 2;
     }
 
-    private void autoScroll(Message message) {
+    private void autoScroll() {
         adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
         if (isRecyclerViewAtBottom()) {
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
@@ -334,11 +338,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessage(Message message) {
         try {
             boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
-            Log.e("ChatActivity", "readMessage MessageId() :" + message.getMessageId());
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    Log.e("ChatActivity", "readMessage currentMessage() :" + currentMessage.getMessageId());
+                    Log.e("ChatActivity", "readMessage :" + message.getMessage());
+                    Log.e("ChatActivity", "message.getMessageId() :" + message.getMessageId());
+                    Log.e("ChatActivity", "currentMessage.getMessageId() :" +currentMessage.getMessageId());
+
                     manager.updateMessage(message); // Оновлюємо повідомлення
                     adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
                     messageExists = true;          // Повідомлення існує
@@ -349,9 +355,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
                 message.setTimestamp(getTime());
-                manager.addMessage(message);
+                manager.addMessage(message);       // Додаємо нове повідомлення
                 messages.add(message);
-                runOnUiThread(() -> autoScroll(message));
+
+                runOnUiThread(this::autoScroll);
             }
         } catch (Exception e) {
             Log.e("ChatActivity", "readMessage :" + e);
@@ -365,6 +372,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
+                    Log.e("ChatActivity", "readMessageFile :" + message);
+
                     manager.updateMessage(message); // Оновлюємо повідомлення
                     adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
                     messageExists = true;          // Повідомлення існує
@@ -377,7 +386,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setTimestamp(getTime());
                 manager.addMessage(message);       // Додаємо нове повідомлення
                 messages.add(message);
-                runOnUiThread(() -> autoScroll(message));
+                runOnUiThread(this::autoScroll);
             }
         } catch (Exception e) {
             Log.e("ChatActivity", "readMessageFile :" + e);
@@ -393,20 +402,31 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void addReceiverKey(String aesKey) throws Exception {
         receiverKey = Encryption.RSA.decrypt(aesKey, privateKey);
     }
-
+    int i=0;
     @Override
     public void addNotifier(String messageId, String messageStatus) {
-        for (int i = 0; i < messages.size(); i++) {
-            Message message = messages.get(i);
-            if (message.getMessageId().equals(messageId)) {
-                message.setMessageStatus(messageStatus);
-                message.setTimestamp(getTime());
-                manager.updateMessage(message);
-                adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
-                break;
+        runOnUiThread(() -> {
+            for (int i = 0; i < messages.size(); i++) {
+                Message message = messages.get(i);
+                if (message.getMessageId().equals(messageId)) {
+                    message.setMessageStatus(messageStatus);
+                    message.setTimestamp(getTime());
+                    manager.updateMessage(message);
+
+                    // Перевірка коректності адаптера
+                    if (adapter != null) {
+                        adapter.notifyItemChanged(i); // Оновлюємо тільки змінений елемент
+                    } else {
+                        Log.e("ChatActivity", "Adapter is null. Unable to notify.");
+                    }
+
+                    Log.e("ChatActivity", "Updated message at position: " + i + " with ID: " + messageId);
+                    break;
+                }
             }
-        }
+        });
     }
+
 
     @Override
     public void setProgressShow(String messageId, int progress, String info) {

@@ -27,7 +27,7 @@ public class Manager {
         this.secretKey=secretKey;
     }
 
-    public void readAccount(File externalDir) {
+    public void readAccount() {
 
         JSONObject jsonObject =accountManager.getAccount(secretKey);// new FileDetect().readJsonFromFile(externalDir, "cube.json");
         if (jsonObject != null) {

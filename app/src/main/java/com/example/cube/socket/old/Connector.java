@@ -1,4 +1,4 @@
-package com.example.cube.socket;
+package com.example.cube.socket.old;
 
 import static java.lang.Thread.sleep;
 
@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,6 @@ public class Connector {
     private final int SERVER_PORT;  // Порт сервера
     private String PING_COMMAND;    // Команда для перевірки зв'язку
     private String REGISTRATION_COMMAND; // Команда для реєстрації на сервері
-
     private Socket socket;  // Сокет для з'єднання
     private BufferedReader input; // Потік для читання даних
     private PrintWriter output;   // Потік для надсилання даних
@@ -108,7 +108,9 @@ public class Connector {
             while (true) {
                 try {
                     // Створення нового сокета та підключення до сервера
-                    socket = new Socket(SERVER_IP, SERVER_PORT);
+                    socket = new Socket();
+                    socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT), 5000); // 5000 мс на підключення
+                    socket.setSoTimeout(5000); // 5000 мс для очікування відповіді
                     input = new BufferedReader(new InputStreamReader(socket.getInputStream())); // Вхідний потік
                     output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true); // Вихідний потік
 
@@ -123,9 +125,6 @@ public class Connector {
                     // Перезапуск слухача повідомлень в новому потоці
                     listenerExecutor = Executors.newFixedThreadPool(1);
                     listenerExecutor.execute(this::listener);
-
-                    // Надсилання збережених даних (якщо є) після успішного підключення
-                    // sendSaveData();
 
                     break; // Вихід з циклу при успішному підключенні
                 } catch (IOException e) {
@@ -270,36 +269,12 @@ public class Connector {
 
 
     public synchronized void sendData(String data) {
-        saveData.add(data);
-        //listener.setLogs("[INFO]", "Збереження даних");
+        if(checkCONNECT>1) {
+            saveData.add(data);
+        }else {
+            sendEnvelope(data);
+        }
 
-//        if (!senderExecutor.isShutdown() && !senderExecutor.isTerminated()) {
-//            senderExecutor.execute(() -> {
-//                if (output != null && !socket.isClosed() && socket.isConnected()) {
-//                    // Надсилання збережених даних із черги, якщо є
-//                    sendSaveData();
-//                    // Надсилання нових даних
-//                    output.println(data);
-//                } else {
-//                    saveData.add(data);
-//                    listener.setLogs("[INFO]", "Данні збережені.");
-//                    // Логування, якщо сокет недоступний
-//                    listener.setLogs("[INFO]", "Неможливо надіслати дані, сокет закритий.");
-//                }
-//            });
-//        } else {
-//            // Логування, якщо виконавець недоступний
-//            listener.setLogs("[INFO]", "Неможливо надіслати дані.");
-//            // Збереження даних у чергу
-//            saveData.add(data);
-//            listener.setLogs("[INFO]", "Данні збережені.");
-//            // Зупинка існуючого виконавця
-//            stopSender();
-//            // Перезапуск виконавця
-//            senderExecutor = Executors.newFixedThreadPool(1);
-//            // Повторне надсилання збережених даних
-//            sendSaveData();
-//        }
     }
 
     private void sendSaveData() {
@@ -333,6 +308,8 @@ public class Connector {
                 if (!message.startsWith("{") && !message.endsWith("}")) {
                     if (message.contains("CONNECT_SUCCESSFUL")) {
                         // Сервер підтвердив успішне підключення
+                        Log.e("Connector", "Сервер на зв'язку...." + message);
+
                         listener.setLogs("[INFO]", "Сервер на зв'язку....");
                         setStatusCONNECT(true);
                         // Надсилання збережених даних (якщо є) після успішного підключення

@@ -3,6 +3,7 @@ package com.example.folder.download;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.example.folder.Folder;
 import com.example.folder.file.FileDetect;
@@ -57,6 +58,8 @@ public class Downloader implements FileDownload.DownloadHandler {
 
     @Override
     public void showDetails(String info) {
+        Log.e("CONNECTOR", info);
+
         if (context instanceof Activity) {
             ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 0, info));
         }

@@ -19,6 +19,7 @@ import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 
 
 import com.example.cube.chat.ChatActivity;
+import com.example.cube.contact.ContactCreator;
 import com.example.cube.contact.UserAdapter;
 import com.example.cube.contact.UserData;
 import com.example.cube.databinding.ActivityMainBinding;
@@ -41,7 +43,7 @@ import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 import com.example.cube.socket.Envelope;
-import com.example.cube.socket.Listener;
+import com.example.cube.socket.IOService;
 import com.example.qrcode.QR;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -65,7 +67,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Реалізує кілька інтерфейсів для обробки кліків та отримання повідомлень від сервера.
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        View.OnClickListener, Listener.DataListener,
+        View.OnClickListener,
         ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener {
 
     private ActivityMainBinding binding;
@@ -93,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int numMessage = 0;  // Лічильник повідомлень
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
-    private Listener listener;      // З'єднання з сервером
     private File externalDir;  // Зовнішній каталог
 
 
@@ -109,8 +110,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user_name.setText(accountName);
         user_id.setText(userId);
 
-        if (listener == null)
-            startConnect(userId);
     }
 
     /**
@@ -132,9 +131,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void startConnect(String userId) {
-        listener = new Listener(this, userId, "192.168.1.237", 8080);
-    }
 
     /**
      * BroadcastReceiver для отримання даних з ChatActivity через broadcast.
@@ -145,6 +141,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
             if (dataFromChat != null) {
                 receivingData(dataFromChat);
+            }
+        }
+    };
+    private BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && intent.getAction().equals("com.example.RECEIVED_MESSAGE")) {
+                String message = intent.getStringExtra("message");
+                if(message!=null){
+                    Log.e("MainActivity", "Message from server: " + message);
+                    onReceived(message);
+
+                }
+                String save_message = intent.getStringExtra("save_message");
+
+                if (save_message!=null) {
+                    Log.e("MainActivity", "Save Message from server: " + save_message);
+                    saveMessage(save_message);
+                }
             }
         }
     };
@@ -163,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+
         logs = new ArrayList<>();
         logAdapter = new LogAdapter(this, logs);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -196,22 +213,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dbHelper = new DatabaseHelper(this);
         db = dbHelper.getWritableDatabase();
         externalDir = new File(getExternalFilesDir(null), "cube");
-        manager= new Manager(this,db,secretKey);
-        manager.readAccount(externalDir);
+        manager = new Manager(this, db, secretKey);
+        manager.readAccount();
         contactManager = new ContactManager(db);
 
-
+        registerServer();
+        startService();
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
-        if (userId != null)
-            // Створення підключення до сервера
-            startConnect(userId);
-        else
-            scannerQrAccount();
 
         initUserList();
-
-
+        new Handler().postDelayed(() -> {
+            if (userId != null) {
+                // Створення підключення до сервера
+           //     startConnect(userId);
+            } else
+                scannerQrAccount();
+        }, 100); // Затримка, щоб дочекатися ініціалізації userId
     }
 
 
@@ -223,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             super.onBackPressed();
         }
     }
+
 
     /**
      * Ініціалізація списку користувачів та його заповнення з файлу.
@@ -241,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    @Override
+
     public synchronized String getReceiverId() {
         return receiverId;
     }
@@ -254,13 +273,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void receivingData(String data) {
         if (data.equals("endUser")) {
             receiverId = null;
-            //listener.setReceiverId(receiverId);
+            notifyIdReciverChanged(receiverId);
         } else {
             // якщо нема публічного ключа кому ми відправляємо то повідомлення не буде відправлено
             if (user != null) {
                 if (!data.isEmpty()) {
                     if (user.getReceiverPublicKey() != null) {
-                        listener.sendData(data);
+                        sendMessageToService(data);
                     }
                 }
             }
@@ -274,6 +293,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(dataReceiver);
+        unregisterReceiver(serverMessageReceiver);
+
     }
 
     /**
@@ -298,6 +319,52 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
         startActivity(intent);
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void registerServer() {
+        IntentFilter filter = new IntentFilter("com.example.RECEIVED_MESSAGE");
+        registerReceiver(serverMessageReceiver, filter, Context.RECEIVER_EXPORTED);
+    }
+
+    public void startService() {
+        // Запуск сервісу
+        Intent serviceIntent = new Intent(this, IOService.class);
+        serviceIntent.putExtra("com.example.ID_SENDER", userId);
+        serviceIntent.putExtra("com.example.IP_TO_SERVER", "192.168.1.237");
+        serviceIntent.putExtra("com.example.PORT_TO_SERVER", "8080");
+        startService(serviceIntent);
+    }
+
+    private void notifyIdReciverChanged(String receiverId) {
+        Intent intent = new Intent("com.example.ID_RECIVER");
+        intent.putExtra("receiverId", receiverId);
+        sendBroadcast(intent);
+    }
+
+
+    private void notifyIdSenderChanged(String senderId) {
+        Intent intent = new Intent("com.example.ID_SENDER");
+        intent.putExtra("senderId", senderId);
+        sendBroadcast(intent);
+    }
+
+    private void sendMessageToService(String message) {
+        Intent intent = new Intent("com.example.SEND_TO_SERVER");
+        intent.putExtra("message", message);
+        sendBroadcast(intent);  // Надсилає повідомлення сервісу
+    }
+
+    private void notifyIpChanged(String ip) {
+        Intent intent = new Intent("com.example.IP_TO_SERVER");
+        intent.putExtra("ip", ip);
+        sendBroadcast(intent);
+    }
+
+    private void notifyPortChanged(String port) {
+        Intent intent = new Intent("com.example.PORT_TO_SERVER");
+        intent.putExtra("port", port);
+        sendBroadcast(intent);
     }
 
     /**
@@ -342,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             user.setSenderKey(key);
 
             // відправка публічного ключа отримувачу
-            listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+            sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
             //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
@@ -353,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (user.getReceiverPublicKey() == null) {
                     // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
                     // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
-                    listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+                    sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
                     //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
                     //serverConnection.setReceiverId(receiverId);
@@ -364,13 +431,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             new Operation(this).openSaveMessage(receiverId, saveMessage);
                             user.setMessageSize("");
                             userAdapter.notifyDataSetChanged();
+                            notifyIdReciverChanged(receiverId);
                         }
                     } else {
                         try {
                             PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                             String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
                             if (AES != null && !AES.isEmpty()) {
-                                listener.sendHandshake(userId, receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                                sendHandshake(userId, receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
                             } else {
                                 Log.e("AESKeyExchange", "Failed to encrypt AES key");
                             }
@@ -400,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String key = KeyGenerator.AES.generateKey(16);
         user.setSenderKey(key);
         // відправка публічного ключа отримувачу
-        listener.sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+        sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
         //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
         receiverId = null;
         //serverConnection.setReceiverId(receiverId);
@@ -413,7 +481,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      *
      * @param message Текст повідомлення.
      */
-    @Override
     public void onReceived(String message) {
         new Operation(this).onReceived(message);
     }
@@ -421,18 +488,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Зберігає отримане повідомлення.
      *
-     * @param envelope дані повідомлення, яке зберігається.
+     * @param message дані повідомлення, яке зберігається.
      */
-    @Override
-    public void saveMessage(Envelope envelope) {
-        Log.e("Exchange", "Збереження повідомлення: " + envelope);
-        // Оновлення інтерфейсу користувача на основі нових повідомлень
-        runOnUiThread(() -> {
-            numMessage = new Operation(this).saveMessage(envelope, saveMessage, numMessage, userList);
-        });
+    public void saveMessage(String message) {
+        try {
+            Envelope envelope=new Envelope(new JSONObject(message));
+            Log.e("MainActivity", "Збереження повідомлення: " + envelope);
+            // Оновлення інтерфейсу користувача на основі нових повідомлень
+            runOnUiThread(() -> {
+                numMessage = new Operation(this).saveMessage(envelope, saveMessage, numMessage, userList);
+            });
+        }catch (Exception e){
+            Log.e("MainActivity", "Save Message Error: " + e);
+
+        }
+
     }
 
-    @Override
     public void setLogs(String clas, String log) {
         runOnUiThread(() -> {
             logs.add(new Logger(clas, log));
@@ -440,8 +512,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.log.smoothScrollToPosition(logs.size() - 1); // Прокрутити до нового елемента
             Log.e(clas, log);
         });
-
-
     }
 
     /**
@@ -502,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                 // Шифруємо AES ключ за допомогою публічного ключа отримувача
                 String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
-                listener.sendHandshake(userId, sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                sendHandshake(userId, sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
             }
         } catch (JSONException e) {
             Log.e("Exchange", "Помилка під час парсінгу JSON: " + e);
@@ -512,6 +582,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    /**
+     * Надсилає хендшейк (handshake) повідомлення з даними користувача.
+     * Використовується для встановлення безпечного з'єднання.
+     *
+     * @param userId Ідентифікатор користувача.
+     * @param receiverId Ідентифікатор отримувача.
+     * @param operation Операція (наприклад, шифрування).
+     * @param nameKey Назва ключа.
+     * @param key Значення ключа.
+     */
+    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
+        String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
+        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "").toJson().toString());
+    }
     /**
      * Зберігає отримане Handshake.
      *
@@ -578,20 +662,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void scannerQrContact() {
         deleteDatabase("cube.db");
         finish();
-       // new QR(qrCodeAddContact);
+        // new QR(qrCodeAddContact);
     }
 
     @Override
     public void onClick(View view) {
         // Визначаємо дії при натисканні на різні елементи інтерфейсу
         if (view == binding.setting) {
-            // showPopupWindow = new ShowPopupWindow(this);
-            /// showPopupWindow.showPopupWindow(view, "Це вспливаюче вікно зліва!");
             drawerLayout.openDrawer(GravityCompat.START);
-            // Запуск сканера QR-коду для отримання налаштувань
-            // new QR(qrCodeLauncher);
         } else if (view == binding.fab) {
-            // Відкриваємо вікно для додавання нового клієнта
             new ContactCreator(this).showCreator();
         }
     }

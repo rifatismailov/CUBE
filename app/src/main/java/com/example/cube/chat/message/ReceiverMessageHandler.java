@@ -46,26 +46,39 @@ public class ReceiverMessageHandler {
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
 
-    private void alltoDo(ReceiverViewHolder viewHolder, Message message) {
-        // Загальне налаштування feelLayout
-        if (message.getFeeling() >= 0 || message.getProgress() > 0 || message.getTimestamp() != null) {
-            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-            viewHolder.binding.time.setText(message.getTimestamp());
-
-        } else {
-            viewHolder.binding.feelLayout.setVisibility(View.GONE);
-        }
-        viewHolder.binding.messageNotifier.setProgressRadius(30);
-
-
-        if (message.getProgress() == 100) {
-            List<String> hashes = Arrays.asList("d3a523", "123456abcdef");
-            viewHolder.binding.messageNotifier.setHashes(hashes);
-            viewHolder.binding.messageNotifier.setProgress(0);
-        } else {
+    private void aLLtoDoMessage(ReceiverViewHolder viewHolder, Message message) {
+        updateTimestamp(viewHolder, message);
+        updateMessageNotifier(viewHolder, message);
+        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+        updateFeeling(viewHolder, message);
+    }
+    private void updateMessageNotifier(ReceiverViewHolder viewHolder, Message message) {
+        viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
+        if ("server".equals(message.getMessageStatus())) {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
+
             viewHolder.binding.messageNotifier.setHashes(hashes);
-            viewHolder.binding.messageNotifier.setProgress(message.getProgress());
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
+        } else  {
+            List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
+
+            viewHolder.binding.messageNotifier.setHashes(hashes);
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
+        }
+    }
+    private void updateFeeling(ReceiverViewHolder viewHolder, Message message){
+        if (message.getFeeling() >= 0) {
+            viewHolder.binding.feeling.setImageResource(message.getFeeling());
+            viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.binding.feeling.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateTimestamp(ReceiverViewHolder viewHolder, Message message) {
+        if (message.getTimestamp() != null) {
+            String[] time = message.getTimestamp().split(" ");
+            viewHolder.binding.time.setText(time[1]);
         }
     }
 
@@ -88,7 +101,7 @@ public class ReceiverMessageHandler {
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 58f, 58f, 58f));
         }
-        alltoDo(viewHolder, message);
+        aLLtoDoMessage(viewHolder, message);
     }
 
     private void handleFileMessage(ReceiverViewHolder viewHolder, Message message) {
@@ -125,7 +138,7 @@ public class ReceiverMessageHandler {
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
             viewHolder.binding.message.setText(message.getMessage());
         }
-        alltoDo(viewHolder, message);
+        aLLtoDoMessage(viewHolder, message);
 
     }
 
@@ -139,7 +152,7 @@ public class ReceiverMessageHandler {
             viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
-        alltoDo(viewHolder, message);
+        aLLtoDoMessage(viewHolder, message);
 
     }
 

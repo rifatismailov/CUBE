@@ -51,20 +51,19 @@ public class SendMessageHandler {
     private void handleImageMessage(SentViewHolder viewHolder, Message message) {
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
-
         Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
         int scaledWidth = message.getImageWidth() > 2000 ? message.getImageWidth() / 4 : message.getImageWidth() / 2;
         int scaledHeight = message.getImageWidth() > 2000 ? message.getImageHeight() / 4 : message.getImageHeight() / 2;
         viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false));
 
         if (message.getMessage() != null && !message.getMessage().isEmpty()) {
+            viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
-            viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
-        } else {
-            viewHolder.binding.messageLayout.setVisibility(View.GONE);
+        } else  {
             viewHolder.binding.file.setVisibility(View.GONE);
+            viewHolder.binding.message.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
         }
         if (!viewHolder.binding.fileHash.getText().toString().equals(message.getHas())) {
@@ -93,6 +92,7 @@ public class SendMessageHandler {
         viewHolder.binding.message.setVisibility(View.VISIBLE);
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.VISIBLE);
+        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
 
         if (message.getImage() != null) {
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
@@ -125,10 +125,10 @@ public class SendMessageHandler {
         viewHolder.binding.image.setVisibility(View.GONE);
         viewHolder.binding.file.setVisibility(View.GONE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
+        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+        viewHolder.binding.message.setVisibility(View.VISIBLE);
 
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
         aLLtoDoMessage(viewHolder, message);

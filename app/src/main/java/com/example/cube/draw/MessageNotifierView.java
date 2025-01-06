@@ -65,15 +65,15 @@ public class MessageNotifierView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Paint paint = new Paint();
-        int circleRadius = 15; // Розмір точки
+        int circleRadius = 10; // Розмір точки
 
         if (!colors.isEmpty()) {
             int firstCircleY = getHeight() / 2; // Координата Y для всіх кульок
 
             // Визначення початкової координати X залежно від alignStart
             int firstCircleX = alignStart
-                    ? circleRadius + 20 // Початок зліва
-                    : getWidth() - circleRadius - 20; // Початок справа
+                    ? circleRadius + 15 // Початок зліва
+                    : getWidth() - circleRadius - 15; // Початок справа
 
             // Малюємо першу кулю
             paint.setColor(colors.get(0));
@@ -84,10 +84,10 @@ public class MessageNotifierView extends View {
             if (progress > 0) {
                 paint.setColor(colors.get(0));
                 paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(10);
+                paint.setStrokeWidth(5);
 
                 // Використовуємо progressRadius або за замовчуванням обчислюємо його
-                int progressCircleRadius = progressRadius > 0 ? progressRadius : circleRadius + 15;
+                int progressCircleRadius = progressRadius > 0 ? progressRadius : circleRadius + 5;
                 float sweepAngle = (float) (360 * progress / 100);
 
                 canvas.drawArc(firstCircleX - progressCircleRadius, firstCircleY - progressCircleRadius,

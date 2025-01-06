@@ -2,6 +2,8 @@ package com.example.folder.download;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import com.example.folder.file.progress.ProgressResponseBody;
 import okhttp3.*;
@@ -79,6 +81,8 @@ public class FileDownload {
             public void onResponse(@NonNull Call call, @NonNull Response response) {
                 if (!response.isSuccessful()) {
                     handler.showDetails("Server response error");
+                    Log.e("CONNECTOR", "Server response error");
+
                     return;
                 }
 
@@ -97,6 +101,8 @@ public class FileDownload {
                     }
                 } catch (IOException e) {
                     handler.showDetails("Error saving file: " + e.getMessage());
+                    Log.e("CONNECTOR", "Error saving file " + e);
+
                 }
             }
         });
