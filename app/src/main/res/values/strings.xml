@@ -55,4 +55,7 @@
     <string name="save_contact">Зберегти</string>
     <string name="navigation_drawer_open">Відкрити меню</string>
     <string name="navigation_drawer_close">Закрити меню</string>
+    <string name="name">Contact Name</string>
+    <string name="online">Online</string>
+    <string name="type_a_message">Type a message...</string>
 </resources>

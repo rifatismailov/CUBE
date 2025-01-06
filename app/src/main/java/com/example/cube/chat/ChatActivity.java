@@ -119,11 +119,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
         // Ініціалізація RecyclerView
         setupRecyclerView();
-
-        // Відправляємо тестове повідомлення
-        //readMessage(new Message(test, Side.Receiver, UUID.randomUUID().toString()));
-
-        // Обробники натискання
         setupClickListeners();
         showMessage();
     }
@@ -183,16 +178,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
         messages.addAll(messagesdb);
-        Log.e("Listener", "SIZE " + messagesdb.size());
-
         runOnUiThread(() -> {
             adapter.notifyDataSetChanged(); // Повідомити адаптер про всі зміни
             binding.recyclerView.smoothScrollToPosition(messages.size());
         });
     }
     private void handleReceivedData(String data) {
-        Log.e("Listener", "Data " + data);
-
         new OperationMSG(this).onReceived(senderKey, data);
     }
 
@@ -221,7 +212,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
     private void send(Message message) {
-
         runOnUiThread(() -> {
             message.setSenderId(senderId);
             message.setReceiverId(receiverId);
@@ -237,12 +227,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
 
     private void addMessageFile(Message message,String encFile) {
-        message.setSenderId(senderId);
-        message.setReceiverId(receiverId);
-        manager.addMessage(message);
-        messages.add(message);
         runOnUiThread(() -> {
-            Log.e("FileEncryption", " addFile " + encFile);
+            message.setSenderId(senderId);
+            message.setReceiverId(receiverId);
+            manager.addMessage(message);
+            messages.add(message);
             new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, message.getHas(), receiverKey, message.getMessageId());
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
@@ -256,16 +245,16 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Message message;
             FileData fileData;
             String fileName = new File(url).getName();
+            String messageTxt = binding.messageBox.getText().toString();
+            if (!messageTxt.isEmpty()) {
+                binding.messageBox.setText("");
+            }
             if (url.endsWith(".jpg") || url.endsWith(".png")) {
-                String messageTxt = binding.messageBox.getText().toString();
-                if (!messageTxt.isEmpty()) {
-                    binding.messageBox.setText("");
-                }
                 fileData = new FileData().convertImage(url);
                 message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
                 fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
-                message = new Message("There will be information about your message ", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
+                message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             }
             message.setFileName(fileName);
             message.setFileSize(fileData.getFileSize(new File(url)));
@@ -341,10 +330,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    Log.e("ChatActivity", "readMessage :" + message.getMessage());
-                    Log.e("ChatActivity", "message.getMessageId() :" + message.getMessageId());
-                    Log.e("ChatActivity", "currentMessage.getMessageId() :" +currentMessage.getMessageId());
-
                     manager.updateMessage(message); // Оновлюємо повідомлення
                     adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
                     messageExists = true;          // Повідомлення існує
@@ -361,7 +346,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 runOnUiThread(this::autoScroll);
             }
         } catch (Exception e) {
-            Log.e("ChatActivity", "readMessage :" + e);
+            Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
         }
     }
 
@@ -372,8 +357,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    Log.e("ChatActivity", "readMessageFile :" + message);
-
                     manager.updateMessage(message); // Оновлюємо повідомлення
                     adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
                     messageExists = true;          // Повідомлення існує
@@ -389,7 +372,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 runOnUiThread(this::autoScroll);
             }
         } catch (Exception e) {
-            Log.e("ChatActivity", "readMessageFile :" + e);
+            Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом :" + e);
         }
     }
 
@@ -417,10 +400,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     if (adapter != null) {
                         adapter.notifyItemChanged(i); // Оновлюємо тільки змінений елемент
                     } else {
-                        Log.e("ChatActivity", "Adapter is null. Unable to notify.");
+                        Log.e("ChatActivity", "Адаптер дорівнює NULL. Unable to notify.");
                     }
 
-                    Log.e("ChatActivity", "Updated message at position: " + i + " with ID: " + messageId);
+                    Log.e("ChatActivity", "Оновлене повідомлення на позиції: " + i + " з ідентифікатором: " + messageId);
                     break;
                 }
             }
