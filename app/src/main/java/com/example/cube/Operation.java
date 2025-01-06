@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.example.cube.contact.UserData;
 import com.example.cube.control.FIELD;
-import com.example.cube.socket.Envelope;
+import com.example.web_socket_service.socket.Envelope;
 
 import org.json.JSONException;
 import org.json.JSONObject;

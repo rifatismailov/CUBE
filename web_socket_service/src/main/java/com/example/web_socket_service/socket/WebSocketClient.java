@@ -1,4 +1,4 @@
-package com.example.cube.socket;
+package com.example.web_socket_service.socket;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -33,7 +33,7 @@ public class WebSocketClient {
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
-                Log.e("MainActivity", "Connected to server.");
+                listener.onNotification("Connected to server...");
                 webSocket.send("REGISTER:" + CLIENT_ID);
             }
 
@@ -44,20 +44,20 @@ public class WebSocketClient {
 
             @Override
             public void onClosing(WebSocket webSocket, int code, String reason) {
-                Log.e("MainActivity", "Connection closing: " + reason);
+                listener.onNotification("Connection closing: " + reason);
                 webSocket.close(1000, null);
             }
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
-                Log.e("MainActivity", "Connection closed: " + reason);
+                listener.onNotification( "Connection closed: " + reason);
                 reconnect();
             }
 
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 t.printStackTrace();
-                Log.e("MainActivity", "Connection failed: " + t.getMessage());
+                listener.onNotification("Connection failed: " + t.getMessage());
                 reconnect();
             }
         });
@@ -70,7 +70,7 @@ public class WebSocketClient {
         if (webSocket != null) {
             webSocket.send(message);
         } else {
-            Log.e("MainActivity", "WebSocket is not connected.");
+            listener.onNotification( "WebSocket is not connected.");
         }
     }
 
@@ -85,7 +85,7 @@ public class WebSocketClient {
     // Метод для перепідключення
     private void reconnect() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Log.d("WebSocket", "Reconnecting...");
+            listener.onNotification("Reconnecting...");
             connect(SERVER_URL,CLIENT_ID); // Спроба перепідключення
         }, 5000); // Затримка перед перепідключенням
     }
@@ -95,5 +95,6 @@ public class WebSocketClient {
      */
     public interface Listener {
         void onListener(String message);
+        void onNotification(String message);
     }
 }

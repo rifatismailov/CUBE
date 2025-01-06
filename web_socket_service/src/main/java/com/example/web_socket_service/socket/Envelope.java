@@ -1,4 +1,4 @@
-package com.example.cube.socket;
+package com.example.web_socket_service.socket;
 
 import org.json.JSONObject;
 

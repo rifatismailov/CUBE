@@ -8,7 +8,7 @@ import com.example.cube.chat.message.Message;
 import com.example.cube.control.FIELD;
 import com.example.cube.control.Side;
 import com.example.cube.encryption.Encryption;
-import com.example.cube.socket.Envelope;
+import com.example.web_socket_service.socket.Envelope;
 
 import org.json.JSONException;
 import org.json.JSONObject;

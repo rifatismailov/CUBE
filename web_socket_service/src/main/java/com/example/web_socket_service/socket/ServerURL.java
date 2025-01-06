@@ -1,4 +1,4 @@
-package com.example.cube.socket;
+package com.example.web_socket_service.socket;
 
 public class ServerURL {
     private String senderId;       // ІД відправника

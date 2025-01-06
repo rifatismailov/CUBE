@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.PRIVATE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
@@ -19,10 +19,13 @@
         android:theme="@style/Theme.CUBE"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+
         <service
-            android:name=".socket.IOService"
+            android:name="com.example.web_socket_service.socket.IOService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false"
+            android:permission="TODO" />
 
         <activity
             android:name=".NewsActivity"
@@ -37,7 +40,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

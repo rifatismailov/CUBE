@@ -1,4 +1,4 @@
-package com.example.cube.socket.old;
+package com.example.web_socket_service.socket.old;
 
 import static java.lang.Thread.sleep;
 
