@@ -39,7 +39,8 @@ public enum FIELD {
     CUBE_SEND_TO_SERVER("CUBE_SEND_TO_SERVER"),
     CUBE_RECEIVED_MESSAGE("CUBE_RECEIVED_MESSAGE"),
     IP("ip"),
-    PORT("port");
+    PORT("port"),
+    NOTIFICATION("notification");
     private final String field;
 
     FIELD(String field) {

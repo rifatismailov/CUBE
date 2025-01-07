@@ -94,7 +94,7 @@ public class WebSocketClient {
      * Інтерфейс для обробки подій та логів.
      */
     public interface Listener {
-        void onListener(String message);
         void onNotification(String message);
+        void onListener(String message);
     }
 }

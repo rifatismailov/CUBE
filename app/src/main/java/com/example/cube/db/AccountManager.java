@@ -1,5 +1,6 @@
 package com.example.cube.db;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -54,7 +55,7 @@ public class AccountManager {
             if (cursor != null && cursor.moveToFirst()) {
                 Log.e("DatabaseHelper", "Found data in TABLE_ACCOUNT");
                 do {
-                    String encryptedData = cursor.getString(cursor.getColumnIndex(COLUMN_ENCRYPTED_DATA));
+                    @SuppressLint("Range") String encryptedData = cursor.getString(cursor.getColumnIndex(COLUMN_ENCRYPTED_DATA));
                     Log.e("DatabaseHelper", "Encrypted Data retrieved: " + encryptedData);
 
                     // Decrypt the contact data

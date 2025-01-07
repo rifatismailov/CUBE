@@ -17,14 +17,13 @@ import org.json.JSONObject;
 
 public class IOService extends Service implements WebSocketClient.Listener {
 
-    private BroadcastReceiver receiver;
     private WebSocketClient webSocketClient;
     private ServerURL serverURL;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        receiver = new BroadcastReceiver() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 switch (intent.getAction()) {
@@ -106,6 +105,13 @@ public class IOService extends Service implements WebSocketClient.Listener {
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1
     }
 
+    @Override
+    public void onNotification(String message) {
+        Log.e("IOService", message);
+        Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
+        intent.putExtra("notification", message);
+        sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+    }
 
     /**
      * Обробляє отримані повідомлення від сервера.
@@ -114,6 +120,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *
      * @param message Повідомлення, яке отримано від сервера.
      */
+
     @Override
     public void onListener(String message) {
         try {
@@ -132,11 +139,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
             Log.e("IOService", " Помилка обробки JSON під час отримання повідомлення - " + e.getMessage());
             Log.e("IOService", "Не JSON повідомлення" + message);
         }
-    }
-
-    @Override
-    public void onNotification(String message) {
-        Log.e("IOService", message);
     }
 
 

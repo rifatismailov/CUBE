@@ -1,0 +1,42 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Зображення, яке користувач вибирає -->
+    <ImageView
+        android:id="@+id/imageProfile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:layout_gravity="left"
+        android:background="#000000" />
+
+    <ImageView
+        android:id="@+id/imageAccount"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="fitCenter"
+        android:layout_gravity="top|center_horizontal"
+        android:background="@color/white" />
+
+    <!-- Рамка для вибору області -->
+    <View
+        android:id="@+id/cropFrame"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:background="#80FF0000"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- Кнопка для обрізання та конвертації -->
+    <Button
+        android:id="@+id/btnCrop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:text="Crop  Convert" />
+
+</FrameLayout>

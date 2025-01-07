@@ -19,23 +19,13 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-/**
- * Даний  @AlertDialog відображає папки та файли
- * при натисканні на які фалй конвертується в массив байтів
- * за допомогою методів @convertImage
- *
- * @convertVideo
- * @convertFile За задумкою всі ці методи мають окремі класи  як @ConvertImage
- * @ConvertFile яка будуть конвертувати файли
- */
+
 public class QR {
-    private static final Logger LOGGER = Logger.getLogger(QR.class.getName());
     Context context;
     Activity activity;
     AlertDialog alertDialog;
     ImageButton back;
     ImageView qrCode;
-
     TextView idNumber;
     String id;
     private ActivityResultLauncher<ScanOptions> barLauncher;

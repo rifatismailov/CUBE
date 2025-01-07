@@ -3,7 +3,8 @@
 
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:statusBarColor">@color/chat_toolbar</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowLightStatusBar">false</item> <!-- Для темного тексту -->
 
     </style>

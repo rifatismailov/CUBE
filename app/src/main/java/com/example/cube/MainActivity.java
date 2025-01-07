@@ -3,6 +3,7 @@ package com.example.cube;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,9 +18,12 @@ import android.content.Intent;
 
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,6 +47,7 @@ import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 
+import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
 import com.example.web_socket_service.socket.Envelope;
 import com.example.web_socket_service.socket.IOService;
@@ -53,6 +58,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -69,7 +75,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener,
-        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener {
+        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer {
 
     private ActivityMainBinding binding;
     private TextView user_name;
@@ -97,6 +103,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
     private File externalDir;  // Зовнішній каталог
+
+    private ActivityResultLauncher<Intent> activityResultLauncher;
+
+
+    private DrawerLayout drawerLayout;
 
 
     @Override
@@ -157,11 +168,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (save_message != null) {
                     saveMessage(save_message);
                 }
+                String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
+                if (notification != null) {
+                    //saveMessage(save_message);
+                    setNotification("", notification);
+                }
             }
         }
     };
 
-    private DrawerLayout drawerLayout;
 
     /**
      * Метод onCreate викликається при створенні активності.
@@ -189,19 +204,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         drawerLayout = findViewById(R.id.drawer_layout);
 
         // Створення ActionBarDrawerToggle для відкриття/закриття меню
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, null,
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, null,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         user_name = findViewById(R.id.user_name);
         user_id = findViewById(R.id.user_id);
-        Button accountButton = findViewById(R.id.nav_account);
-        Button settingsButton = findViewById(R.id.nav_settings);
-        Button logoutButton = findViewById(R.id.nav_logout);
-        ImageButton add_accounte = findViewById(R.id.add_account);
 
         // Використання NavigationManager для обробки меню
-        new NavigationManager(this, drawerLayout, add_accounte, accountButton, settingsButton, logoutButton);
+        new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
+                findViewById(R.id.add_account), findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
 
 
         password = "1234567890123456";  // Пароль
@@ -483,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    public void setLogs(String clas, String log) {
+    public void setNotification(String clas, String log) {
         runOnUiThread(() -> {
             logs.add(new Logger(clas, log));
             logAdapter.notifyItemInserted(logs.size() - 1); // Повідомити, що новий елемент було вставлено
@@ -596,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @SuppressLint("SetTextI18n")
     ActivityResultLauncher<ScanOptions> qrCodeAddAccount = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
-            manager.writeAccount(externalDir, result.getContents());
+            manager.writeAccount(result.getContents());
         }
     });
 
@@ -616,6 +629,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void scannerQrAccount() {
         //manager.clearMessagesTable();
         new QR(qrCodeAddAccount);
+    }
+
+    private static final int PICK_IMAGE_REQUEST = 1;
+    ImageExplorer imageExplorer;
+
+    @Override
+    public void imageNavigation() {
+        imageExplorer = new ImageExplorer(this, "");
+    }
+
+    // Вибір зображення з галереї
+    @Override
+    public void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri imageUri = data.getData();
+            try {
+                Bitmap selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                imageExplorer.setImageBitmap(selectedBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

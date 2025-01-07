@@ -29,7 +29,7 @@ public class Manager {
 
     public void readAccount() {
 
-        JSONObject jsonObject =accountManager.getAccount(secretKey);// new FileDetect().readJsonFromFile(externalDir, "cube.json");
+        JSONObject jsonObject =accountManager.getAccount(secretKey);
         if (jsonObject != null) {
             createAccount(jsonObject);
             Log.e("DatabaseHelper", "Manager JSONObject Not null.");
@@ -39,7 +39,7 @@ public class Manager {
 
         }
     }
-    public void writeAccount(File externalDir,String result){
+    public void writeAccount(String result){
         try {
                 // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
                 JSONObject jsonObject = new JSONObject(result);
@@ -48,9 +48,6 @@ public class Manager {
                     Log.e("DatabaseHelper", "account setAccount. ");
                 }
 
-            // Зберігаємо JSON-дані в файл "cube.json"
-                //new FileDetect().saveJsonToFile(externalDir, "cube.json", jsonObject);
-                // Читаємо дані з JSON-об'єкта
                 createAccount(jsonObject);
 
         } catch (JSONException e) {

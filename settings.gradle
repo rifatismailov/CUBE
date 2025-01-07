@@ -22,3 +22,4 @@ include ':myemoji'
 include ':qrcode'
 
 include ':web_socket_service'
+include ':image_account'

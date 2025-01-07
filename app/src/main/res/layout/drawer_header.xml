@@ -1,62 +1,58 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    android:background="@color/black"
-    android:orientation="vertical"
-    android:paddingTop="50dp">
+    android:background="@color/white">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginLeft="1dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginRight="1dp"
-        android:elevation="10dp"
-        app:cardCornerRadius="50dp"
-        app:cardElevation="0dp">
+    <!-- Основне зображення (не кругле) -->
+    <ImageView
+        android:id="@+id/avatarImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:src="@drawable/photo_my"
 
-        <ImageView
-            android:id="@+id/profile_image"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:src="@drawable/elliot" />
-    </androidx.cardview.widget.CardView>
+        android:background="@color/blue" />
 
+    <!-- Кругле зображення -->
+    <!-- Кругле зображення -->
+    <com.example.cube.draw.CircularImageView
+        android:id="@+id/accountImage"
+        android:layout_width="80sp"
+        android:layout_height="80sp"
+        android:layout_gravity="bottom|center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="10sp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/photo_my"
+        android:background="@drawable/circular_placeholder" />
+
+
+    <!-- Текст з ім'ям -->
     <TextView
         android:id="@+id/user_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="16dp"
         android:text="Your Name"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:textSize="16sp"
         android:textStyle="bold"
         android:typeface="monospace" />
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+
+    <!-- Текст з ID -->
+    <TextView
+        android:id="@+id/user_id"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="H652882301"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:typeface="monospace" />
 
-        <!-- Текст посередині -->
-        <TextView
-            android:id="@+id/user_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="H652882301"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:typeface="monospace"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-</LinearLayout>
+</FrameLayout>
