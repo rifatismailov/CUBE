@@ -144,7 +144,6 @@ public class ImageExplorer {
 
         // Перевіряємо, чи рамка знаходиться над зображенням
         if (frameX < imageX || frameY < imageY) {
-            System.out.println("Frame is outside the image bounds.");
             return null;
         }
 
@@ -160,19 +159,18 @@ public class ImageExplorer {
 
         // Перевіряємо, чи координати не виходять за межі Bitmap
         if (cropX < 0 || cropY < 0 || cropX + cropWidth > selectedBitmap.getWidth() || cropY + cropHeight > selectedBitmap.getHeight()) {
-            System.out.println("Crop area is out of bounds.");
             return null;
         }
 
         // Якщо вирізати занадто вузько, збільшуємо рамку
         if (cropWidth < cropHeight) {
             int newSize = cropHeight;  // робимо ширину рівною висоті
-            int offsetX = (cropWidth - newSize) / 2;
+            int offsetX = (cropWidth - newSize) ;
             cropX += offsetX;
             cropWidth = newSize;
         } else if (cropHeight < cropWidth) {
             int newSize = cropWidth;  // робимо висоту рівною ширині
-            int offsetY = (cropHeight - newSize) / 2;
+            int offsetY = (cropHeight - newSize) ;
             cropY += offsetY;
             cropHeight = newSize;
         }
