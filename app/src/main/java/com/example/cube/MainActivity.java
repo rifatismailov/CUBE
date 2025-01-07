@@ -631,31 +631,52 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new QR(qrCodeAddAccount);
     }
 
+    // Константа для запиту вибору зображення
     private static final int PICK_IMAGE_REQUEST = 1;
+
     ImageExplorer imageExplorer;
 
     @Override
     public void imageNavigation() {
+        // Ініціалізація об'єкта ImageExplorer для відображення діалогового вікна для вибору зображення
         imageExplorer = new ImageExplorer(this, "");
     }
 
-    // Вибір зображення з галереї
+    /**
+     * Відкриває галерею для вибору зображення.
+     * Цей метод створює намір (Intent) для відкриття галереї та вибору зображення.
+     */
     @Override
     public void openImagePicker() {
+        // Створення наміру для вибору зображення з галереї
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Запуск активності для вибору зображення (запит з кодом PICK_IMAGE_REQUEST)
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
+    /**
+     * Обробник результату вибору зображення.
+     * Після вибору зображення з галереї цей метод отримує обраний файл і відправляє його в ImageExplorer.
+     *
+     * @param requestCode код запиту, який визначає, з якої активності повернувся результат
+     * @param resultCode код результату, який вказує, чи успішно завершилась операція
+     * @param data Дані, отримані з вибраної активності, які містять URI вибраного зображення
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Перевіряємо, чи це результат вибору зображення
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            // Отримуємо URI вибраного зображення
             Uri imageUri = data.getData();
             try {
+                // Отримуємо Bitmap з обраного URI
                 Bitmap selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                // Встановлюємо обране зображення в ImageExplorer
                 imageExplorer.setImageBitmap(selectedBitmap);
             } catch (IOException e) {
+                // Обробка помилки, якщо не вдалося отримати зображення
                 e.printStackTrace();
             }
         }
