@@ -12,8 +12,6 @@
         android:scaleType="fitStart"
         android:src="@drawable/photo_my" />
 
-
-    <!-- Кругле зображення -->
     <!-- Кругле зображення -->
     <com.example.cube.draw.CircularImageView
         android:id="@+id/accountImage"
