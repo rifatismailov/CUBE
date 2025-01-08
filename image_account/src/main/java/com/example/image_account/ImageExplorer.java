@@ -17,7 +17,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+
 import androidx.activity.result.ActivityResultLauncher;
+
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -39,7 +41,7 @@ public class ImageExplorer {
      * Конструктор класу ImageExplorer.
      * Ініціалізує контекст і ключ відправника, а також викликає діалог для вибору та обрізки зображення.
      *
-     * @param context Контекст, у якому працює діалог.
+     * @param context   Контекст, у якому працює діалог.
      * @param senderKey Ключ відправника.
      */
     public ImageExplorer(Context context, String senderKey) {
@@ -48,8 +50,10 @@ public class ImageExplorer {
         this.imgExplorer = (ImgExplorer) context;
         showDialog();
     }
+
     boolean isResizing = false;
     boolean isMoving = false;
+
     /**
      * Відображення діалогового вікна для вибору та обрізки зображення.
      * Відкриває діалог, налаштовує макет, та прив'язує елементи інтерфейсу.
@@ -74,79 +78,89 @@ public class ImageExplorer {
         cropFrame = layout.findViewById(R.id.cropFrame);
 
         imageAccount.setOnClickListener(v -> imgExplorer.openImagePicker());
-        // Дозвіл переміщувати рамку
-// Ініціалізація змінних для переміщення та зміни розміру
-        float dXx, dYy;
-
-
-// Ініціалізація змінних для переміщення та зміни розміру
-
 
         cropFrame.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
+
+            /*
+             * event.getAction() визначає тип сенсорної події. Це може бути:
+             * MotionEvent.ACTION_DOWN: Користувач торкнувся елемента.
+             * MotionEvent.ACTION_MOVE: Користувач рухає пальцем.
+             * MotionEvent.ACTION_UP: Користувач відпустив палець.
+             * event.getX() та event.getY() дають координати дотику відносно поточного елемента (тобто, cropFrame).
+             */
+
+            int action = event.getAction(); // Отримуємо тип події: натискання, рух або відпускання
             float touchX = event.getX(); // Координати дотику відносно View
             float touchY = event.getY();
 
-            // Розміри зони переміщення
-            int moveZoneSize = 40;
+            int moveZoneSize = 40; // Розмір зони, що визначає межу для перетягування або зміни розміру
 
+            /*
+             * Якщо точка дотику знаходиться всередині cropFrame, то запускається режим переміщення.
+             * В іншому випадку, коли точка дотику знаходиться на межі або за її межами, запускається режим зміни розміру.
+             * dX та dY зберігають відстань між поточною позицією елемента та місцем дотику,
+             * що дозволяє правильно обчислювати зміщення при переміщенні.
+             * */
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
-                    // Визначаємо, натиснув користувач всередині зони чи на краях
                     if (touchX > moveZoneSize && touchX < v.getWidth() - moveZoneSize &&
                             touchY > moveZoneSize && touchY < v.getHeight() - moveZoneSize) {
                         isResizing = false; // Режим переміщення
-                        dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
+                        dX = v.getX() - event.getRawX(); // Зберігаємо відстань для переміщення
+                        dY = v.getY() - event.getRawY(); // Аналогічно по осі Y
                     } else {
                         isResizing = true; // Режим зміни розміру
-                        dX = event.getRawX();
+                        dX = event.getRawX(); // Зберігаємо початкові координати для зміни розміру
                         dY = event.getRawY();
                     }
                     break;
 
+                /*
+                 * Якщо активовано зміну розміру, обчислюється різниця між поточними координатами дотику та попередніми (deltaX та deltaY).
+                 * Для того, щоб розміри змінювались однаково по обох осях, використовується scaleFactor = Math.max(deltaX, deltaY).
+                 * Обчислюються нові розміри елемента і застосовуються до cropFrame через setLayoutParams().
+                 * Якщо активовано режим переміщення, то елемент рухається без зміни розміру, використовуючи анімацію для плавного переміщення.
+                 * */
                 case MotionEvent.ACTION_MOVE:
                     if (isResizing) {
-                        // Логіка зміни розміру
-                        float deltaX = event.getRawX() - dX;
+                        float deltaX = event.getRawX() - dX; // Різниця між новими та старими координатами
                         float deltaY = event.getRawY() - dY;
 
-                        // Визначаємо коефіцієнт зміни для обох осей
-                        float scaleFactor = Math.max(deltaX, deltaY);
+                        float scaleFactor = Math.max(deltaX, deltaY); // Вибір найбільшої зміни для пропорційного зміщення
+
+                        ViewGroup.LayoutParams params = v.getLayoutParams(); // Отримуємо поточні параметри розміру
 
                         // Змінюємо розміри
-                        ViewGroup.LayoutParams params = v.getLayoutParams();
-
-                        // Додаємо зміну розміру
                         params.width += scaleFactor;
                         params.height += scaleFactor;
 
-                        // Мінімальні розміри, щоб уникнути зникнення
+                        // Мінімальні обмеження для розміру
                         params.width = Math.max(params.width, moveZoneSize * 2);
                         params.height = Math.max(params.height, moveZoneSize * 2);
 
-                        v.setLayoutParams(params);
+                        v.setLayoutParams(params); // Застосовуємо нові розміри
 
-                        // Зберігаємо нові координати
+                        // Оновлюємо збережені координати для наступного руху
                         dX = event.getRawX();
                         dY = event.getRawY();
                     } else {
-                        // Логіка переміщення
+                        // Логіка переміщення (для переміщення без зміни розміру)
                         v.animate()
-                                .x(event.getRawX() + dX)
-                                .y(event.getRawY() + dY)
-                                .setDuration(0)
+                                .x(event.getRawX() + dX) // Переміщаємо по осі X
+                                .y(event.getRawY() + dY) // Переміщаємо по осі Y
+                                .setDuration(0) // Швидке переміщення без анімації
                                 .start();
                     }
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    // Завершення дії
+                    /*
+                     * В цьому блоці можна було б реалізувати додаткову логіку після того, як користувач відпустив палець
+                     */
                     break;
             }
             return true;
         });
-
 
 
         // Обрізання вибраної області
@@ -158,7 +172,7 @@ public class ImageExplorer {
                 if (croppedBitmap != null) {
                     String base64String = resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
                     setImage(base64String);
-                    imgExplorer. setImageAccount(base64String);
+                    imgExplorer.setImageAccount(base64String);
 
                 }
             }
@@ -181,17 +195,23 @@ public class ImageExplorer {
      * @return Вирізане зображення в форматі Bitmap.
      */
     private Bitmap cropImage() {
+        /*
+         * Перевіряємо, чи є вибране зображення
+         * Якщо немає вибраного зображення (selectedBitmap == null), функція повертає null, що означає, що нічого обрізати.
+         */
         if (selectedBitmap == null) return null;
 
-        // Отримуємо координати рамки на екрані
+        /*
+         * Отримуємо координати рамки на екрані
+         * Використовуємо getLocationOnScreen() для отримання координат cropFrame на екрані, щоб точно визначити її положення та розміри.
+         */
         int[] frameLocation = new int[2];
         cropFrame.getLocationOnScreen(frameLocation);
-
         int frameX = frameLocation[0];
         int frameY = frameLocation[1];
-
         int frameWidth = cropFrame.getWidth();
         int frameHeight = cropFrame.getHeight();
+
 
         // Отримуємо координати ImageView на екрані
         int[] imageLocation = new int[2];
@@ -200,11 +220,20 @@ public class ImageExplorer {
         int imageX = imageLocation[0];
         int imageY = imageLocation[1];
 
-        // Перевіряємо, чи рамка знаходиться над зображенням
+        /*
+         * Перевіряємо, чи рамка знаходиться над зображенням
+         * Аналогічно отримуємо координати для imageProfile, щоб дізнатися розташування зображення на екрані.
+         * Якщо координати рамки знаходяться поза зображенням, функція повертає null — не можна вирізати нічого за межами зображення.
+         */
         if (frameX < imageX || frameY < imageY) {
             System.out.println("Frame is outside the image bounds.");
             return null;
         }
+
+        /*
+         * Обчислюємо масштабні коефіцієнти для осі X та Y, щоб правильно перевести координати зображення до Bitmap.
+         * Потім перераховуємо координати та розміри для вирізання частини зображення відповідно до масштабованих значень.
+         */
 
         // Обчислюємо пропорції для перетворення координат у Bitmap
         float scaleX = (float) selectedBitmap.getWidth() / imageProfile.getWidth();
@@ -216,7 +245,10 @@ public class ImageExplorer {
         int cropWidth = (int) (frameWidth * scaleX);
         int cropHeight = (int) (frameHeight * scaleY);
 
-        // Перевіряємо, чи координати не виходять за межі Bitmap
+        /*
+         * Перевіряємо, чи координати не виходять за межі Bitmap
+         * Перевіряється, чи не виходять координати та розміри за межі зображення. Якщо так, функція повертає null.
+         */
         if (cropX < 0 || cropY < 0 || cropX + cropWidth > selectedBitmap.getWidth() || cropY + cropHeight > selectedBitmap.getHeight()) {
             System.out.println("Crop area is out of bounds.");
             return null;
@@ -248,8 +280,8 @@ public class ImageExplorer {
      * Масштабує зображення до заданих максимальних розмірів, зберігаючи співвідношення сторін.
      *
      * @param originalBitmap Оригінальне зображення.
-     * @param maxWidth Максимальна ширина.
-     * @param maxHeight Максимальна висота.
+     * @param maxWidth       Максимальна ширина.
+     * @param maxHeight      Максимальна висота.
      * @return Масштабоване зображення.
      */
     private Bitmap resizeImage(Bitmap originalBitmap, int maxWidth, int maxHeight) {
@@ -288,8 +320,8 @@ public class ImageExplorer {
      * Масштабує зображення і стискає його до формату Base64.
      *
      * @param originalBitmap Оригінальне зображення.
-     * @param maxWidth Максимальна ширина.
-     * @param maxHeight Максимальна висота.
+     * @param maxWidth       Максимальна ширина.
+     * @param maxHeight      Максимальна висота.
      * @return Стиснуте зображення у форматі Base64.
      */
     private String resizeAndCompressImage(Bitmap originalBitmap, int maxWidth, int maxHeight) {
@@ -298,8 +330,7 @@ public class ImageExplorer {
     }
 
 
-
- public Bitmap decodeBase64ToBitmap(String base64String) {
+    public Bitmap decodeBase64ToBitmap(String base64String) {
         byte[] decodedBytes = Base64.decode(base64String, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
     }
@@ -311,6 +342,7 @@ public class ImageExplorer {
 
     public interface ImgExplorer {
         void openImagePicker();
+
         void setImageAccount(String base64String);
     }
 }
