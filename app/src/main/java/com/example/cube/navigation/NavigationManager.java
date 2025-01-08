@@ -3,6 +3,8 @@ package com.example.cube.navigation;
 import static android.widget.Toast.*;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -14,6 +16,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.cube.R;
 
+import java.io.File;
+
 public class NavigationManager {
 
     private Activity activity;
@@ -22,7 +26,7 @@ public class NavigationManager {
     ImageView avatarImage;
     ImageView accountImage;
     private Button accountButton, settingsButton, logoutButton;
-
+    private final File externalDir;
     public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage,ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
         this.activity = activity;
         if (!(activity instanceof Navigation)) {
@@ -36,6 +40,10 @@ public class NavigationManager {
         this.accountButton = accountButton;
         this.settingsButton = settingsButton;
         this.logoutButton = logoutButton;
+        externalDir = new File(activity.getExternalFilesDir(null), "imageProfile");
+        if (!externalDir.exists()) {
+            boolean mkdirs = externalDir.mkdirs();
+        }
         setupButtons();
     }
 
@@ -66,7 +74,24 @@ public class NavigationManager {
         // Закрити Drawer після вибору
        // drawerLayout.closeDrawer(GravityCompat.START);
     }
-
+    public void setAvatarImage(String image){
+        File file = new File(externalDir+"/"+image);
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            avatarImage.setImageBitmap(bitmap);
+        } else {
+            avatarImage.setImageResource(R.drawable.cube_svg); // Резервне зображення
+        }
+    }
+    public void setAccountImage(String image) {
+        File file = new File(externalDir + "/" + image);
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            accountImage.setImageBitmap(bitmap);
+        } else {
+            accountImage.setImageResource(R.drawable.ukraineflag); // Резервне зображення
+        }
+    }
     public interface Navigation {
         void scannerQrAccount();
         void imageNavigation();

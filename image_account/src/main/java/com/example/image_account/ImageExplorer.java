@@ -21,6 +21,8 @@ import android.widget.ImageView;
 import androidx.activity.result.ActivityResultLauncher;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.UUID;
 
 /**
  * Клас для роботи з вибором та обрізкою зображень у діалоговому вікні.
@@ -161,7 +163,10 @@ public class ImageExplorer {
             return true;
         });
 
-
+        File externalDir = new File(context.getExternalFilesDir(null), "imageProfile");
+        if (!externalDir.exists()) {
+            boolean mkdirs = externalDir.mkdirs();
+        }
         // Обрізання вибраної області
         btnCrop.setOnClickListener(v -> {
             if (selectedBitmap != null) {
@@ -169,10 +174,10 @@ public class ImageExplorer {
                 Log.e("MainActivity", "Base64: ");
 
                 if (croppedBitmap != null) {
-                    String base64String = resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
-                    setImage(base64String);
-                    imgExplorer.setImageAccount(base64String);
-
+                    String base64StringOrg = new BitmapToFile().saveBitmapToFile(selectedBitmap, UUID.randomUUID().toString(),externalDir);//compressImageToBase64(selectedBitmap);
+                    String base64String =new BitmapToFile().saveBitmapToFile(croppedBitmap, UUID.randomUUID().toString(),externalDir); //resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
+                    setImage(resizeAndCompressImage(croppedBitmap, 200, 200));
+                    imgExplorer.setImageAccount(base64StringOrg,base64String);
                 }
             }
         });
@@ -342,6 +347,6 @@ public class ImageExplorer {
     public interface ImgExplorer {
         void openImagePicker();
 
-        void setImageAccount(String base64String);
+        void setImageAccount(String base64StringOrg,String base64String);
     }
 }

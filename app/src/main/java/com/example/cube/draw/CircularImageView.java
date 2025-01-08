@@ -1,5 +1,6 @@
 package com.example.cube.draw;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -36,9 +37,27 @@ public class CircularImageView extends AppCompatImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // Враховуємо padding
+        float paddingLeft = getPaddingLeft();
+        float paddingTop = getPaddingTop();
+        float paddingRight = getPaddingRight();
+        float paddingBottom = getPaddingBottom();
+
+        @SuppressLint("DrawAllocation")
+        RectF adjustedRect = new RectF(
+                rect.left + paddingLeft,
+                rect.top + paddingTop,
+                rect.right - paddingRight,
+                rect.bottom - paddingBottom
+        );
+
+        path.reset();
+        path.addOval(adjustedRect, Path.Direction.CCW);
+
         canvas.save();
         canvas.clipPath(path);
         super.onDraw(canvas);
         canvas.restore();
     }
+
 }

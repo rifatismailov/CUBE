@@ -88,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private UserData user;           // Об'єкт користувача
     private DatabaseHelper dbHelper;
     private SQLiteDatabase db;
-    ContactManager contactManager;
-    Manager manager;
+    private ContactManager contactManager;
+    private Manager manager;
     private final List<UserData> userList = new ArrayList<>();  // Список користувачів
     private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
 
@@ -102,13 +102,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int numMessage = 0;  // Лічильник повідомлень
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
-    private File externalDir;  // Зовнішній каталог
-
     private ActivityResultLauncher<Intent> activityResultLauncher;
-
-
     private DrawerLayout drawerLayout;
-
+    private NavigationManager navigationManager;
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password) {
@@ -213,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user_id = findViewById(R.id.user_id);
 
         // Використання NavigationManager для обробки меню
-        new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
+        navigationManager= new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
                  findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
 
 
@@ -222,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
         dbHelper = new DatabaseHelper(this);
         db = dbHelper.getWritableDatabase();
-        externalDir = new File(getExternalFilesDir(null), "cube");
         manager = new Manager(this, db, secretKey);
         manager.readAccount();
         contactManager = new ContactManager(db);
@@ -655,8 +650,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void setImageAccount(String base64String) {
+    public void setImageAccount(String base64StringOrg,String base64String) {
+        Log.e("MainActivity", "Base64or: " + base64StringOrg);
         Log.e("MainActivity", "Base64: " + base64String);
+        navigationManager.setAvatarImage(base64StringOrg);
+        navigationManager.setAccountImage(base64String);
     }
 
     /**
