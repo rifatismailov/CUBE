@@ -52,7 +52,6 @@ public class ImageExplorer {
     }
 
     boolean isResizing = false;
-    boolean isMoving = false;
 
     /**
      * Відображення діалогового вікна для вибору та обрізки зображення.
