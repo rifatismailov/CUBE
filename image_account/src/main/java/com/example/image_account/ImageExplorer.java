@@ -99,9 +99,10 @@ public class ImageExplorer {
                 Log.e("MainActivity", "Base64: ");
 
                 if (croppedBitmap != null) {
-                    String base64String = resizeAndCompressImage(croppedBitmap, 300, 300); // конвертуємо в Base64
-                    Log.e("MainActivity", "Base64: " + base64String);
+                    String base64String = resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
                     setImage(base64String);
+                    imgExplorer. setImageAccount(base64String);
+
                 }
             }
         });
@@ -144,6 +145,7 @@ public class ImageExplorer {
 
         // Перевіряємо, чи рамка знаходиться над зображенням
         if (frameX < imageX || frameY < imageY) {
+            System.out.println("Frame is outside the image bounds.");
             return null;
         }
 
@@ -159,18 +161,19 @@ public class ImageExplorer {
 
         // Перевіряємо, чи координати не виходять за межі Bitmap
         if (cropX < 0 || cropY < 0 || cropX + cropWidth > selectedBitmap.getWidth() || cropY + cropHeight > selectedBitmap.getHeight()) {
+            System.out.println("Crop area is out of bounds.");
             return null;
         }
 
         // Якщо вирізати занадто вузько, збільшуємо рамку
         if (cropWidth < cropHeight) {
             int newSize = cropHeight;  // робимо ширину рівною висоті
-            int offsetX = (cropWidth - newSize) ;
+            int offsetX = (cropWidth - newSize) / 2;
             cropX += offsetX;
             cropWidth = newSize;
         } else if (cropHeight < cropWidth) {
             int newSize = cropWidth;  // робимо висоту рівною ширині
-            int offsetY = (cropHeight - newSize) ;
+            int offsetY = (cropHeight - newSize) / 2;
             cropY += offsetY;
             cropHeight = newSize;
         }
@@ -182,8 +185,7 @@ public class ImageExplorer {
             e.printStackTrace();
             return null;
         }
-    }
-    /**
+    }    /**
      * Масштабує зображення до заданих максимальних розмірів, зберігаючи співвідношення сторін.
      *
      * @param originalBitmap Оригінальне зображення.
@@ -250,5 +252,6 @@ public class ImageExplorer {
 
     public interface ImgExplorer {
         void openImagePicker();
+        void setImageAccount(String base64String);
     }
 }

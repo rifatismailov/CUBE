@@ -654,6 +654,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
+    @Override
+    public void setImageAccount(String base64String) {
+        Log.e("MainActivity", "Base64: " + base64String);
+    }
+
     /**
      * Обробник результату вибору зображення.
      * Після вибору зображення з галереї цей метод отримує обраний файл і відправляє його в ImageExplorer.
