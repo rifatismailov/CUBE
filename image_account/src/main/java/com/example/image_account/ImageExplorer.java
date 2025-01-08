@@ -25,7 +25,7 @@ import java.io.ByteArrayOutputStream;
  */
 public class ImageExplorer {
     private final Context context;
-    private View cropFrame;
+    private CustomCropView cropFrame;
     private Bitmap selectedBitmap;
     private ImageView imageProfile;
     private ImageView imageAccount;
@@ -48,7 +48,8 @@ public class ImageExplorer {
         this.imgExplorer = (ImgExplorer) context;
         showDialog();
     }
-
+    boolean isResizing = false;
+    boolean isMoving = false;
     /**
      * Відображення діалогового вікна для вибору та обрізки зображення.
      * Відкриває діалог, налаштовує макет, та прив'язує елементи інтерфейсу.
@@ -72,25 +73,81 @@ public class ImageExplorer {
         btnCrop = layout.findViewById(R.id.btnCrop);
         cropFrame = layout.findViewById(R.id.cropFrame);
 
-        imageProfile.setOnClickListener(v -> imgExplorer.openImagePicker());
-
+        imageAccount.setOnClickListener(v -> imgExplorer.openImagePicker());
         // Дозвіл переміщувати рамку
+// Ініціалізація змінних для переміщення та зміни розміру
+        float dXx, dYy;
+
+
+// Ініціалізація змінних для переміщення та зміни розміру
+
+
         cropFrame.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
+            int action = event.getAction();
+            float touchX = event.getX(); // Координати дотику відносно View
+            float touchY = event.getY();
+
+            // Розміри зони переміщення
+            int moveZoneSize = 40;
+
+            switch (action) {
                 case MotionEvent.ACTION_DOWN:
-                    dX = v.getX() - event.getRawX();
-                    dY = v.getY() - event.getRawY();
+                    // Визначаємо, натиснув користувач всередині зони чи на краях
+                    if (touchX > moveZoneSize && touchX < v.getWidth() - moveZoneSize &&
+                            touchY > moveZoneSize && touchY < v.getHeight() - moveZoneSize) {
+                        isResizing = false; // Режим переміщення
+                        dX = v.getX() - event.getRawX();
+                        dY = v.getY() - event.getRawY();
+                    } else {
+                        isResizing = true; // Режим зміни розміру
+                        dX = event.getRawX();
+                        dY = event.getRawY();
+                    }
                     break;
+
                 case MotionEvent.ACTION_MOVE:
-                    v.animate()
-                            .x(event.getRawX() + dX)
-                            .y(event.getRawY() + dY)
-                            .setDuration(0)
-                            .start();
+                    if (isResizing) {
+                        // Логіка зміни розміру
+                        float deltaX = event.getRawX() - dX;
+                        float deltaY = event.getRawY() - dY;
+
+                        // Визначаємо коефіцієнт зміни для обох осей
+                        float scaleFactor = Math.max(deltaX, deltaY);
+
+                        // Змінюємо розміри
+                        ViewGroup.LayoutParams params = v.getLayoutParams();
+
+                        // Додаємо зміну розміру
+                        params.width += scaleFactor;
+                        params.height += scaleFactor;
+
+                        // Мінімальні розміри, щоб уникнути зникнення
+                        params.width = Math.max(params.width, moveZoneSize * 2);
+                        params.height = Math.max(params.height, moveZoneSize * 2);
+
+                        v.setLayoutParams(params);
+
+                        // Зберігаємо нові координати
+                        dX = event.getRawX();
+                        dY = event.getRawY();
+                    } else {
+                        // Логіка переміщення
+                        v.animate()
+                                .x(event.getRawX() + dX)
+                                .y(event.getRawY() + dY)
+                                .setDuration(0)
+                                .start();
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // Завершення дії
                     break;
             }
             return true;
         });
+
+
 
         // Обрізання вибраної області
         btnCrop.setOnClickListener(v -> {
@@ -185,7 +242,9 @@ public class ImageExplorer {
             e.printStackTrace();
             return null;
         }
-    }    /**
+    }
+
+    /**
      * Масштабує зображення до заданих максимальних розмірів, зберігаючи співвідношення сторін.
      *
      * @param originalBitmap Оригінальне зображення.

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#ff33b5e5"/> <!-- Задаємо колір фону -->
+
+    <!-- Заокруглені кути -->
+    <corners android:radius="20dp"/> <!-- Можна регулювати радіус заокруглення -->
+
+    <size android:width="100dp" android:height="100dp"/> <!-- Розміри для вашого View -->
+</shape>
+

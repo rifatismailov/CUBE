@@ -22,9 +22,8 @@ public class NavigationManager {
     ImageView avatarImage;
     ImageView accountImage;
     private Button accountButton, settingsButton, logoutButton;
-    ImageButton add_accounte;
 
-    public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage,ImageView accountImage, ImageButton add_accounte, Button accountButton, Button settingsButton, Button logoutButton) {
+    public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage,ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
         this.activity = activity;
         if (!(activity instanceof Navigation)) {
             //Перевірка типу activity у конструкторі: Якщо активність не імплементує Navigation, це може викликати ClassCastException.
@@ -32,7 +31,6 @@ public class NavigationManager {
         }
         this.navigation = (Navigation) activity;
         this.drawerLayout = drawerLayout;
-        this.add_accounte = add_accounte;
         this.avatarImage = avatarImage;
         this.accountImage=accountImage;
         this.accountButton = accountButton;
@@ -42,7 +40,6 @@ public class NavigationManager {
     }
 
     private void setupButtons() {
-        add_accounte.setOnClickListener(v -> handleMenuItemClick(R.id.add_account));
         accountButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_account));
         settingsButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_settings));
         accountImage.setOnClickListener(v -> handleMenuItemClick(R.id.accountImage));
@@ -52,10 +49,6 @@ public class NavigationManager {
 
     private void handleMenuItemClick(int itemId) {
         switch (itemId) {
-            case R.id.add_account:
-                navigation.scannerQrAccount();
-                // Логіка для "Акаунт"
-                break;
             case R.id.nav_account:
                 // Логіка для "Акаунт"
                 break;
@@ -63,11 +56,10 @@ public class NavigationManager {
                 // Логіка для "Налаштування"
                 break;
             case R.id.nav_logout:
-
+                navigation.scannerQrAccount();
                 // Логіка для "Вихід"
                 break;
             case R.id.accountImage:
-                Log.e("MainActivity", "AAAA");
                 navigation.imageNavigation();
                 break;
         }
