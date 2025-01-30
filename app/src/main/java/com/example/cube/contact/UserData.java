@@ -133,6 +133,9 @@ public class UserData implements Serializable {
             this.senderKey = jsonObject.optString("senderKey", "");
             this.receiverKey = jsonObject.optString("receiverKey", "");
             this.name = jsonObject.optString("name", "No name");
+            this.avatarImageUrl = jsonObject.optString("avatarImageUrl", "");
+            this.accountImageUrl = jsonObject.optString("accountImageUrl", "");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -149,6 +152,8 @@ public class UserData implements Serializable {
             jsonObject.put("senderKey", senderKey);
             jsonObject.put("receiverKey", receiverKey);
             jsonObject.put("name", name);
+            jsonObject.put("avatarImageUrl", avatarImageUrl);
+            jsonObject.put("accountImageUrl", accountImageUrl);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,6 +2,10 @@ package com.example.cube.contact;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,8 +48,15 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
         userData = mList.get(position);
         ImageView image = view.findViewById(R.id.qrCodeUser);
-        if (userData.getAccountImageUrl() != null) {
-            // image.setImageBitmap(QRCode.getQRCode(userData.getId()));
+        Log.e("MainActivity", "AccountImageUrl "+userData.getAccountImageUrl());
+
+        if (userData.getAccountImageUrl() != null && !userData.getAccountImageUrl().isEmpty()) {
+            Log.e("MainActivity", "AccountImageUrl "+userData.getAccountImageUrl());
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 2; // Зменшити розмір у два рази
+            Bitmap bitmap = BitmapFactory.decodeFile(userData.getAccountImageUrl(), options);
+            image.setImageBitmap(bitmap);
         } else {
             image.setImageBitmap(QRCode.getQRCode(userData.getId()));
         }
@@ -68,7 +79,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (userData.getAccountImageUrl() != null) {
+                if (userData.getAccountImageUrl() != null&&!userData.getAccountImageUrl().isEmpty()) {
                     // вікно відображення QR коду або зображення та повної інформації
                 } else {
                     // вікно відображення QR коду або зображення та повної інформації

@@ -917,6 +917,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String avatar = getAvatarInfoAndRemove(positionId);
         String[] positionName = avatar.split(":");
         Log.e("MainActivity", "user "+positionName[0]+" avatar_name "+positionName[1]+" [" + positionId + " fileName " + url + " ]: " + has);
+
+        for (UserData user : userList) {
+            if (user.getId().equals(positionName[0])) {
+                user.setName("Kent");
+                if(positionName[1].equals("avatar_org")){
+                    user.setAvatarImageUrl(url);
+                }
+                if(positionName[1].equals("avatar")){
+                    user.setAccountImageUrl(url);
+                }
+                contactManager.updateContact(user, secretKey);
+                break;
+            }
+        }
+        userAdapter.notifyDataSetChanged();
     }
 
     /**Метод для отримання ключа для разщифрування файшлу
