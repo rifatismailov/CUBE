@@ -37,10 +37,7 @@
 
         android:layout_marginBottom="10sp">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/circular_placeholder" />
+
 
         <com.example.cube.draw.CircularImageView
             android:id="@+id/accountImage"

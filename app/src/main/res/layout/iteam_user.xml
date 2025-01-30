@@ -5,11 +5,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
+    <com.example.cube.draw.CircularImageView
         android:id="@+id/qrCodeUser"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
         android:layout_marginStart="5dp"
+
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp" />
 
@@ -33,7 +34,7 @@
         android:layout_above="@+id/idNumber"
         android:layout_alignParentTop="true"
         android:layout_marginStart="1dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="1dp"
         android:layout_marginBottom="2dp"
         android:layout_toStartOf="@+id/messageSize"
@@ -59,7 +60,7 @@
         android:layout_above="@+id/bottomView"
         android:layout_below="@+id/userName"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="1dp"
         android:layout_marginBottom="1dp"
         android:layout_toStartOf="@+id/messageSize"
@@ -121,7 +122,7 @@
         android:layout_width="wrap_content"
         android:layout_height="1dp"
         android:layout_below="@+id/idNumber"
-        android:layout_marginStart="55dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginStart="65dp"
+        android:layout_marginTop="10dp"
         android:background="#909090" />
 </RelativeLayout>
