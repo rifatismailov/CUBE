@@ -43,8 +43,10 @@ import com.example.cube.log.Logger;
 import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
+import com.example.folder.download.Downloader;
 import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileOMG;
+import com.example.folder.file.Folder;
 import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
@@ -58,6 +60,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -74,8 +77,9 @@ import javax.crypto.spec.SecretKeySpec;
  * Реалізує кілька інтерфейсів для обробки кліків та отримання повідомлень від сервера.
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        View.OnClickListener,
-        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer, ContactInterface, FileOMG {
+        View.OnClickListener, ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable,
+        NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer,
+        ContactInterface, FileOMG, Folder ,Downloader.DownloaderHandler{
 
     private ActivityMainBinding binding;
     private TextView user_name;
@@ -378,24 +382,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param i           Позиція вибраного елемента.
      * @param l           Ідентифікатор вибраного елемента.
      * @user Основний користувач, який був вибраний.
-     *
+     * <p>
      * Пояснення до коду: пишу для себе, але може бути корисно для вас також.
-     *
      * @onItemClick Відповідає за обробку натискання на контакти, які у вас є.
-     *
+     * <p>
      * Під час натискання перевіряються 4 параметри:
-     *
      * @publicKey Перевірка існування publicKey — це RSA-ключ, за допомогою якого
      * шифруються спеціальні повідомлення, що будуть відправлятися вам користувачем,
      * з яким ви спілкуєтеся.
-     *
      * @senderKey Перевірка існування senderKey — це AES-ключ, за допомогою якого
      * шифруються повідомлення, що буде відправляти вам користувач, з яким ви спілкуєтеся.
-     *
      * @receiverPublicKey Перевірка існування receiverPublicKey користувача, якому ви пишете —
      * це RSA-ключ, за допомогою якого шифруються спеціальні повідомлення для відправки
      * до користувача, з яким ви спілкуєтеся.
-     *
      * @receiverKey Перевірка існування receiverKey користувача, якому ви пишете —
      * це AES-ключ, за допомогою якого шифруються повідомлення, які ви будете відправляти
      * до користувача, з яким ви спілкуєтеся.
@@ -519,7 +518,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    /**Передача зображення акаунта
+    /**
+     * Передача зображення акаунта
      * Під час передачі ми передаємо два зображення:
      * 1. Маленьке — для контактів
      * 2. Велике — для аватара
@@ -529,7 +529,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * - Назви поточного файлу
      * - Користувача, якому належить файл
      * - Хеш-суми
-     * Також передається ключ для шифрування, де зазначається, хто запитує ці зображення. */
+     * Також передається ключ для шифрування, де зазначається, хто запитує ці зображення.
+     */
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
@@ -541,23 +542,51 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for (UserData user : userList) {
             if (user.getId().equals(sender)) {
                 String key = user.getSenderKey();
-                uploadFile(new File(avatarImage), sender + ":imageOrgName:"+fileDetect.getFileHash(avatarImage, "SHA-256"), key);
-                uploadFile(new File(accountImage), sender + ":accountImage:"+fileDetect.getFileHash(accountImage, "SHA-256"), key);
+                uploadFile(new File(avatarImage), sender + ":imageOrgName:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
+                uploadFile(new File(accountImage), sender + ":accountImage:" + fileDetect.getFileHash(accountImage, "SHA-256"), key);
                 break;
             }
         }
     }
 
-    /**Отримання зображення контакту який в нас збережений */
+
+    private void addAvatar(Envelope envelope,String avatar_name){
+        try {
+            //Thread.sleep(3000);
+            for (int position = 0; position < userList.size(); position++) {
+                if (userList.get(position).getId().equals(envelope.getSenderId())) {
+                    addPositionID(envelope.getMessageId(),envelope.getSenderId()+ ":"+avatar_name);
+                    Log.e("MainActivity", userList.get(position).getId() +" Key " + userList.get(position).getReceiverKey());
+                    String message = Encryption.AES.decrypt(envelope.getMessage(), userList.get(position).getReceiverKey());
+                    String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), userList.get(position).getReceiverKey());
+                    String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), userList.get(position).getReceiverKey());
+                    File externalDir = new File(getExternalFilesDir(null), "imageProfile");
+                    Log.e("MainActivity", "message "+message+" messageID " + envelope.getMessageId()+" fileUrl "+fileUrl+" fileHash "+fileHash);
+                    URL url = new URL(fileUrl);
+                    new Downloader(this, url , externalDir, position, envelope.getMessageId());
+                    break;
+                }
+            }
+        }catch (Exception e){
+            Log.e("MainActivity"," Error "+ e);
+
+        }
+    }
+    /**
+     * Отримання зображення контакту який в нас збережений
+     */
     @Override
     public void getAvatar(Envelope envelope) {
-        Log.e("MainActivity", "Envelope " + envelope.toJson());
+            addAvatar(envelope,"avatar");
     }
 
-    /**Отримання зображення контакту який в нас збережений */
+
+    /**
+     * Отримання зображення контакту який в нас збережений
+     */
     @Override
     public void getAvatarORG(Envelope envelope) {
-        Log.e("MainActivity", "Envelope " + envelope.toJson());
+        addAvatar(envelope,"avatar_org");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -565,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         String serverUrl = "http://192.168.1.237:8020/api/files/upload";
         // Виконуємо шифрування у фоновому потоці
-        new Thread(() -> {
+        new Handler().postDelayed(() -> {
             try {
                 FileEncryption fileEncryption = new FileEncryption(this, sender, serverUrl);
                 SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
@@ -576,7 +605,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             } catch (Exception e) {
 
             }
-        }).start();
+        }, 1);
+//        new Thread(() -> {
+//            try {
+//                FileEncryption fileEncryption = new FileEncryption(this, sender, serverUrl);
+//                SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
+//                String encryptedFile = fileEncryption.getEncFile(file, secretKey);
+//                addPositionID(sender, encryptedFile);
+//                Log.e("MainActivity", " encryptedFileName " + encryptedFile);
+//                fileEncryption.fileEncryption();
+//            } catch (Exception e) {
+//
+//            }
+//        }).start();
     }
 
     // Метод для додавання значення
@@ -585,7 +626,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Метод для отримання та автоматичного видалення значення
-    public String getFileNameAndRemove(String positionID) {
+    public String getAvatarInfoAndRemove(String positionID) {
         return avatar_map.remove(positionID);
     }
 
@@ -833,22 +874,62 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void endProgress(String positionId, String info) {
-        String path = getFileNameAndRemove(positionId);
-        String fileName = path.substring(path.lastIndexOf("/") + 1);
-        String serverUrl = "http://192.168.1.237:8020/api/files/upload/"+fileName;
-        String[] position = positionId.split(":");
+        try {
+            String path = getAvatarInfoAndRemove(positionId);
+            String fileName = path.substring(path.lastIndexOf("/") + 1);
+            String serverUrl = "http://192.168.1.237:8020/api/files/download/" + fileName;
+            String[] position = positionId.split(":");
+            for (UserData user : userList) {
+                if (user.getId().equals(position[0])) {
+                    if (position[1].equals("imageOrgName")) {
+                        String rMessage = Encryption.AES.encrypt("avatar_org", user.getSenderKey());
+                        String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
+                        String Has = Encryption.AES.encrypt(position[2], user.getSenderKey());
+
+                        sendMessageToService(new Envelope(userId, position[0], FIELD.AVATAR_ORG.getFIELD(),
+                                rMessage,
+                                Url, Has, UUID.randomUUID().toString()).toJson().toString());
+                    } else {
+                        String rMessage = Encryption.AES.encrypt("avatar", user.getSenderKey());
+                        String Url = Encryption.AES.encrypt(serverUrl,user.getSenderKey());
+                        String Has = Encryption.AES.encrypt(position[2], user.getSenderKey());
+
+                        sendMessageToService(new Envelope(userId, position[0], FIELD.AVATAR.getFIELD(),
+                                rMessage,
+                                Url, Has, UUID.randomUUID().toString()).toJson().toString());                    }
+                    break;
+                }
+            }
+            Log.e("MainActivity", "[" + positionId + " fileName " + fileName + " ]: " + info);
+        }catch (Exception e){
+
+        }
+
+    }
+
+    @Override
+    public void addFile(String messageId, String url, String encFile, String has) {
+
+    }
+
+    @Override
+    public void updateItem(int position, String positionId, String url, String has) {
+        String avatar = getAvatarInfoAndRemove(positionId);
+        String[] positionName = avatar.split(":");
+        Log.e("MainActivity", "user "+positionName[0]+" avatar_name "+positionName[1]+" [" + positionId + " fileName " + url + " ]: " + has);
+    }
+
+    /**Метод для отримання ключа для разщифрування файшлу
+     * в нашому випадку в нас тут слугу  positionId Id-Повідомлення яке прийшло та за яким збережений Id контакту
+     * Звертаємося до avatar_map та оримуємо ID контакту для отримання ключа*/
+    @Override
+    public String getKey(String positionId) {
+        String body_map=avatar_map.get(positionId);
+        String[] position = body_map.split(":");
         for (UserData user : userList) {
             if (user.getId().equals(position[0])) {
-                if (position[1].equals("imageOrgName")) {
-                  //  sendHandshake(userId, position[0], FIELD.AVATAR_ORG.getFIELD(), fileName, user.getPublicKey());
-                 //   sendMessageToService(new Envelope(userId,  position[0], FIELD.AVATAR_ORG.getFIELD(), "avatar", fileName).toJson().toString());
-                    sendMessageToService( new Envelope(userId, position[0],  FIELD.AVATAR_ORG.getFIELD(),"avatar_org", serverUrl, position[2], UUID.randomUUID().toString()).toJson().toString());
-                } else {
-                    sendMessageToService(new Envelope(userId, position[0],  FIELD.AVATAR.getFIELD(),"avatar", serverUrl, position[2], UUID.randomUUID().toString()).toJson().toString());
-                }
-                break;
-            }
-        }
-        Log.e("MainActivity", "[" + positionId + " fileName " + fileName + " ]: " + info);
+                return user.getReceiverKey();
+            }}
+        return "";
     }
 }

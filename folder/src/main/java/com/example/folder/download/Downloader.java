@@ -8,7 +8,8 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.example.folder.Folder;
+import com.example.folder.file.Folder;
+import com.example.folder.file.FileDeletion;
 import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileOMG;
 
@@ -41,12 +42,14 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
      *
      * @context Контекст основного активності
      * @url адреса де знаходиться файл
+     * @externalDir місце куди буде збережено файл
      * @position позиція у активності
      * @positionId ІД позиції у активності
      */
-    public Downloader(Context context, URL url, int position, String positionId) {
+    public Downloader(Context context, URL url, File externalDir, int position, String positionId) {
+        Log.e("MainActivity",  "URL "+url );
+
         // Перевірка та створення директорії
-        File externalDir = new File(context.getExternalFilesDir(null), "cube");
         if (!externalDir.exists()) {
             boolean mkdirs = externalDir.mkdirs();
             if (!mkdirs) {
@@ -64,6 +67,8 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
         this.position = position;
         this.positionId = positionId;
     }
+
+
 
     /**
      * Отримує ім'я файлу з URL.
@@ -98,7 +103,7 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
             Thread.sleep(1000);
             // Розшифровка файлу, якщо потрібно
             FileDecryption fileDecryption = new FileDecryption(this, context, positionId);
-            SecretKey secretKey = new SecretKeySpec(downloaderHandler.getKey().getBytes(), "AES");
+            SecretKey secretKey = new SecretKeySpec(downloaderHandler.getKey(positionId).getBytes(), "AES");
             decryptedFileName = fileDecryption.getDecFile(new File(directory + "/" + fileName), secretKey);
             Log.e("Downloader", "decryptedFileName " + decryptedFileName);
             fileDecryption.fileDecryption();
@@ -109,18 +114,20 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
 
     @Override
     public void stopDecryption() {
-        Log.e("Downloader", "stopDecryption " + directory + "/" + fileName + " > " + decryptedFileName);
         try {
             new Handler().postDelayed(() -> {
                 FileDetect fileDetect = new FileDetect();
-                folder.updateItem(position, decryptedFileName, fileDetect.getFileHash(decryptedFileName, "SHA-256"));
+                folder.updateItem(position,positionId, decryptedFileName, fileDetect.getFileHash(decryptedFileName, "SHA-256"));
             }, 1);
+            Log.e("Downloader", "Decryption of file " + directory + "/" + fileName + " to file > " + decryptedFileName);
+            //Видаляємо шифрований файл щоб не було накопичування
+            FileDeletion.deleteFile(context, directory + "/" + fileName);
         } catch (Exception e) {
             Log.e("Downloader", "Помилка при оновленні інформації про розшифрований файл", e);
         }
     }
 
     public interface DownloaderHandler {
-        String getKey();
+        String getKey(String positionId);
     }
 }

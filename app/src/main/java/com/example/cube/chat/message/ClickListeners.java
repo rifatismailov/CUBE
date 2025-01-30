@@ -108,7 +108,8 @@ public class ClickListeners {
                         URL url = new URL(message.getUrl().toString()); // Змініть IP на ваш
                         Log.e("Listener",url.toString());
 
-                        new Downloader(context, url,position,message.getMessageId());
+                        File externalDir = new File(context.getExternalFilesDir(null), "cube");
+                        new Downloader(context, url,externalDir,position,message.getMessageId());
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

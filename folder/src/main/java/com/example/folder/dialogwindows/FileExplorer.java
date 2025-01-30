@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
-import com.example.folder.Folder;
+import com.example.folder.file.Folder;
 import com.example.folder.R;
 import com.example.folder.file.FileDetect;
 import com.example.folder.upload.FileEncryption;

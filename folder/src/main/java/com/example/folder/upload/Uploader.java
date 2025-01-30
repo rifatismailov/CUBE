@@ -36,9 +36,9 @@ public class Uploader {
             public void onProgressUpdate(int percentage) {
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> {
-                        if (percentage ==100) {
-                            fileOMG.endProgress(positionId, "end");
-                        }
+//                        if (percentage >100) {
+//                            fileOMG.endProgress(positionId, "end");
+//                        }
                         fileOMG.setProgressShow(positionId, percentage, "");
                     });
                 }
@@ -88,6 +88,7 @@ public class Uploader {
                     ((Activity) context).runOnUiThread(() -> {
                         try {
                             fileOMG.setProgressShow(positionId, 100, "Файл успішно завантажено");
+                            fileOMG.endProgress(positionId, "end");
                             Log.e("Uploader", "Файл успішно завантажено: " + response.body().string());
                         } catch (Exception e) {
                             Log.e("Uploader", "ERROR: при обробці відповіді сервера: " + e.getMessage());

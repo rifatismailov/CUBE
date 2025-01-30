@@ -30,7 +30,7 @@ import android.view.Menu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
-import com.example.folder.Folder;
+import com.example.folder.file.Folder;
 import com.example.folder.dialogwindows.FileExplorer;
 import com.example.folder.download.Downloader;
 import com.example.folder.file.FileOMG;
@@ -49,11 +49,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
-
-public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG, FileOMG,Downloader.DownloaderHandler  {
+public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG, FileOMG, Downloader.DownloaderHandler {
     private ActivityChatBinding binding;
     private MessageManager manager;
     private MessagesAdapter adapter;
@@ -178,7 +175,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
 
-
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
         messages.addAll(messagesdb);
@@ -187,6 +183,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             binding.recyclerView.smoothScrollToPosition(messages.size());
         });
     }
+
     private void handleReceivedData(String data) {
         new OperationMSG(this).onReceived(senderKey, data);
     }
@@ -213,8 +210,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
 
-
-
     private void send(Message message) {
         runOnUiThread(() -> {
             message.setSenderId(senderId);
@@ -229,8 +224,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
 
-
-    private void addMessageFile(Message message,String encFile) {
+    private void addMessageFile(Message message, String encFile) {
         runOnUiThread(() -> {
             message.setSenderId(senderId);
             message.setReceiverId(receiverId);
@@ -253,7 +247,16 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (!messageTxt.isEmpty()) {
                 binding.messageBox.setText("");
             }
-            if (url.endsWith(".jpg") || url.endsWith(".png")) {
+            if (url.endsWith(".jpg") ||
+                    url.endsWith(".jpeg") ||
+                    url.endsWith(".png") ||
+                    url.endsWith(".webp") ||
+                    url.endsWith(".bmp") ||
+                    url.endsWith(".gif") ||
+                    url.endsWith(".heic") ||
+                    url.endsWith(".heif") ||
+                    url.endsWith(".tiff") ||
+                    url.endsWith(".tif")) {
                 fileData = new FileData().convertImage(url);
                 message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
@@ -265,7 +268,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setTypeFile(fileData.getFileType(new File(url)));
             message.setHas(has);
             message.setDataCreate(fileData.getFileDate(new File(url)));
-            addMessageFile(message,encFile);
+            addMessageFile(message, encFile);
 
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);
@@ -273,19 +276,28 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void updateItem(int position, @NonNull String url, String has) {
-        updateItemAsync(position, url, has);
+    public void updateItem(int position, String positionId, @NonNull String url, String has) {
+        updateItemAsync(position, positionId, url, has);
     }
 
     private final ExecutorService update_execService = Executors.newSingleThreadExecutor();
 
-    public void updateItemAsync(int position, @NonNull String url, String has) {
+    public void updateItemAsync(int position, String positionId, @NonNull String url, String has) {
         Message message = messages.get(position);
         update_execService.execute(() -> {
             try {
                 String fileName = new File(url).getName();
                 FileData fileData;
-                if (url.endsWith(".jpg") || url.endsWith(".png")) {
+                if (url.endsWith(".jpg") ||
+                        url.endsWith(".jpeg") ||
+                        url.endsWith(".png") ||
+                        url.endsWith(".webp") ||
+                        url.endsWith(".bmp") ||
+                        url.endsWith(".gif") ||
+                        url.endsWith(".heic") ||
+                        url.endsWith(".heif") ||
+                        url.endsWith(".tiff") ||
+                        url.endsWith(".tif")) {
                     fileData = new FileData().convertImage(url);
                 } else {
                     fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
@@ -389,7 +401,9 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void addReceiverKey(String aesKey) throws Exception {
         receiverKey = Encryption.RSA.decrypt(aesKey, privateKey);
     }
-    int i=0;
+
+    int i = 0;
+
     @Override
     public void addNotifier(String messageId, String messageStatus) {
         runOnUiThread(() -> {
@@ -417,7 +431,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void setProgressShow(String messageId, int progress, String info) {
-        Log.e("Downloader", "setProgressShow "+progress);
+        Log.e("Downloader", "setProgressShow " + progress);
 
         try {
             runOnUiThread(() -> {
@@ -443,7 +457,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     }
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -461,7 +475,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
     @Override
-    public String getKey() {
+    public String getKey(String positionId) {
         return receiverKey;
     }
 

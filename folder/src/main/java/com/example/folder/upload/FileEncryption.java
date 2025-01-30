@@ -21,6 +21,9 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 
+/**
+ * Клас FileEncryption призначений для шифрування та відправки до файл сервери зашифрований файл
+ */
 public class FileEncryption {
     private static final String ALGORITHM = "AES";
     private static final int BUFFER_SIZE = 4096; // Розмір блоку для обробки (4KB)
@@ -37,8 +40,6 @@ public class FileEncryption {
         this.fileOMG = (FileOMG) context;
         this.positionId = positionId;
         this.server_address = server_address;
-        Log.e("Uploader", "FileEncryption: " + positionId);
-
     }
 
     /**
