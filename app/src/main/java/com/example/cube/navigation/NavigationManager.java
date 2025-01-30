@@ -51,7 +51,6 @@ public class NavigationManager {
         accountButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_account));
         settingsButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_settings));
         accountImage.setOnClickListener(v -> handleMenuItemClick(R.id.accountImage));
-
         logoutButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_logout));
     }
 
@@ -78,6 +77,7 @@ public class NavigationManager {
         File file = new File(externalDir+"/"+image);
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+
             avatarImage.setImageBitmap(bitmap);
         } else {
             avatarImage.setImageResource(R.drawable.cube_svg); // Резервне зображення

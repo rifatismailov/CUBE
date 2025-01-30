@@ -14,36 +14,42 @@ import java.io.IOException;
 
 public class Uploader {
     private FileOMG fileOMG;
-    String messageId;
+    String positionId;
     Context context;
     private final String server_address; // Змініть IP на ваш
-    public Uploader(Context context, String messageId, String server_address) {
-        this.context=context;
-        this.fileOMG=(FileOMG)context;
-        this.messageId=messageId;
-        this.server_address=server_address;
-        Log.e("FileEncryption", "Uploader: " + messageId);
+
+    public Uploader(Context context, String positionId, String server_address) {
+        this.context = context;
+        this.fileOMG = (FileOMG) context;
+        this.positionId = positionId;
+        this.server_address = server_address;
+        Log.e("Uploader", "PositionId: " + positionId);
 
     }
-    
-    public void uploadFile(File file)throws InterruptedException {
-        Log.e("FileEncryption", "uploadFile "+file);
+
+    public void uploadFile(File file) throws InterruptedException {
+        Log.e("Uploader", "uploadFile " + file);
 
         OkHttpClient client = new OkHttpClient();
         ProgressRequestBody fileBody = new ProgressRequestBody(file, "application/octet-stream", new ProgressRequestBody.UploadCallbacks() {
             @Override
-            public void onProgressUpdate(int percentage)  {
+            public void onProgressUpdate(int percentage) {
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,percentage,""));
+                    ((Activity) context).runOnUiThread(() -> {
+                        if (percentage ==100) {
+                            fileOMG.endProgress(positionId, "end");
+                        }
+                        fileOMG.setProgressShow(positionId, percentage, "");
+                    });
                 }
             }
 
             @Override
             public void onError() {
-                Log.e("FileEncryption", "ERROR: to sending");
+                Log.e("Uploader", "ERROR: to sending");
 
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: to sending"));
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: to sending"));
                 }
             }
 
@@ -52,37 +58,41 @@ public class Uploader {
             }
         });
 
-        // Створюємо MultipartBody, додаючи файл та інші частини, якщо необхідно
         MultipartBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("file", file.getName(), fileBody) // додаємо файл
+                .addFormDataPart("file", file.getName(), fileBody)
                 .build();
 
-        // Створюємо запит
         Request request = new Request.Builder()
                 .url(server_address)
                 .post(requestBody)
                 .build();
 
-        // Викликаємо запит на сервер
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("FileEncryption", "ERROR: " + e);
+                Log.e("Uploader", "ERROR: " + e);
 
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: "+e));
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: " + e));
                 }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId,0,"ERROR: server is not responding."));
-
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: server is not responding."));
                 } else {
-                    Log.e("FileEncryption", "Відповідь сервера: " + response.body().string());
+                    Log.e("Uploader", "Відповідь сервера: " + response.body().string());
 
+                    ((Activity) context).runOnUiThread(() -> {
+                        try {
+                            fileOMG.setProgressShow(positionId, 100, "Файл успішно завантажено");
+                            Log.e("Uploader", "Файл успішно завантажено: " + response.body().string());
+                        } catch (Exception e) {
+                            Log.e("Uploader", "ERROR: при обробці відповіді сервера: " + e.getMessage());
+                        }
+                    });
                 }
             }
         });

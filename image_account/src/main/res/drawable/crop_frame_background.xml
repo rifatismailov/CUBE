@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#ff33b5e5"/> <!-- Задаємо колір фону -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bottom layer: Blue background with rounded corners -->
+    <item>
+        <shape>
+            <solid android:color="#ff33b5e5"/> <!-- Blue background -->
+            <corners android:radius="5dp"/> <!-- Rounded corners -->
+            <size android:width="100dp" android:height="100dp"/> <!-- Size of the view -->
+        </shape>
+    </item>
 
-    <!-- Заокруглені кути -->
-    <corners android:radius="20dp"/> <!-- Можна регулювати радіус заокруглення -->
-
-    <size android:width="100dp" android:height="100dp"/> <!-- Розміри для вашого View -->
-</shape>
-
+    <!-- Top layer: White rounded triangle in the bottom right corner -->
+    <item android:gravity="bottom|end">
+        <shape>
+            <solid android:color="#000"/> <!-- White color for the triangle -->
+            <corners android:radius="5dp"/> <!-- Rounded corners for the triangle -->
+            <path android:pathData="M 0 50 L 50 50 L 50 0 Z"/> <!-- Triangle path -->
+            <size android:width="50dp" android:height="50dp"/> <!-- Size of the triangle -->
+        </shape>
+    </item>
+</layer-list>

@@ -55,12 +55,19 @@ public class ProgressResponseBody extends ResponseBody {
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 long bytesRead = super.read(sink, byteCount);
+
+                // Перевірка на 0 байт або невизначену довжину файлу
+                if (contentLength <= 0) {
+                    return bytesRead;
+                }
+
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
-                // Оновлюємо прогрес
+                // Обчислення прогресу
                 int progress = (int) ((totalBytesRead * 100) / contentLength);
                 listener.onProgressUpdate(progress);
 
+                // Завершення завантаження
                 if (bytesRead == -1) {
                     listener.onFinish();
                 }

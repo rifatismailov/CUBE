@@ -51,8 +51,7 @@ public class Manager {
                 createAccount(jsonObject);
 
         } catch (JSONException e) {
-            e.printStackTrace();
-            // Тут можна також відобразити повідомлення про помилку користувачу
+            Log.e("DatabaseHelper", e.toString());
         }
     }
     /**
@@ -69,11 +68,14 @@ public class Manager {
             String name = jsonObject.optString(FIELD.NAME.getFIELD(), "");
             String lastName = jsonObject.optString(FIELD.LAST_NAME.getFIELD(), "");
             String password = jsonObject.optString(FIELD.PASSWORD.getFIELD(), "");
+            String imageOrgName = jsonObject.optString("imageOrgName", "");
+            String imageName = jsonObject.optString("imageName", "");
+            Log.e("DatabaseHelper", imageOrgName+" > "+imageName);
 
             if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(name) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(password)) {
                 Toast.makeText((Context) accountOps, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();
             } else {
-                accountOps.setAccount(userId, name, lastName, password);
+                accountOps.setAccount(userId, name, lastName, password,imageOrgName,imageName);
             }
         }
     }
@@ -100,7 +102,7 @@ public class Manager {
     }
 
     public interface AccountOps {
-        void setAccount(String userId, String name, String lastName, String password);
+        void setAccount(String userId, String name, String lastName, String password,String imageOrgName,String imageName);
 
         void setContact(String id_contact, String public_key_contact, String name_contact);
     }

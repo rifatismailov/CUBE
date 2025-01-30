@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class UserAdapter extends ArrayAdapter<UserData> {
     private List<UserData> mList;
     private Context mContext;
+    private ContactInterface contactInterface;
     UserData userData;
     private int layout;
 
@@ -30,6 +32,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         super(context, layout, objects);
         this.mList = objects;
         this.mContext = context;
+        this.contactInterface = (ContactInterface) context;
         this.layout = layout;
 
     }
@@ -41,7 +44,11 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
         userData = mList.get(position);
         ImageView image = view.findViewById(R.id.qrCodeUser);
-        image.setImageBitmap(QRCode.getQRCode(userData.getId()));
+        if (userData.getAccountImageUrl() != null) {
+            // image.setImageBitmap(QRCode.getQRCode(userData.getId()));
+        } else {
+            image.setImageBitmap(QRCode.getQRCode(userData.getId()));
+        }
 
         TextView userName = view.findViewById(R.id.userName);
         userName.setText(userData.getName());
@@ -58,7 +65,18 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         //receiverKey.setText( Encryption.getHash(userData.getReceiverKey()));
         List<String> chunksReceiverKey = splitHash(Encryption.getHash(userData.getReceiverKey()), 10);
         receiverKey.setHashes(chunksReceiverKey);
-
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (userData.getAccountImageUrl() != null) {
+                    // вікно відображення QR коду або зображення та повної інформації
+                } else {
+                    // вікно відображення QR коду або зображення та повної інформації
+                    // Та якщо нема зображення робимо запит
+                    contactInterface.onImageClickContact(position);
+                }
+            }
+        });
 
         TextView messageSize = view.findViewById(R.id.messageSize);
         messageSize.setText(userData.getMessageSize());
@@ -70,6 +88,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
 
         return view;
     }
+
     public List<String> splitHash(String hash, int chunkSize) {
         List<String> chunks = new ArrayList<>();
         int length = hash.length();

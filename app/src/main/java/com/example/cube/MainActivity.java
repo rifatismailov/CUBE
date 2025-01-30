@@ -15,7 +15,6 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -27,13 +26,11 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
-
 
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.ContactCreator;
+import com.example.cube.contact.ContactInterface;
 import com.example.cube.contact.UserAdapter;
 import com.example.cube.contact.UserData;
 import com.example.cube.databinding.ActivityMainBinding;
@@ -46,7 +43,9 @@ import com.example.cube.log.Logger;
 import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
-
+import com.example.folder.file.FileDetect;
+import com.example.folder.file.FileOMG;
+import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
 import com.example.web_socket_service.socket.Envelope;
@@ -65,6 +64,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -75,7 +75,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener,
-        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer {
+        ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable, NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer, ContactInterface, FileOMG {
 
     private ActivityMainBinding binding;
     private TextView user_name;
@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String name;             // Ім'я користувача
     private String lastName;         // Прізвище користувача
     private String password;         // Пароль
+    private String imageOrgName;
+    private String imageName;
     private UserData user;           // Об'єкт користувача
     private DatabaseHelper dbHelper;
     private SQLiteDatabase db;
@@ -99,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private SecretKey secretKey;  // AES-ключ
 
     private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
+    private HashMap<String, String> avatar_map = new HashMap<>();
+
     private int numMessage = 0;  // Лічильник повідомлень
 
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
@@ -107,17 +111,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private NavigationManager navigationManager;
 
     @Override
-    public void setAccount(String userId, String name, String lastName, String password) {
+    public void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName) {
         String accountName = name + " " + lastName;
         this.userId = userId;
         this.name = name;
         this.lastName = lastName;
         this.password = password;
+        this.imageOrgName = imageOrgName;
+        this.imageName = imageName;
         binding.id.setText(userId);
         binding.name.setText(accountName);
         user_name.setText(accountName);
         user_id.setText(userId);
-
+        navigationManager.setAvatarImage(imageOrgName);
+        navigationManager.setAccountImage(imageName);
     }
 
     /**
@@ -151,11 +158,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
-    private BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
+
+
+    private final BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
+
                 if (message != null) {
                     onReceived(message);
                 }
@@ -187,12 +197,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
         logs = new ArrayList<>();
         logAdapter = new LogAdapter(this, logs);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-
-
         binding.log.setLayoutManager(layoutManager);
         binding.log.setAdapter(logAdapter);
 
@@ -209,8 +216,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user_id = findViewById(R.id.user_id);
 
         // Використання NavigationManager для обробки меню
-        navigationManager= new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
-                 findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
+        navigationManager = new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
+                findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
 
 
         password = "1234567890123456";  // Пароль
@@ -276,6 +283,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (user != null) {
                 if (!data.isEmpty()) {
                     if (user.getReceiverPublicKey() != null) {
+                        Log.e("MainActivity", data);
+
                         sendMessageToService(data);
                     }
                 }
@@ -314,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.SENDER_KEY.getFIELD(), userData.getSenderKey());
         intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
         startActivity(intent);
-
     }
 
     private void registerServer() {
@@ -369,14 +377,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param view        Об'єкт View.
      * @param i           Позиція вибраного елемента.
      * @param l           Ідентифікатор вибраного елемента.
-     * @user Основний користувач який був вибраний.
-     * Пояснення до коду: пишу для себе але може бути корисно для вас також
-     * @onItemClick відповідає за натискання на контактів які в вас є
-     * Під час натискання перевіряється 4 параметра а саме:
-     * @publicKey існування publicKey - це RSA ключ за допомогою якого шифруються спеціальні повідомлення які будуть відправляти вам користувач з яким ви будете спілкуватися.
-     * @senderKey існування senderKey - це ASE ключ за допомогою якого шифруються повідомлення які буде відправляти вам користувач з яким ви будете спілкуватися.
-     * @receiverPublicKey існування receiverPublicKey користувача якому ви пишете - це RSA ключ за допомогою якого шифруються спеціальні повідомлення для відправки до користувача з яким ви будете спілкуватися.
-     * @receiverKey існування receiverKey користувача якому ви пишете - це ASE ключ за допомогою якого шифруються повідомлення які ви будете відправляти до користувача з яким ви будете спілкуватися.
+     * @user Основний користувач, який був вибраний.
+     *
+     * Пояснення до коду: пишу для себе, але може бути корисно для вас також.
+     *
+     * @onItemClick Відповідає за обробку натискання на контакти, які у вас є.
+     *
+     * Під час натискання перевіряються 4 параметри:
+     *
+     * @publicKey Перевірка існування publicKey — це RSA-ключ, за допомогою якого
+     * шифруються спеціальні повідомлення, що будуть відправлятися вам користувачем,
+     * з яким ви спілкуєтеся.
+     *
+     * @senderKey Перевірка існування senderKey — це AES-ключ, за допомогою якого
+     * шифруються повідомлення, що буде відправляти вам користувач, з яким ви спілкуєтеся.
+     *
+     * @receiverPublicKey Перевірка існування receiverPublicKey користувача, якому ви пишете —
+     * це RSA-ключ, за допомогою якого шифруються спеціальні повідомлення для відправки
+     * до користувача, з яким ви спілкуєтеся.
+     *
+     * @receiverKey Перевірка існування receiverKey користувача, якому ви пишете —
+     * це AES-ключ, за допомогою якого шифруються повідомлення, які ви будете відправляти
+     * до користувача, з яким ви спілкуєтеся.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
@@ -408,8 +430,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
-
-
         } else {
             try {
                 if (user.getReceiverPublicKey() == null) {
@@ -440,7 +460,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         } catch (Exception e) {
                             Log.e("MainActivity", "Error during AES key encryption: " + e.toString());
                         }
-
                     }
                 }
             } catch (Exception e) {
@@ -488,7 +507,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);
         }
-
     }
 
     public void setNotification(String clas, String log) {
@@ -498,6 +516,77 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.log.smoothScrollToPosition(logs.size() - 1); // Прокрутити до нового елемента
             Log.e(clas, log);
         });
+    }
+
+
+    /**Передача зображення акаунта
+     * Під час передачі ми передаємо два зображення:
+     * 1. Маленьке — для контактів
+     * 2. Велике — для аватара
+     * Під час передачі передається посилання на файл (він шифрується та відправляється у зашифрованому вигляді).
+     * Передається ID, яке складається з:
+     * - Відправника
+     * - Назви поточного файлу
+     * - Користувача, якому належить файл
+     * - Хеш-суми
+     * Також передається ключ для шифрування, де зазначається, хто запитує ці зображення. */
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    @Override
+    public void giveAvatar(String sender) {
+        File file = new File(this.getExternalFilesDir(null), "imageProfile");
+        FileDetect fileDetect = new FileDetect();
+        String avatarImage = file + "/" + imageOrgName;
+        String accountImage = file + "/" + imageName;
+        for (UserData user : userList) {
+            if (user.getId().equals(sender)) {
+                String key = user.getSenderKey();
+                uploadFile(new File(avatarImage), sender + ":imageOrgName:"+fileDetect.getFileHash(avatarImage, "SHA-256"), key);
+                uploadFile(new File(accountImage), sender + ":accountImage:"+fileDetect.getFileHash(accountImage, "SHA-256"), key);
+                break;
+            }
+        }
+    }
+
+    /**Отримання зображення контакту який в нас збережений */
+    @Override
+    public void getAvatar(Envelope envelope) {
+        Log.e("MainActivity", "Envelope " + envelope.toJson());
+    }
+
+    /**Отримання зображення контакту який в нас збережений */
+    @Override
+    public void getAvatarORG(Envelope envelope) {
+        Log.e("MainActivity", "Envelope " + envelope.toJson());
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    public void uploadFile(File file, String sender, String key) {
+
+        String serverUrl = "http://192.168.1.237:8020/api/files/upload";
+        // Виконуємо шифрування у фоновому потоці
+        new Thread(() -> {
+            try {
+                FileEncryption fileEncryption = new FileEncryption(this, sender, serverUrl);
+                SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
+                String encryptedFile = fileEncryption.getEncFile(file, secretKey);
+                addPositionID(sender, encryptedFile);
+                Log.e("MainActivity", " encryptedFileName " + encryptedFile);
+                fileEncryption.fileEncryption();
+            } catch (Exception e) {
+
+            }
+        }).start();
+    }
+
+    // Метод для додавання значення
+    public void addPositionID(String positionID, String fileName) {
+        avatar_map.put(positionID, fileName);
+    }
+
+    // Метод для отримання та автоматичного видалення значення
+    public String getFileNameAndRemove(String positionID) {
+        return avatar_map.remove(positionID);
     }
 
     /**
@@ -650,11 +739,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void setImageAccount(String base64StringOrg,String base64String) {
-        Log.e("MainActivity", "Base64or: " + base64StringOrg);
-        Log.e("MainActivity", "Base64: " + base64String);
-        navigationManager.setAvatarImage(base64StringOrg);
-        navigationManager.setAccountImage(base64String);
+    public void setImageAccount(String imageOrgName, String imageName) {
+        runOnUiThread(() -> {
+            String jsonData = "{" +
+                    "\"userId\":\"" + this.userId + "\"," +
+                    "\"name\":\"" + this.name + "\"," +
+                    "\"lastName\":\"" + this.lastName + "\"," +
+                    "\"password\":\"" + this.password + "\"," +
+                    "\"imageOrgName\":\"" + imageOrgName + "\"," +
+                    "\"imageName\":\"" + imageName + "\"" +
+                    "}";
+            Log.e("DatabaseHelper", "setImageAccount. ");
+
+            manager.writeAccount(jsonData);
+            navigationManager.setAvatarImage(imageOrgName);
+            navigationManager.setAccountImage(imageName);
+        });
     }
 
     /**
@@ -662,8 +762,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Після вибору зображення з галереї цей метод отримує обраний файл і відправляє його в ImageExplorer.
      *
      * @param requestCode код запиту, який визначає, з якої активності повернувся результат
-     * @param resultCode код результату, який вказує, чи успішно завершилась операція
-     * @param data Дані, отримані з вибраної активності, які містять URI вибраного зображення
+     * @param resultCode  код результату, який вказує, чи успішно завершилась операція
+     * @param data        Дані, отримані з вибраної активності, які містять URI вибраного зображення
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -720,4 +820,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
+    @Override
+    public void onImageClickContact(int position) {
+        user = userList.get(position);
+        sendHandshake(userId, user.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", user.getPublicKey());
+    }
+
+    @Override
+    public void setProgressShow(String positionId, int progress, String info) {
+        Log.e("MainActivity", "[" + positionId + "]: " + progress + " " + info);
+    }
+
+    @Override
+    public void endProgress(String positionId, String info) {
+        String path = getFileNameAndRemove(positionId);
+        String fileName = path.substring(path.lastIndexOf("/") + 1);
+        String serverUrl = "http://192.168.1.237:8020/api/files/upload/"+fileName;
+        String[] position = positionId.split(":");
+        for (UserData user : userList) {
+            if (user.getId().equals(position[0])) {
+                if (position[1].equals("imageOrgName")) {
+                  //  sendHandshake(userId, position[0], FIELD.AVATAR_ORG.getFIELD(), fileName, user.getPublicKey());
+                 //   sendMessageToService(new Envelope(userId,  position[0], FIELD.AVATAR_ORG.getFIELD(), "avatar", fileName).toJson().toString());
+                    sendMessageToService( new Envelope(userId, position[0],  FIELD.AVATAR_ORG.getFIELD(),"avatar_org", serverUrl, position[2], UUID.randomUUID().toString()).toJson().toString());
+                } else {
+                    sendMessageToService(new Envelope(userId, position[0],  FIELD.AVATAR.getFIELD(),"avatar", serverUrl, position[2], UUID.randomUUID().toString()).toJson().toString());
+                }
+                break;
+            }
+        }
+        Log.e("MainActivity", "[" + positionId + " fileName " + fileName + " ]: " + info);
+    }
 }

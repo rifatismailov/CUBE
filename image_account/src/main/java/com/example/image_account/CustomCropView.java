@@ -35,7 +35,7 @@ public class CustomCropView extends View {
         circlePaint.setColor(Color.WHITE); // Колір кола в середині
         circlePaint.setAntiAlias(true);
 
-        cornerRadius = getResources().getDisplayMetrics().density * 20; // Розмір заокруглення
+        cornerRadius = getResources().getDisplayMetrics().density * 50; // Розмір заокруглення
     }
 
     @Override

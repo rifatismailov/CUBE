@@ -58,12 +58,12 @@ public class ReceiverMessageHandler {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);
-            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
+          //  viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
         } else  {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);
-            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
+         //   viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
         }
     }
     private void updateFeeling(ReceiverViewHolder viewHolder, Message message){
@@ -81,7 +81,13 @@ public class ReceiverMessageHandler {
             viewHolder.binding.time.setText(time[1]);
         }
     }
-
+    private void updateProgress(ReceiverViewHolder viewHolder, Message message) {
+        if (message.getProgress() == 100) {
+            viewHolder.binding.messageNotifier.setProgress(0);
+        } else {
+            viewHolder.binding.messageNotifier.setProgress(message.getProgress());
+        }
+    }
     private void handleImageMessage(ReceiverViewHolder viewHolder, Message message) {
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
@@ -99,8 +105,9 @@ public class ReceiverMessageHandler {
         } else {
             viewHolder.binding.messageLayout.setVisibility(View.GONE);
             viewHolder.binding.file.setVisibility(View.GONE);
-            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 58f, 58f, 58f));
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 58f, 10f, 10f));
         }
+        updateProgress(viewHolder,message);
         aLLtoDoMessage(viewHolder, message);
     }
 
@@ -138,6 +145,7 @@ public class ReceiverMessageHandler {
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
             viewHolder.binding.message.setText(message.getMessage());
         }
+        updateProgress(viewHolder,message);
         aLLtoDoMessage(viewHolder, message);
 
     }

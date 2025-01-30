@@ -179,7 +179,16 @@ public class Message implements Serializable {
         this.image = image;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
-        if (selectedUrl.toString().endsWith(".jpg") || selectedUrl.toString().endsWith(".png")) {
+        if (selectedUrl.toString().endsWith(".jpg") ||
+                selectedUrl.toString().endsWith(".jpeg") ||
+                selectedUrl.toString().endsWith(".png") ||
+                selectedUrl.toString().endsWith(".webp") ||
+                selectedUrl.toString().endsWith(".bmp") ||
+                selectedUrl.toString().endsWith(".gif") ||
+                selectedUrl.toString().endsWith(".heic") ||
+                selectedUrl.toString().endsWith(".heif") ||
+                selectedUrl.toString().endsWith(".tiff") ||
+                selectedUrl.toString().endsWith(".tif"))  {
             this.check = Check.Image;
         } else {
             this.check = Check.File;

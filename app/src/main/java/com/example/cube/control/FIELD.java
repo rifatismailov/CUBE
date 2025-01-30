@@ -40,7 +40,10 @@ public enum FIELD {
     CUBE_RECEIVED_MESSAGE("CUBE_RECEIVED_MESSAGE"),
     IP("ip"),
     PORT("port"),
-    NOTIFICATION("notification");
+    NOTIFICATION("notification"),
+    AVATAR("AVATAR"),
+    AVATAR_ORG("AVATAR_ORG"),
+    GET_AVATAR("GET_AVATAR");
     private final String field;
 
     FIELD(String field) {

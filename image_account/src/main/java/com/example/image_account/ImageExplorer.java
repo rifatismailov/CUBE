@@ -174,14 +174,29 @@ public class ImageExplorer {
                 Log.e("MainActivity", "Base64: ");
 
                 if (croppedBitmap != null) {
-                    String base64StringOrg = new BitmapToFile().saveBitmapToFile(selectedBitmap, UUID.randomUUID().toString(),externalDir);//compressImageToBase64(selectedBitmap);
-                    String base64String =new BitmapToFile().saveBitmapToFile(croppedBitmap, UUID.randomUUID().toString(),externalDir); //resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
+                    Bitmap scaledBitmap = resizeBitmap(selectedBitmap, 2.0f);
+                    String imageOrgName = new BitmapToFile().saveBitmapToFile(scaledBitmap, UUID.randomUUID().toString(),externalDir);//compressImageToBase64(selectedBitmap);
+                    String imageName =new BitmapToFile().saveBitmapToFile(croppedBitmap, UUID.randomUUID().toString(),externalDir); //resizeAndCompressImage(croppedBitmap, 200, 200); // конвертуємо в Base64
                     setImage(resizeAndCompressImage(croppedBitmap, 200, 200));
-                    imgExplorer.setImageAccount(base64StringOrg,base64String);
+                    imgExplorer.setImageAccount(imageOrgName,imageName);
                 }
             }
         });
     }
+
+    public Bitmap resizeBitmap(Bitmap originalBitmap, float scaleFactor) {
+        // Оригінальні розміри
+        int originalWidth = originalBitmap.getWidth();
+        int originalHeight = originalBitmap.getHeight();
+
+        // Розрахунок нових розмірів
+        int targetWidth = (int) (originalWidth / scaleFactor);
+        int targetHeight = (int) (originalHeight / scaleFactor);
+
+        // Створення масштабованого Bitmap
+        return Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true);
+    }
+
 
     /**
      * Встановлює зображення у компонент ImageView.

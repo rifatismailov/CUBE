@@ -2,8 +2,11 @@ package com.example.folder.download;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.example.folder.Folder;
 import com.example.folder.file.FileDetect;
@@ -12,29 +15,54 @@ import com.example.folder.file.FileOMG;
 import java.io.File;
 import java.net.URL;
 
-public class Downloader implements FileDownload.DownloadHandler {
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * Клас Downloader є посередником між класом FileDownload та FileDecryption
+ * спочатку запускає клас FileDownload
+ * та очікуємо дій від FileDownload а саме завантаження файлу після запускаємо
+ * клас FileDecryption робота якого полягає в дешифруванні файлу
+ */
+public class Downloader implements FileDownload.DownloadHandler, FileDecryption.DecryptionHandle {
 
     private final Context context;
     private final FileOMG fileOMG;
     private final Folder folder;
     private final String fileName;
+    private String decryptedFileName;
     private final String directory;
     private final int position;
-    private final String messageId;
+    private final String positionId;
+    private DownloaderHandler downloaderHandler;
 
-    public Downloader(Context context, URL url, int position, String messageId) {
+    /**
+     * Основний конструктор класу  Downloader який приймає такі поля:
+     *
+     * @context Контекст основного активності
+     * @url адреса де знаходиться файл
+     * @position позиція у активності
+     * @positionId ІД позиції у активності
+     */
+    public Downloader(Context context, URL url, int position, String positionId) {
+        // Перевірка та створення директорії
         File externalDir = new File(context.getExternalFilesDir(null), "cube");
         if (!externalDir.exists()) {
             boolean mkdirs = externalDir.mkdirs();
+            if (!mkdirs) {
+                Log.e("Downloader", "Не вдалося створити директорію");
+            }
         }
+
         fileName = getFileNameFromUrl(url.toString());
         new FileDownload(this).downloadFile(url, new File(externalDir + "/" + fileName));
         this.directory = externalDir.getAbsolutePath();
         this.context = context;
         folder = (Folder) context;
+        downloaderHandler = (DownloaderHandler) context;
         this.fileOMG = (FileOMG) context;
         this.position = position;
-        this.messageId = messageId;
+        this.positionId = positionId;
     }
 
     /**
@@ -51,30 +79,48 @@ public class Downloader implements FileDownload.DownloadHandler {
     public void setProgress(int progress) {
         // Оновлюємо прогрес у головному потоці
         if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, progress, ""));
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
         }
-
     }
 
     @Override
     public void showDetails(String info) {
-        Log.e("CONNECTOR", info);
-
         if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(messageId, 0, info));
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, info));
         }
     }
 
-
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onFinish() {
+
+        try {
+            Thread.sleep(1000);
+            // Розшифровка файлу, якщо потрібно
+            FileDecryption fileDecryption = new FileDecryption(this, context, positionId);
+            SecretKey secretKey = new SecretKeySpec(downloaderHandler.getKey().getBytes(), "AES");
+            decryptedFileName = fileDecryption.getDecFile(new File(directory + "/" + fileName), secretKey);
+            Log.e("Downloader", "decryptedFileName " + decryptedFileName);
+            fileDecryption.fileDecryption();
+        } catch (Exception e) {
+            Log.e("Downloader", "Помилка при розшифровці файлу", e);
+        }
+    }
+
+    @Override
+    public void stopDecryption() {
+        Log.e("Downloader", "stopDecryption " + directory + "/" + fileName + " > " + decryptedFileName);
         try {
             new Handler().postDelayed(() -> {
                 FileDetect fileDetect = new FileDetect();
-                folder.updateItem(position, directory + "/" + fileName, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
+                folder.updateItem(position, decryptedFileName, fileDetect.getFileHash(decryptedFileName, "SHA-256"));
             }, 1);
         } catch (Exception e) {
-            // Handle any exceptions here
+            Log.e("Downloader", "Помилка при оновленні інформації про розшифрований файл", e);
         }
+    }
+
+    public interface DownloaderHandler {
+        String getKey();
     }
 }

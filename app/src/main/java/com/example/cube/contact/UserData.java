@@ -1,6 +1,7 @@
 package com.example.cube.contact;
 
 import android.util.Log;
+import android.widget.ImageView;
 
 import org.json.JSONObject;
 
@@ -15,6 +16,8 @@ public class UserData implements Serializable {
     private String receiverKey;
     private String name;
     private String messageSize;
+    private String avatarImageUrl;
+    private String accountImageUrl;
     private int size;
 
     // Конструктор
@@ -102,6 +105,22 @@ public class UserData implements Serializable {
 
     public void setReceiverKey(String receiverKey) {
         this.receiverKey = receiverKey;
+    }
+
+    public String getAvatarImageUrl() {
+        return avatarImageUrl;
+    }
+
+    public void setAvatarImageUrl(String avatarImageUrl) {
+        this.avatarImageUrl = avatarImageUrl;
+    }
+
+    public String getAccountImageUrl() {
+        return accountImageUrl;
+    }
+
+    public void setAccountImageUrl(String accountImageUrl) {
+        this.accountImageUrl = accountImageUrl;
     }
 
     // Конструктор для десеріалізації з JSONObject

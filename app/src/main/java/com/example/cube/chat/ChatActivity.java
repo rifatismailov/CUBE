@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.folder.Folder;
 import com.example.folder.dialogwindows.FileExplorer;
+import com.example.folder.download.Downloader;
 import com.example.folder.file.FileOMG;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
@@ -48,8 +49,11 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
-public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG, FileOMG {
+
+public class ChatActivity extends AppCompatActivity implements Folder, OperationMSG.OperableMSG, FileOMG,Downloader.DownloaderHandler  {
     private ActivityChatBinding binding;
     private MessageManager manager;
     private MessagesAdapter adapter;
@@ -413,6 +417,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void setProgressShow(String messageId, int progress, String info) {
+        Log.e("Downloader", "setProgressShow "+progress);
+
         try {
             runOnUiThread(() -> {
                 for (int i = 0; i < messages.size(); i++) {
@@ -443,10 +449,24 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     }
 
+    @Override
+    public void endProgress(String messageId, String info) {
+
+    }
+
     private String getTime() {
         Date currentDate = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
         return formatter.format(currentDate);
     }
 
+    @Override
+    public String getKey() {
+        return receiverKey;
+    }
+
+//    @Override
+//    public String getKey() {
+//        return senderKey;
+//    }
 }

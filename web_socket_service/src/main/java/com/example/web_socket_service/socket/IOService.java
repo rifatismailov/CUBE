@@ -94,6 +94,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     }
 
     private void addMessage(String message) {
+
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("message", message);
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1

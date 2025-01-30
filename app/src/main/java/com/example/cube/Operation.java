@@ -57,6 +57,15 @@ public class Operation {
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
                 // Обробка статусних повідомлень
                 operable.addMessage(message);
+            } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.giveAvatar(sender);
+            } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.getAvatar(envelope);
+            } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.getAvatarORG(envelope);
             } else {
                 operable.addMessage(message);
             }
@@ -131,6 +140,16 @@ public class Operation {
                 // Обробка статусних повідомлень
                 String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
                 String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
+            } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.giveAvatar(envelope.getSenderId());
+            } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.getAvatar(envelope);
+
+            } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
+                // Обробка статусних повідомлень
+                operable.getAvatarORG(envelope);
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -143,6 +162,12 @@ public class Operation {
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
      */
     public interface Operable {
+        void giveAvatar(String sender);
+
+        void getAvatar(Envelope envelope);
+
+        void getAvatarORG(Envelope envelope);
+
         void addMessage(String message);
 
         void addHandshake(Envelope envelope);
