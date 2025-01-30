@@ -79,6 +79,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if (userData.getAccountImageUrl() != null&&!userData.getAccountImageUrl().isEmpty()) {
                     // вікно відображення QR коду або зображення та повної інформації
                 } else {

@@ -920,7 +920,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         for (UserData user : userList) {
             if (user.getId().equals(positionName[0])) {
-                user.setName("Kent");
                 if(positionName[1].equals("avatar_org")){
                     user.setAvatarImageUrl(url);
                 }
