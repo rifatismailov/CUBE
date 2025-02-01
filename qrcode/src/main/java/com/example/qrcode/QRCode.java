@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -116,7 +119,58 @@ public class QRCode {
             return null;
         }
     }
+    /**
+     * Generates a QR code with a text overlay displayed inside a circle in the center.
+     *
+     * @param qrCodeData The data to encode in the QR code.
+     * @param image
+     * @return A bitmap representing the QR code with a centered text overlay.
+     */
+    public static Bitmap getQRCode(String qrCodeData, Bitmap image) {
+        int qrCodeSize = 1000;  // QR code size in pixels
+        int overlaySize = 300;  // Size of the text overlay
 
+        try {
+            // QR code generation settings with error correction
+            Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H); // High error correction level
+
+            MultiFormatWriter writer = new MultiFormatWriter();
+            BitMatrix bitMatrix = writer.encode(qrCodeData, BarcodeFormat.QR_CODE, qrCodeSize, qrCodeSize, hints);
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            Bitmap qrCodeBitmap = barcodeEncoder.createBitmap(bitMatrix);
+
+            // Create a new bitmap to draw QR code and overlay
+            Bitmap finalBitmap = Bitmap.createBitmap(qrCodeBitmap.getWidth(), qrCodeBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(finalBitmap);
+
+            // Draw QR code
+            canvas.drawBitmap(qrCodeBitmap, 0, 0, null);
+
+            // Draw a black rectangle at the center
+            Paint paint = new Paint();
+            paint.setColor(Color.BLACK);
+            float left = (qrCodeSize - overlaySize) / 2f;
+            float top = (qrCodeSize - overlaySize) / 2f;
+            float right = left + overlaySize;
+            float bottom = top + overlaySize;
+            canvas.drawRect(left, top, right, bottom, paint);
+
+            // Create and draw the bitmap with text and rounded background
+            Bitmap textBitmap = createBitmap(image, overlaySize, overlaySize);
+
+            // Position to draw the text overlay
+            float xLogo = (qrCodeSize - overlaySize) / 2f;
+            float yLogo = (qrCodeSize - overlaySize) / 2f;
+
+            canvas.drawBitmap(textBitmap, xLogo, yLogo, null);
+
+            return finalBitmap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     /**
      * Creates a bitmap containing text inside a blue circular background.
      *
@@ -149,4 +203,42 @@ public class QRCode {
 
         return bitmap;
     }
+
+    /**
+     * Resizes the given bitmap to the specified width and height, cropping it to a circular shape.
+     *
+     * @param image  The original bitmap to be resized.
+     * @param width  The desired width of the output bitmap.
+     * @param height The desired height of the output bitmap.
+     * @return A resized circular bitmap with the specified dimensions.
+     */
+    private static Bitmap createBitmap(Bitmap image, int width, int height) {
+        if (image == null || width <= 0 || height <= 0) {
+            throw new IllegalArgumentException("Invalid image or dimensions.");
+        }
+
+        // Масштабування зображення до необхідних розмірів
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(image, width, height, true);
+
+        // Створення круглого бітмапу
+        Bitmap circularBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(circularBitmap);
+
+        // Встановлення Paint з антиаліасінгом
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setFilterBitmap(true);
+        paint.setDither(true);
+
+        // Малювання круглої області
+        float radius = Math.min(width, height) / 2f;
+        canvas.drawCircle(width / 2f, height / 2f, radius, paint);
+
+        // Використання PorterDuff для обрізки зображення у круг
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(resizedBitmap, 0, 0, paint);
+
+        return circularBitmap;
+    }
+
+
 }

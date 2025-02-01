@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.View;
@@ -28,6 +30,7 @@ public class QR {
     ImageView qrCode;
     TextView idNumber;
     String id;
+    private String accountImageUrl;
     private ActivityResultLauncher<ScanOptions> barLauncher;
 
 
@@ -35,10 +38,11 @@ public class QR {
         this.context = context;
         activity = (Activity) context;
     }
-    public QR(Context context, String id) {
+    public QR(Context context, String id,String accountImageUrl) {
         this.context = context;
         activity = (Activity) context;
         this.id = id;
+        this.accountImageUrl=accountImageUrl;
         DialogShow();
     }
 
@@ -63,7 +67,10 @@ public class QR {
                 "\"name\":\"" + name + "\"," +
                 "\"lastName\":\"" + lastName + "\"" +
                 "}";
-        qrCode.setImageBitmap(QRCode.getQRCode(jsonData,"KA"));
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 2; // Зменшити розмір у два рази
+        Bitmap bitmap = BitmapFactory.decodeFile(accountImageUrl, options);
+        qrCode.setImageBitmap(QRCode.getQRCode(jsonData,bitmap));
         assert back != null;
         back.setOnClickListener(v -> alertDialog.cancel());
         idNumber = linearlayout.findViewById(R.id.idNumber);

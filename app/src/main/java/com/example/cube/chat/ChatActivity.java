@@ -185,7 +185,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         });
 
         binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(ChatActivity.this, senderKey));
-        binding.profile.setOnClickListener(view -> new QR(this, receiverId));
+        binding.profile.setOnClickListener(view -> new QR(this, receiverId,accountImageUrl));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
 
