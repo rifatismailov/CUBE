@@ -30,10 +30,10 @@
                 app:srcCompat="@drawable/ic_left_arrow"
                 app:tint="@color/white" />
 
-            <ImageView
+            <com.example.cube.draw.CircularImageView
                 android:id="@+id/profile"
-                android:layout_width="42sp"
-                android:layout_height="42sp"
+                android:layout_width="55sp"
+                android:layout_height="55sp"
                 android:layout_marginStart="10sp" />
 
 

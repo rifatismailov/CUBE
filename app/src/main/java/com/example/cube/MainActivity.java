@@ -326,6 +326,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), userData.getReceiverPublicKey());
         intent.putExtra(FIELD.SENDER_KEY.getFIELD(), userData.getSenderKey());
         intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), userData.getReceiverKey());
+        intent.putExtra(FIELD.AVATAR_ORG.getFIELD(), userData.getAvatarImageUrl());
+        intent.putExtra(FIELD.AVATAR.getFIELD(), userData.getAccountImageUrl());
+
         startActivity(intent);
     }
 

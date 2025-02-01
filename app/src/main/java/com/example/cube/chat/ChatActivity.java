@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -65,7 +67,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private KeyGenerator.RSA keyGenerator;
     private String senderKey;
     private String receiverKey;
-
+    private String avatarImageUrl;
+    private String accountImageUrl;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -92,6 +95,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             receiverPublicKey = bundleProcessor.getReceiverPublicKey();
             senderKey = bundleProcessor.getSenderKey();
             receiverKey = bundleProcessor.getReceiverKey();
+            avatarImageUrl=bundleProcessor.getAvatarImageUrl();
+            accountImageUrl=bundleProcessor.getAccountImageUrl();
 
         }
     }
@@ -116,15 +121,23 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         // Встановлюємо початкові значення
         binding.status.setText(receiverStatus);
         binding.name.setText(receiverName);
-        String name="Kiki";
-        String lastName = "Kamureno";
-        String jsonData = "{" +
-                "\"userId\":\"" + this.receiverId + "\"," +
-                "\"name\":\"" + name + "\"," +
-                "\"lastName\":\"" + lastName + "\"" +
-                "}";
-        binding.profile.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
 
+        if (accountImageUrl != null && !accountImageUrl.isEmpty()) {
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 2; // Зменшити розмір у два рази
+            Bitmap bitmap = BitmapFactory.decodeFile(accountImageUrl, options);
+            binding.profile.setImageBitmap(bitmap);
+        } else {
+            String name="Kiki";
+            String lastName = "Kamureno";
+            String jsonData = "{" +
+                    "\"userId\":\"" + receiverId + "\"," +
+                    "\"name\":\"" + name + "\"," +
+                    "\"lastName\":\"" + lastName + "\"" +
+                    "}";
+            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
+        }
         // Ініціалізація RecyclerView
         setupRecyclerView();
         setupClickListeners();
