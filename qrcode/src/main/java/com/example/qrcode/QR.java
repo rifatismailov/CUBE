@@ -56,7 +56,14 @@ public class QR {
         dialog.create();
         back = linearlayout.findViewById(R.id.back);
         qrCode = linearlayout.findViewById(R.id.qrCode);//is:debug tag:MainActivity
-        qrCode.setImageBitmap(QRCode.getQRCode(id));
+        String name="Kiki";
+        String lastName = "Kamureno";
+        String jsonData = "{" +
+                "\"userId\":\"" +id + "\"," +
+                "\"name\":\"" + name + "\"," +
+                "\"lastName\":\"" + lastName + "\"" +
+                "}";
+        qrCode.setImageBitmap(QRCode.getQRCode(jsonData,"KA"));
         assert back != null;
         back.setOnClickListener(v -> alertDialog.cancel());
         idNumber = linearlayout.findViewById(R.id.idNumber);

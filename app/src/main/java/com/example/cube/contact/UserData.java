@@ -19,6 +19,7 @@ public class UserData implements Serializable {
     private String avatarImageUrl;
     private String accountImageUrl;
     private int size;
+    private int progress;  // Додаємо змінну для прогресу
 
     // Конструктор
     public UserData() {
@@ -122,7 +123,15 @@ public class UserData implements Serializable {
     public void setAccountImageUrl(String accountImageUrl) {
         this.accountImageUrl = accountImageUrl;
     }
+    // Інші поля і методи
 
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
     // Конструктор для десеріалізації з JSONObject
     public UserData(JSONObject jsonObject) {
         try {

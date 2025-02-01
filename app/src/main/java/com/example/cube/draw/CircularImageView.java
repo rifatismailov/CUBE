@@ -1,6 +1,5 @@
 package com.example.cube.draw;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -13,11 +12,15 @@ public class CircularImageView extends AppCompatImageView {
     private Path path;
     private Paint imagePaint;
     private Paint borderPaint;
-    private RectF rect;
+    private Paint progressPaint;
+    private Paint backgroundPaint;
 
-    // Значення для обвідного кольору та ширини
+    private RectF rect;
     private int borderColor = 0xFF000000; // Чорний колір за замовчуванням
-    private float borderWidth = 4f; // Ширина обвідної лінії
+    private float borderWidth = 4f;
+    private float currentProgress = 0f; // Прогрес від 0 до 100
+    private int progressColor = 0xFF049FD9; // Помаранчевий колір прогресу
+    private int backgroundColor = 0xFF049fd9; // Синій колір заднього фону
 
     public CircularImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -39,6 +42,19 @@ public class CircularImageView extends AppCompatImageView {
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setColor(borderColor);
         borderPaint.setStrokeWidth(borderWidth);
+
+        // Налаштування для прогрес-індикатора
+        progressPaint = new Paint();
+        progressPaint.setAntiAlias(true);
+        progressPaint.setStyle(Paint.Style.STROKE);
+        progressPaint.setColor(progressColor);
+        progressPaint.setStrokeWidth(10f);
+
+        // Налаштування для заднього фону
+        backgroundPaint = new Paint();
+        backgroundPaint.setAntiAlias(true);
+        backgroundPaint.setStyle(Paint.Style.FILL);
+        backgroundPaint.setColor(backgroundColor);
     }
 
     @Override
@@ -51,6 +67,9 @@ public class CircularImageView extends AppCompatImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // Малювання заднього фону
+        canvas.drawOval(rect, backgroundPaint);
+
         // Малювання зображення
         canvas.save();
         canvas.clipPath(path);
@@ -59,19 +78,53 @@ public class CircularImageView extends AppCompatImageView {
 
         // Малювання обвідної лінії
         canvas.drawOval(rect, borderPaint);
+
+        // Малювання прогрес-кільця
+        if (currentProgress > 0 && currentProgress <= 100) {
+            float centerX = getWidth() / 2f;
+            float centerY = getHeight() / 2f;
+            float radius = Math.min(centerX, centerY) - borderWidth;
+
+            float sweepAngle = (currentProgress / 100f) * 360f;
+            canvas.drawArc(
+                    centerX - radius,
+                    centerY - radius,
+                    centerX + radius,
+                    centerY + radius,
+                    -90,
+                    sweepAngle,
+                    false,
+                    progressPaint
+            );
+        }
     }
 
-    // Метод для зміни кольору обвідної лінії
-    public void setBorderColor(int color) {
-        this.borderColor = color;
-        borderPaint.setColor(color);
+    // Метод для оновлення прогресу
+    public void setProgress(float progress) {
+        if (progress < 0) progress = 0;
+        if (progress > 100) progress = 100;
+
+        this.currentProgress = progress;
         invalidate();
     }
 
-    // Метод для зміни ширини обвідної лінії
-    public void setBorderWidth(float width) {
-        this.borderWidth = width;
-        borderPaint.setStrokeWidth(width);
+    // Метод для зміни кольору прогресу
+    public void setProgressColor(int color) {
+        this.progressColor = color;
+        progressPaint.setColor(color);
+        invalidate();
+    }
+
+    // Метод для зміни кольору заднього фону
+    public void setBackgroundColor(int color) {
+        this.backgroundColor = color;
+        backgroundPaint.setColor(color);
+        invalidate();
+    }
+
+    // Метод для очищення прогресу
+    public void clearProgress() {
+        this.currentProgress = 0;
         invalidate();
     }
 }

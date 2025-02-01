@@ -116,7 +116,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         // Встановлюємо початкові значення
         binding.status.setText(receiverStatus);
         binding.name.setText(receiverName);
-        binding.profile.setImageBitmap(QRCode.getQRCode(receiverId));
+        String name="Kiki";
+        String lastName = "Kamureno";
+        String jsonData = "{" +
+                "\"userId\":\"" + this.receiverId + "\"," +
+                "\"name\":\"" + name + "\"," +
+                "\"lastName\":\"" + lastName + "\"" +
+                "}";
+        binding.profile.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
 
         // Ініціалізація RecyclerView
         setupRecyclerView();

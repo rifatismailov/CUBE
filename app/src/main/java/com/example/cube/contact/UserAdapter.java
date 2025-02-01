@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.cube.R;
+import com.example.cube.draw.CircularImageView;
 import com.example.cube.draw.ColorfulDotsView;
 import com.example.cube.encryption.Encryption;
 import com.example.qrcode.QRCode;
@@ -29,6 +30,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
     private Context mContext;
     private ContactInterface contactInterface;
     UserData userData;
+    private CircularImageView image;
     private int layout;
 
     public UserAdapter(@NonNull Context context, int layout, List<UserData> objects) {
@@ -47,18 +49,32 @@ public class UserAdapter extends ArrayAdapter<UserData> {
 
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
         userData = mList.get(position);
-        ImageView image = view.findViewById(R.id.qrCodeUser);
-        Log.e("MainActivity", "AccountImageUrl "+userData.getAccountImageUrl());
+        image = view.findViewById(R.id.qrCodeUser);
+        if(userData.getProgress()>0) {
+            image.setProgress(userData.getProgress()); // Встановлюємо прогрес в circular image
+        }
+        if(userData.getProgress()==100){
+            image.clearProgress();
+        }
+
+        Log.e("MainActivity", "AccountImageUrl " + userData.getAccountImageUrl());
 
         if (userData.getAccountImageUrl() != null && !userData.getAccountImageUrl().isEmpty()) {
-            Log.e("MainActivity", "AccountImageUrl "+userData.getAccountImageUrl());
+            Log.e("MainActivity", "AccountImageUrl " + userData.getAccountImageUrl());
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 2; // Зменшити розмір у два рази
             Bitmap bitmap = BitmapFactory.decodeFile(userData.getAccountImageUrl(), options);
             image.setImageBitmap(bitmap);
         } else {
-            image.setImageBitmap(QRCode.getQRCode(userData.getId()));
+            String name="Kiki";
+            String lastName = "Kamureno";
+            String jsonData = "{" +
+                    "\"userId\":\"" + this.userData.getId() + "\"," +
+                    "\"name\":\"" + name + "\"," +
+                    "\"lastName\":\"" + lastName + "\"" +
+                    "}";
+             image.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
         }
 
         TextView userName = view.findViewById(R.id.userName);
@@ -79,8 +95,9 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                contactInterface.onImageClickContact(position);
 
-                if (userData.getAccountImageUrl() != null&&!userData.getAccountImageUrl().isEmpty()) {
+                if (userData.getAccountImageUrl() != null && !userData.getAccountImageUrl().isEmpty()) {
                     // вікно відображення QR коду або зображення та повної інформації
                 } else {
                     // вікно відображення QR коду або зображення та повної інформації
@@ -99,6 +116,16 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         }
 
         return view;
+    }
+    public void setProgressForPosition(int position, int progress) {
+        // Оновлюємо конкретну позицію
+        if (position >= 0 && position < mList.size()) {
+            UserData userData = mList.get(position);
+            userData.setProgress(progress);  // Оновлюємо прогрес для конкретного користувача
+
+            // Оновлюємо тільки цю позицію
+            notifyDataSetChanged();  // або notifyItemChanged(position);
+        }
     }
 
     public List<String> splitHash(String hash, int chunkSize) {

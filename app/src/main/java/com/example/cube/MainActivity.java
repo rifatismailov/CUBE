@@ -79,7 +79,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener, ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable,
         NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer,
-        ContactInterface, FileOMG, Folder ,Downloader.DownloaderHandler{
+        ContactInterface, FileOMG, Folder, Downloader.DownloaderHandler {
 
     private ActivityMainBinding binding;
     private TextView user_name;
@@ -550,34 +550,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void addAvatar(Envelope envelope,String avatar_name){
+    private void addAvatar(Envelope envelope, String avatar_name) {
         try {
             //Thread.sleep(3000);
             for (int position = 0; position < userList.size(); position++) {
                 if (userList.get(position).getId().equals(envelope.getSenderId())) {
-                    addPositionID(envelope.getMessageId(),envelope.getSenderId()+ ":"+avatar_name);
-                    Log.e("MainActivity", userList.get(position).getId() +" Key " + userList.get(position).getReceiverKey());
+                    addPositionID(envelope.getMessageId(), envelope.getSenderId() + ":" + avatar_name);
+                    Log.e("MainActivity", userList.get(position).getId() + " Key " + userList.get(position).getReceiverKey());
                     String message = Encryption.AES.decrypt(envelope.getMessage(), userList.get(position).getReceiverKey());
                     String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), userList.get(position).getReceiverKey());
                     String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), userList.get(position).getReceiverKey());
                     File externalDir = new File(getExternalFilesDir(null), "imageProfile");
-                    Log.e("MainActivity", "message "+message+" messageID " + envelope.getMessageId()+" fileUrl "+fileUrl+" fileHash "+fileHash);
+                    Log.e("MainActivity", "message " + message + " messageID " + envelope.getMessageId() + " fileUrl " + fileUrl + " fileHash " + fileHash);
                     URL url = new URL(fileUrl);
-                    new Downloader(this, url , externalDir, position, envelope.getMessageId());
+                    new Downloader(this, url, externalDir, position, envelope.getMessageId());
                     break;
                 }
             }
-        }catch (Exception e){
-            Log.e("MainActivity"," Error "+ e);
+        } catch (Exception e) {
+            Log.e("MainActivity", " Error " + e);
 
         }
     }
+
     /**
      * Отримання зображення контакту який в нас збережений
      */
     @Override
     public void getAvatar(Envelope envelope) {
-            addAvatar(envelope,"avatar");
+        addAvatar(envelope, "avatar");
     }
 
 
@@ -586,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     @Override
     public void getAvatarORG(Envelope envelope) {
-        addAvatar(envelope,"avatar_org");
+        addAvatar(envelope, "avatar_org");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -869,6 +870,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void setProgressShow(String positionId, int progress, String info) {
+        String body_map = avatar_map.get(positionId);
+        String[] getBody = body_map.split(":");
+        for (int position = 0; position < userList.size(); position++) {
+            if (userList.get(position).getId().equals(getBody[0])) {
+                userAdapter.setProgressForPosition(position, progress);
+            }
+        }
         Log.e("MainActivity", "[" + positionId + "]: " + progress + " " + info);
     }
 
@@ -891,17 +899,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                 Url, Has, UUID.randomUUID().toString()).toJson().toString());
                     } else {
                         String rMessage = Encryption.AES.encrypt("avatar", user.getSenderKey());
-                        String Url = Encryption.AES.encrypt(serverUrl,user.getSenderKey());
+                        String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
                         String Has = Encryption.AES.encrypt(position[2], user.getSenderKey());
 
                         sendMessageToService(new Envelope(userId, position[0], FIELD.AVATAR.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString()).toJson().toString());                    }
+                                Url, Has, UUID.randomUUID().toString()).toJson().toString());
+                    }
                     break;
                 }
             }
             Log.e("MainActivity", "[" + positionId + " fileName " + fileName + " ]: " + info);
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -916,14 +925,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void updateItem(int position, String positionId, String url, String has) {
         String avatar = getAvatarInfoAndRemove(positionId);
         String[] positionName = avatar.split(":");
-        Log.e("MainActivity", "user "+positionName[0]+" avatar_name "+positionName[1]+" [" + positionId + " fileName " + url + " ]: " + has);
+        Log.e("MainActivity", "user " + positionName[0] + " avatar_name " + positionName[1] + " [" + positionId + " fileName " + url + " ]: " + has);
 
         for (UserData user : userList) {
             if (user.getId().equals(positionName[0])) {
-                if(positionName[1].equals("avatar_org")){
+                if (positionName[1].equals("avatar_org")) {
                     user.setAvatarImageUrl(url);
                 }
-                if(positionName[1].equals("avatar")){
+                if (positionName[1].equals("avatar")) {
                     user.setAccountImageUrl(url);
                 }
                 contactManager.updateContact(user, secretKey);
@@ -933,17 +942,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         userAdapter.notifyDataSetChanged();
     }
 
-    /**Метод для отримання ключа для разщифрування файшлу
+    /**
+     * Метод для отримання ключа для разщифрування файшлу
      * в нашому випадку в нас тут слугу  positionId Id-Повідомлення яке прийшло та за яким збережений Id контакту
-     * Звертаємося до avatar_map та оримуємо ID контакту для отримання ключа*/
+     * Звертаємося до avatar_map та оримуємо ID контакту для отримання ключа
+     */
     @Override
     public String getKey(String positionId) {
-        String body_map=avatar_map.get(positionId);
+        String body_map = avatar_map.get(positionId);
         String[] position = body_map.split(":");
         for (UserData user : userList) {
             if (user.getId().equals(position[0])) {
                 return user.getReceiverKey();
-            }}
-        return "";
+            }
+        }
+        return null;
     }
 }
