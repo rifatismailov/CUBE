@@ -21,39 +21,42 @@ public class Manager {
     SQLiteDatabase db;
     SecretKey secretKey;
     AccountManager accountManager;
+
     public Manager(AccountOps accountOps, SQLiteDatabase db, SecretKey secretKey) {
         this.accountOps = accountOps;
-        accountManager=new AccountManager(db);
-        this.secretKey=secretKey;
+        accountManager = new AccountManager(db);
+        this.secretKey = secretKey;
     }
 
     public void readAccount() {
 
-        JSONObject jsonObject =accountManager.getAccount(secretKey);
+        JSONObject jsonObject = accountManager.getAccount(secretKey);
         if (jsonObject != null) {
             createAccount(jsonObject);
             Log.e("DatabaseHelper", "Manager JSONObject Not null.");
 
-        }else{
+        } else {
             Log.e("DatabaseHelper", "Manager JSONObject null.");
 
         }
     }
-    public void writeAccount(String result){
-        try {
-                // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
-                JSONObject jsonObject = new JSONObject(result);
-                if(jsonObject!=null) {
-                    accountManager.setAccount(jsonObject, secretKey);
-                    Log.e("DatabaseHelper", "account setAccount. ");
-                }
 
-                createAccount(jsonObject);
+    public void writeAccount(String result) {
+        try {
+            // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
+            JSONObject jsonObject = new JSONObject(result);
+            if (jsonObject != null) {
+                accountManager.setAccount(jsonObject, secretKey);
+                Log.e("DatabaseHelper", "account setAccount. ");
+            }
+
+            createAccount(jsonObject);
 
         } catch (JSONException e) {
             Log.e("DatabaseHelper", e.toString());
         }
     }
+
     /**
      * Метод для зчитування даних з JSON-файлу та їх обробки.
      *
@@ -70,12 +73,12 @@ public class Manager {
             String password = jsonObject.optString(FIELD.PASSWORD.getFIELD(), "");
             String imageOrgName = jsonObject.optString("imageOrgName", "");
             String imageName = jsonObject.optString("imageName", "");
-            Log.e("DatabaseHelper", imageOrgName+" > "+imageName);
+            Log.e("DatabaseHelper", imageOrgName + " > " + imageName);
 
             if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(name) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(password)) {
                 Toast.makeText((Context) accountOps, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();
             } else {
-                accountOps.setAccount(userId, name, lastName, password,imageOrgName,imageName);
+                accountOps.setAccount(userId, name, lastName, password, imageOrgName, imageName);
             }
         }
     }
@@ -102,7 +105,7 @@ public class Manager {
     }
 
     public interface AccountOps {
-        void setAccount(String userId, String name, String lastName, String password,String imageOrgName,String imageName);
+        void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName);
 
         void setContact(String id_contact, String public_key_contact, String name_contact);
     }

@@ -50,10 +50,10 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
         userData = mList.get(position);
         image = view.findViewById(R.id.qrCodeUser);
-        if(userData.getProgress()>0) {
+        if (userData.getProgress() > 0) {
             image.setProgress(userData.getProgress()); // Встановлюємо прогрес в circular image
         }
-        if(userData.getProgress()==100){
+        if (userData.getProgress() == 100) {
             image.clearProgress();
         }
 
@@ -67,14 +67,14 @@ public class UserAdapter extends ArrayAdapter<UserData> {
             Bitmap bitmap = BitmapFactory.decodeFile(userData.getAccountImageUrl(), options);
             image.setImageBitmap(bitmap);
         } else {
-            String name="Kiki";
+            String name = "Kiki";
             String lastName = "Kamureno";
             String jsonData = "{" +
                     "\"userId\":\"" + this.userData.getId() + "\"," +
                     "\"name\":\"" + name + "\"," +
                     "\"lastName\":\"" + lastName + "\"" +
                     "}";
-             image.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
+            image.setImageBitmap(QRCode.getQRCode(jsonData, "Ka"));
         }
 
         TextView userName = view.findViewById(R.id.userName);
@@ -117,6 +117,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
 
         return view;
     }
+
     public void setProgressForPosition(int position, int progress) {
         // Оновлюємо конкретну позицію
         if (position >= 0 && position < mList.size()) {

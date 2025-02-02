@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-  >
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -14,12 +13,14 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
         <TextView
             android:id="@+id/clas"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textColor="@color/green"
             android:textSize="10dp" />
+
         <TextView
             android:id="@+id/logger"
             android:layout_width="wrap_content"

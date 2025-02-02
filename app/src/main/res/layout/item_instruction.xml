@@ -99,8 +99,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="5dp"
                     android:gravity="right"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
 
 
                     <ImageView
@@ -109,8 +108,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="right|center"
                         android:layout_marginRight="60dp"
-                        android:background="@drawable/share_news"
-                        />
+                        android:background="@drawable/share_news" />
                 </LinearLayout>
 
 

@@ -36,7 +36,7 @@ public class Message implements Serializable {
     private int imageHeight;              // Висота зображення
     private boolean statusFile = false;
     private String messageStatus;
-    private int progress ;
+    private int progress;
 
 
     public Message() {
@@ -188,7 +188,7 @@ public class Message implements Serializable {
                 selectedUrl.toString().endsWith(".heic") ||
                 selectedUrl.toString().endsWith(".heif") ||
                 selectedUrl.toString().endsWith(".tiff") ||
-                selectedUrl.toString().endsWith(".tif"))  {
+                selectedUrl.toString().endsWith(".tif")) {
             this.check = Check.Image;
         } else {
             this.check = Check.File;

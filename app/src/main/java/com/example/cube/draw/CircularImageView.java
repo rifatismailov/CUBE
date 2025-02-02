@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+
 import androidx.appcompat.widget.AppCompatImageView;
 
 public class CircularImageView extends AppCompatImageView {

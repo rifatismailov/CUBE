@@ -3,7 +3,7 @@
     android:innerRadius="10dp"
     android:shape="rectangle"
     android:thicknessRatio="10"
-    android:useLevel="false" >
+    android:useLevel="false">
     <solid android:color="@android:color/transparent" />
 
     <stroke

@@ -38,7 +38,6 @@
         android:layout_marginBottom="10sp">
 
 
-
         <com.example.cube.draw.CircularImageView
             android:id="@+id/accountImage"
             android:layout_width="match_parent"

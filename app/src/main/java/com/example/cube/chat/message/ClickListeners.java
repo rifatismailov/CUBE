@@ -34,9 +34,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                  //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                  //  viewHolder.binding.feeling.setImageResource(emoji);
-                  //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                    //  viewHolder.binding.feeling.setImageResource(emoji);
+                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
 
@@ -49,9 +49,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                  //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                  //  viewHolder.binding.feeling.setImageResource(emoji);
-                  //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                    //  viewHolder.binding.feeling.setImageResource(emoji);
+                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
         } else {
@@ -65,9 +65,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                   // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                   // viewHolder.binding.feeling.setImageResource(emoji);
-                   // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                    // viewHolder.binding.feeling.setImageResource(emoji);
+                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
 
                 }
             });
@@ -81,9 +81,9 @@ public class ClickListeners {
                     int y = location[1];
                     message.setFeeling(reaction[0]);
                     int emoji = message.getFeeling();
-                   // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                   // viewHolder.binding.feeling.setImageResource(emoji);
-                   // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+                    // viewHolder.binding.feeling.setImageResource(emoji);
+                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
             viewHolder.binding.file.setOnClickListener(v -> {
@@ -106,10 +106,10 @@ public class ClickListeners {
                          * Ми вже знаємо на який сервер звертатися та по якоми параметру */
                         //Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
                         URL url = new URL(message.getUrl().toString()); // Змініть IP на ваш
-                        Log.e("Listener",url.toString());
+                        Log.e("Listener", url.toString());
 
                         File externalDir = new File(context.getExternalFilesDir(null), "cube");
-                        new Downloader(context, url,externalDir,position,message.getMessageId());
+                        new Downloader(context, url, externalDir, position, message.getMessageId());
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

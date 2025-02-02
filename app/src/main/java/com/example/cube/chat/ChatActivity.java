@@ -95,8 +95,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             receiverPublicKey = bundleProcessor.getReceiverPublicKey();
             senderKey = bundleProcessor.getSenderKey();
             receiverKey = bundleProcessor.getReceiverKey();
-            avatarImageUrl=bundleProcessor.getAvatarImageUrl();
-            accountImageUrl=bundleProcessor.getAccountImageUrl();
+            avatarImageUrl = bundleProcessor.getAvatarImageUrl();
+            accountImageUrl = bundleProcessor.getAccountImageUrl();
 
         }
     }
@@ -129,14 +129,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Bitmap bitmap = BitmapFactory.decodeFile(accountImageUrl, options);
             binding.profile.setImageBitmap(bitmap);
         } else {
-            String name="Kiki";
+            String name = "Kiki";
             String lastName = "Kamureno";
             String jsonData = "{" +
                     "\"userId\":\"" + receiverId + "\"," +
                     "\"name\":\"" + name + "\"," +
                     "\"lastName\":\"" + lastName + "\"" +
                     "}";
-            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData,"Ka"));
+            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData, "Ka"));
         }
         // Ініціалізація RecyclerView
         setupRecyclerView();
@@ -185,7 +185,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         });
 
         binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(ChatActivity.this, senderKey));
-        binding.profile.setOnClickListener(view -> new QR(this, receiverId,accountImageUrl));
+        binding.profile.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
 

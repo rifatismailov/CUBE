@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void receivingData(String data) {
         if (data.equals("endUser")) {
-            Log.e("MainActivity", "end User "+data);
+            Log.e("MainActivity", "end User " + data);
 
             receiverId = null;
             notifyIdReciverChanged(receiverId);
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (user != null) {
                 if (!data.isEmpty()) {
                     if (user.getReceiverPublicKey() != null) {
-                        Log.e("MainActivity", "receiving Data on ChatActivity"+data);
+                        Log.e("MainActivity", "receiving Data on ChatActivity" + data);
 
                         sendMessageToService(data);
                     }
@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void sendMessageToService(String message) {
-        Log.e("MainActivity", "send Message To Service"+message);
+        Log.e("MainActivity", "send Message To Service" + message);
 
         Intent intent = new Intent(FIELD.CUBE_SEND_TO_SERVER.getFIELD());
         intent.putExtra(FIELD.MESSAGE.getFIELD(), message);

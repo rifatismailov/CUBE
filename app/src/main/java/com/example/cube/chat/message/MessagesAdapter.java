@@ -62,7 +62,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         this.holder = holder;
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
-             new SendMessageHandler(context).setMessage((SentViewHolder) viewHolder, message);
+            new SendMessageHandler(context).setMessage((SentViewHolder) viewHolder, message);
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             new ReceiverMessageHandler(context).setMessage((ReceiverViewHolder) viewHolder, message);
@@ -75,7 +75,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             messages.set(position, message);
             notifyItemChanged(position);
         } catch (Exception e) {
-            Log.e("Listener",e.toString());
+            Log.e("Listener", e.toString());
         }
 
         //notifyDataSetChanged();// Оновлюємо конкретну позицію

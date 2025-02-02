@@ -11,6 +11,7 @@ import com.example.cube.databinding.ItemReceiveBinding;
 public class ReceiverViewHolder extends RecyclerView.ViewHolder {
     public ItemReceiveBinding binding;
     private Message currentMessage;
+
     public ReceiverViewHolder(@NonNull View itemView) {
         super(itemView);
         binding = ItemReceiveBinding.bind(itemView);

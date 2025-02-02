@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 public class Permission {
     private static final int PERMISSION_REQUEST_CODE = 1;
     Activity activity;
+
     public Permission(Activity activity) {
         this.activity = activity;
         if (!checkPermission()) {

@@ -76,7 +76,8 @@ public class ContactCreator implements View.OnClickListener {
     }
 
     public interface CreatorOps {
-         void saveContact(String contact);
-         void scannerQrContact();
+        void saveContact(String contact);
+
+        void scannerQrContact();
     }
 }

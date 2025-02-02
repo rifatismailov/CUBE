@@ -25,8 +25,7 @@
             android:name="com.example.web_socket_service.socket.IOService"
             android:enabled="true"
             android:exported="false"
-            android:permission="TODO">
-        </service>
+            android:permission="TODO"></service>
 
         <activity
             android:name=".NewsActivity"

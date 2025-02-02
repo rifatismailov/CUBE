@@ -132,6 +132,7 @@ public class UserData implements Serializable {
     public void setProgress(int progress) {
         this.progress = progress;
     }
+
     // Конструктор для десеріалізації з JSONObject
     public UserData(JSONObject jsonObject) {
         try {

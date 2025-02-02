@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * MessageManager - клас для управлжіння операціями над повідомленнями в базі даних SQLite.
- *
+ * <p>
  * Цей клас надає методи для додавання, оновлення, видалення та отримання повідомлень з бази даних.
  */
 public class MessageManager {
@@ -38,10 +38,11 @@ public class MessageManager {
     private static final String COLUMN_IMAGE_WIDTH = "image_width";
     private static final String COLUMN_IMAGE_HEIGHT = "image_height";
     private static final String COLUMN_STATUS = "status";
-    private static final String COLUMN_FILE_SIZE="file_size";
-    private static final String COLUMN_TYPE_FILE="type_file";
-    private static final String COLUMN_FILE_HASH="hash";
-    private static final String COLUMN_DATE_CREATE="data_create";
+    private static final String COLUMN_FILE_SIZE = "file_size";
+    private static final String COLUMN_TYPE_FILE = "type_file";
+    private static final String COLUMN_FILE_HASH = "hash";
+    private static final String COLUMN_DATE_CREATE = "data_create";
+
     /**
      * Конструктор класу MessageManager.
      *
@@ -81,10 +82,10 @@ public class MessageManager {
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
-                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
-                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
-                    values.put(COLUMN_FILE_HASH,message.getHas());
-                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                    values.put(COLUMN_FILE_SIZE, message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE, message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH, message.getHas());
+                    values.put(COLUMN_DATE_CREATE, message.getDataCreate());
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -97,10 +98,10 @@ public class MessageManager {
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
-                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
-                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
-                    values.put(COLUMN_FILE_HASH,message.getHas());
-                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                    values.put(COLUMN_FILE_SIZE, message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE, message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH, message.getHas());
+                    values.put(COLUMN_DATE_CREATE, message.getDataCreate());
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -139,7 +140,7 @@ public class MessageManager {
      */
     public int updateMessage(Message message) {
         ContentValues values = new ContentValues();
-        Log.e("Listener", "Id "+message.getMessageId());
+        Log.e("Listener", "Id " + message.getMessageId());
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSenderId());
         values.put(COLUMN_RECEIVER, message.getReceiverId());
@@ -153,10 +154,10 @@ public class MessageManager {
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
-                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
-                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
-                    values.put(COLUMN_FILE_HASH,message.getHas());
-                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                    values.put(COLUMN_FILE_SIZE, message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE, message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH, message.getHas());
+                    values.put(COLUMN_DATE_CREATE, message.getDataCreate());
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -169,10 +170,10 @@ public class MessageManager {
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
-                    values.put(COLUMN_FILE_SIZE,message.getFileSize());
-                    values.put(COLUMN_TYPE_FILE,message.getTypeFile());
-                    values.put(COLUMN_FILE_HASH,message.getHas());
-                    values.put(COLUMN_DATE_CREATE,message.getDataCreate());
+                    values.put(COLUMN_FILE_SIZE, message.getFileSize());
+                    values.put(COLUMN_TYPE_FILE, message.getTypeFile());
+                    values.put(COLUMN_FILE_HASH, message.getHas());
+                    values.put(COLUMN_DATE_CREATE, message.getDataCreate());
                 }
                 if (message.getImage() != null) {
                     values.put(COLUMN_IMAGE, message.getImage());
@@ -190,7 +191,7 @@ public class MessageManager {
         values.put(COLUMN_STATUS, message.getMessageStatus());
 
         values.put(COLUMN_TIMESTAMP, message.getTimestamp());
-        Log.e("Listener", "Time  "+message.getTimestamp());
+        Log.e("Listener", "Time  " + message.getTimestamp());
 
         return database.update(TABLE_MESSAGES, values, COLUMN_MESSAGE_ID + " = ?", new String[]{message.getMessageId()});
     }
@@ -214,7 +215,7 @@ public class MessageManager {
                 message.setReceiverId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER)));
                 message.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE)));
                 String urlString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SELECTED_URL));
-                String filename=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_NAME));
+                String filename = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_NAME));
                 String fileSize = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_SIZE));
                 String fileType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE_FILE));
                 String fileHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_HASH));
@@ -236,7 +237,7 @@ public class MessageManager {
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
                 message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-                Log.e("Listener", "Time read "+cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                Log.e("Listener", "Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
 
                 messages.add(message);
             } while (cursor.moveToNext());

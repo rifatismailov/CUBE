@@ -52,8 +52,8 @@ public class BundleProcessor {
 
             senderKey = bundle.getString(FIELD.SENDER_KEY.getFIELD());
             receiverKey = bundle.getString(FIELD.RECEIVER_KEY.getFIELD());
-            avatarImageUrl= bundle.getString(FIELD.AVATAR_ORG.getFIELD());
-            accountImageUrl= bundle.getString(FIELD.AVATAR.getFIELD());
+            avatarImageUrl = bundle.getString(FIELD.AVATAR_ORG.getFIELD());
+            accountImageUrl = bundle.getString(FIELD.AVATAR.getFIELD());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

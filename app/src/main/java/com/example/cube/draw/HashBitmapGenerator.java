@@ -91,15 +91,15 @@ public class HashBitmapGenerator {
     }
 
 
-        public static String addLineBreaks (String input,int length){
-            StringBuilder formattedString = new StringBuilder();
-            for (int i = 0; i < input.length(); i += length) {
-                int end = Math.min(i + length, input.length());
-                formattedString.append(input.substring(i, end));
-                if (end < input.length()) {
-                    formattedString.append("\n");
-                }
+    public static String addLineBreaks(String input, int length) {
+        StringBuilder formattedString = new StringBuilder();
+        for (int i = 0; i < input.length(); i += length) {
+            int end = Math.min(i + length, input.length());
+            formattedString.append(input.substring(i, end));
+            if (end < input.length()) {
+                formattedString.append("\n");
             }
-            return formattedString.toString();
         }
+        return formattedString.toString();
     }
+}

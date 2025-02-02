@@ -46,7 +46,7 @@ public class FileData {
         return height;
     }
 
-    public  String getFileSize(File file) {
+    public String getFileSize(File file) {
         if (file.exists() && file.isFile()) {
             long sizeInBytes = file.length();
             double sizeInMB = (double) sizeInBytes / (1024 * 1024);
@@ -56,7 +56,7 @@ public class FileData {
         }
     }
 
-    public  String getFileType(File file) {
+    public String getFileType(File file) {
         if (file.exists() && file.isFile()) {
             String fileName = file.getName();
             int dotIndex = fileName.lastIndexOf('.');
@@ -70,7 +70,7 @@ public class FileData {
         }
     }
 
-    public  String getFileDate(File file) {
+    public String getFileDate(File file) {
         if (file.exists() && file.isFile()) {
             long lastModified = file.lastModified();
             SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");

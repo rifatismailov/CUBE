@@ -27,7 +27,8 @@ public class NavigationManager {
     ImageView accountImage;
     private Button accountButton, settingsButton, logoutButton;
     private final File externalDir;
-    public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage,ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
+
+    public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage, ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
         this.activity = activity;
         if (!(activity instanceof Navigation)) {
             //Перевірка типу activity у конструкторі: Якщо активність не імплементує Navigation, це може викликати ClassCastException.
@@ -36,7 +37,7 @@ public class NavigationManager {
         this.navigation = (Navigation) activity;
         this.drawerLayout = drawerLayout;
         this.avatarImage = avatarImage;
-        this.accountImage=accountImage;
+        this.accountImage = accountImage;
         this.accountButton = accountButton;
         this.settingsButton = settingsButton;
         this.logoutButton = logoutButton;
@@ -71,18 +72,20 @@ public class NavigationManager {
                 break;
         }
         // Закрити Drawer після вибору
-       // drawerLayout.closeDrawer(GravityCompat.START);
+        // drawerLayout.closeDrawer(GravityCompat.START);
     }
-    public void setAvatarImage(String image){
-        File file = new File(externalDir+"/"+image);
+
+    public void setAvatarImage(String image) {
+        File file = new File(externalDir + "/" + image);
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
 
             avatarImage.setImageBitmap(bitmap);
         } else {
-            avatarImage.setImageResource(R.drawable.cube_svg); // Резервне зображення
+            avatarImage.setImageResource(R.drawable.ukraineflag); // Резервне зображення
         }
     }
+
     public void setAccountImage(String image) {
         File file = new File(externalDir + "/" + image);
         if (file.exists()) {
@@ -92,8 +95,10 @@ public class NavigationManager {
             accountImage.setImageResource(R.drawable.ukraineflag); // Резервне зображення
         }
     }
+
     public interface Navigation {
         void scannerQrAccount();
+
         void imageNavigation();
     }
 }

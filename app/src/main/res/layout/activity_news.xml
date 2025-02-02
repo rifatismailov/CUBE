@@ -13,16 +13,17 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/Theme.CUBE.PopupOverlay" >
+        app:popupTheme="@style/Theme.CUBE.PopupOverlay">
 
         <ImageButton
             android:id="@+id/adding"
             android:layout_width="50dp"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp" />
+
         <ImageButton
             android:id="@+id/show"
             android:layout_width="50dp"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp" />
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView

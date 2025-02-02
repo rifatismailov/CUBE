@@ -5,7 +5,7 @@ plugins {
 android {
     namespace 'com.example.cube'
     compileSdk 34
-    packagingOptions{
+    packagingOptions {
         resources.excludes.add("META-INF/*")
     }
     buildFeatures {
@@ -46,12 +46,12 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
 
-    implementation project(path : ':folder')
-    implementation project(path : ':textvisualization')
-    implementation project(path : ':myemoji')
-    implementation project(path : ':qrcode')
-    implementation project(path : ':web_socket_service')
-    implementation project(path : ':image_account')
+    implementation project(path: ':folder')
+    implementation project(path: ':textvisualization')
+    implementation project(path: ':myemoji')
+    implementation project(path: ':qrcode')
+    implementation project(path: ':web_socket_service')
+    implementation project(path: ':image_account')
 
 
     implementation 'androidx.appcompat:appcompat:1.7.0'

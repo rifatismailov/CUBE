@@ -35,7 +35,7 @@ public class AccountManager {
      *
      * @param secretKey The key used to decrypt contact data.
      * @return A map of contact IDs to UserData objects.
-     *
+     * <p>
      * Перевірка існування таблиці: Викликаємо метод isTableExists, щоб перевірити, чи існує таблиця account.
      * Отримання даних: Використовуємо database.query, щоб отримати зашифровані дані з таблиці. Якщо курсор не пустий, читаємо дані.
      * Дешифрування даних: Зчитуємо зашифровані дані з курсора, дешифруємо їх і створюємо об'єкт JSONObject.
@@ -77,18 +77,17 @@ public class AccountManager {
     }
 
 
-
     /**
      * Inserts or updates multiple contacts in the database.
      * The data is encrypted using the provided SecretKey before storage.
      *
      * @param jsonObject to Account objects.
      * @param secretKey  The key used to encrypt contact data.
-     * Початок транзакції: Використовуємо db.beginTransaction() для початку транзакції. Це допомагає забезпечити, що всі операції всередині блоку try виконуються як одна атомарна операція.
-     * Шифрування даних: Конвертуємо jsonObject у строку JSON і шифруємо її, використовуючи заданий секретний ключ.
-     * Підготовка даних для вставки: Створюємо об'єкт ContentValues та додаємо зашифровані дані до нього.
-     * Вставка або заміна даних: Використовуємо метод db.replace() для вставки або заміни даних у таблиці account. Якщо операція не вдалася, rowId дорівнюватиме -1.
-     * Завершення транзакції: Використовуємо db.setTransactionSuccessful(), щоб вказати, що всі операції успішні, а потім db.endTransaction(), щоб завершити транзакцію.
+     *                   Початок транзакції: Використовуємо db.beginTransaction() для початку транзакції. Це допомагає забезпечити, що всі операції всередині блоку try виконуються як одна атомарна операція.
+     *                   Шифрування даних: Конвертуємо jsonObject у строку JSON і шифруємо її, використовуючи заданий секретний ключ.
+     *                   Підготовка даних для вставки: Створюємо об'єкт ContentValues та додаємо зашифровані дані до нього.
+     *                   Вставка або заміна даних: Використовуємо метод db.replace() для вставки або заміни даних у таблиці account. Якщо операція не вдалася, rowId дорівнюватиме -1.
+     *                   Завершення транзакції: Використовуємо db.setTransactionSuccessful(), щоб вказати, що всі операції успішні, а потім db.endTransaction(), щоб завершити транзакцію.
      */
     public void setAccount(JSONObject jsonObject, SecretKey secretKey) {
         SQLiteDatabase db = database;
@@ -120,11 +119,10 @@ public class AccountManager {
     }
 
 
-
     public boolean isTableExists(SQLiteDatabase db, String tableName) {
         Cursor cursor = db.rawQuery(
                 "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                new String[] { tableName }
+                new String[]{tableName}
         );
         boolean tableExists = (cursor.getCount() > 0);
         cursor.close();

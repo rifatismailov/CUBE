@@ -150,8 +150,7 @@
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:typeface="monospace"
-                />
+                android:typeface="monospace" />
         </LinearLayout>
     </LinearLayout>
 

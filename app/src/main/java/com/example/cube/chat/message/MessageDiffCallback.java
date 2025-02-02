@@ -1,6 +1,7 @@
 package com.example.cube.chat.message;
 
 import androidx.recyclerview.widget.DiffUtil;
+
 import java.util.List;
 
 public class MessageDiffCallback extends DiffUtil.Callback {

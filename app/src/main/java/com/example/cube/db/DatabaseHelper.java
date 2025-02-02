@@ -30,10 +30,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_STATUS = "status";
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_ENCRYPTED_DATA = "encrypted_data";
-    private static final String COLUMN_FILE_SIZE="file_size";
-    private static final String COLUMN_TYPE_FILE="type_file";
-    private static final String COLUMN_FILE_HASH="hash";
-    private static final String COLUMN_DATE_CREATE="data_create";
+    private static final String COLUMN_FILE_SIZE = "file_size";
+    private static final String COLUMN_TYPE_FILE = "type_file";
+    private static final String COLUMN_FILE_HASH = "hash";
+    private static final String COLUMN_DATE_CREATE = "data_create";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -53,7 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_RECEIVER + " TEXT, " +
                     COLUMN_MESSAGE + " TEXT, " +
                     COLUMN_SELECTED_URL + " TEXT, " +
-                    COLUMN_FILE_NAME+ " TEXT, " +
+                    COLUMN_FILE_NAME + " TEXT, " +
                     COLUMN_IMAGE + " BLOB, " +
                     COLUMN_IMAGE_WIDTH + " INTEGER, " +
                     COLUMN_IMAGE_HEIGHT + " INTEGER, " +

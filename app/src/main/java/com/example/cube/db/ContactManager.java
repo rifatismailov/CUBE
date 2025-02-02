@@ -7,9 +7,11 @@ import android.util.Log;
 
 import com.example.cube.contact.UserData;
 import com.example.cube.encryption.Encryption;
+
 import org.json.JSONObject;
 
 import javax.crypto.SecretKey;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,7 +108,7 @@ public class ContactManager {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("createContact", "createContact "+e);
+            Log.e("createContact", "createContact " + e);
 
         }
     }
