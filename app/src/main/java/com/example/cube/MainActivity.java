@@ -7,15 +7,19 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
+    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1001;
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName) {
@@ -199,7 +204,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+
+        /*З початку Android 13 необхідно запитувати у користувача дозвіл на відображення нотифікацій. Це робиться так:*/
         setContentView(binding.getRoot());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        1001);
+            }
+        }
 
         logs = new ArrayList<>();
         logAdapter = new LogAdapter(this, logs);
