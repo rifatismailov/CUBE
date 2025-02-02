@@ -39,6 +39,8 @@ public class WebSocketClient {
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
+                Log.e("IOService", "Web Socket onMessage with Service"+text);
+
                 listener.onListener(text);
             }
 
@@ -67,11 +69,13 @@ public class WebSocketClient {
 
     // Метод для відправки повідомлень
     public void sendMessage(String message) {
-        if (webSocket != null) {
-            webSocket.send(message);
-        } else {
-            listener.onNotification( "WebSocket is not connected.");
-        }
+        /**Проблема тут я ту не отримую данні через деякий час хоча з сервера я отримую повідомлення */
+            Log.e("IOService", "Web Socket Message To Service"+message);
+            if (webSocket != null) {
+                webSocket.send(message);
+            } else {
+                Log.e("IOService", "WebSocket is not connected.");
+            }
     }
 
     // Закриття з'єднання
@@ -88,6 +92,10 @@ public class WebSocketClient {
             listener.onNotification("Reconnecting...");
             connect(SERVER_URL,CLIENT_ID); // Спроба перепідключення
         }, 5000); // Затримка перед перепідключенням
+    }
+
+    public boolean isConnected() {
+        return webSocket != null;
     }
 
     /**

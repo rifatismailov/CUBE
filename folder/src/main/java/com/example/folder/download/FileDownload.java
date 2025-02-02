@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.example.folder.file.progress.ProgressResponseBody;
 import okhttp3.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,22 +112,29 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
      * @param file Файл для перевірки.
      */
     private void verifyFileIntegrity(File file) {
-        try {
+        try (InputStream fis = new FileInputStream(file)) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] fileBytes = Files.readAllBytes(file.toPath());
-            byte[] hashBytes = digest.digest(fileBytes);
-            StringBuilder hexString = new StringBuilder();
+            byte[] buffer = new byte[8192]; // Оптимальний розмір буфера
+            int bytesRead;
 
+            // Потокове обчислення хешу
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
+            }
+
+            // Перетворення хешу у шістнадцятковий рядок
+            byte[] hashBytes = digest.digest();
+            StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
-                hexString.append(Integer.toHexString(0xff & b));
+                hexString.append(String.format("%02x", b));
             }
 
             Log.d("FileDownload", "File hash: " + hexString.toString());
-            // Додайте додаткову логіку для перевірки хешу (наприклад, порівняння з очікуваним значенням)
         } catch (IOException | NoSuchAlgorithmException e) {
             Log.e("FileDownload", "Error calculating file hash: " + e.getMessage());
         }
     }
+
 
     @Override
     public void stopDecryption() {

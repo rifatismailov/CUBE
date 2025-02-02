@@ -1,5 +1,10 @@
 package com.example.web_socket_service.socket;
 
+import static android.content.ContentValues.TAG;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,20 +15,23 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 public class IOService extends Service implements WebSocketClient.Listener {
 
     private WebSocketClient webSocketClient;
     private ServerURL serverURL;
+    BroadcastReceiver receiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+
+        // Реєстрація BroadcastReceiver з декількома фільтрами
+        receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 switch (intent.getAction()) {
@@ -40,7 +48,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     case "CUBE_SEND_TO_SERVER":
                         String message = intent.getStringExtra("message");
                         Log.e("IOService", "CUBE_SEND_TO_SERVER " + message);
-                        webSocketClient.sendMessage(message);
+                        sendMessage(message);
                         break;
                     case "CUBE_IP_TO_SERVER":
                         String ip = intent.getStringExtra("ip");
@@ -56,7 +64,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             }
         };
 
-        // Реєстрація BroadcastReceiver з декількома фільтрами
+        // Реєстрація receiver для різних фільтрів
         IntentFilter filter = new IntentFilter();
         filter.addAction("CUBE_ID_SENDER");
         filter.addAction("CUBE_ID_RECIVER");
@@ -69,6 +77,46 @@ public class IOService extends Service implements WebSocketClient.Listener {
         } else {
             registerReceiver(receiver, filter);
         }
+
+        // Запуск сервісу як foreground service
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService();
+        }
+    }
+
+    private void sendMessage(String message) {
+        if (webSocketClient != null && webSocketClient.isConnected()) {
+            Log.e(TAG, "Sending message: " + message);
+            webSocketClient.sendMessage(message);
+        } else {
+            Log.e(TAG, "WebSocket not connected. Cannot send message.");
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void startForegroundService() {
+        // Створення каналу для нотифікацій для Android O та вище
+        String channelId = "web_socket_channel";
+        String channelName = "WebSocket Service";
+        NotificationChannel channel = new NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        // Побудова самої нотифікації
+        Notification notification = new Notification.Builder(this, channelId)
+                .setContentTitle("WebSocket Service")
+                .setContentText("Service is running")
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .build();
+
+        // Переведення сервісу в foreground
+        startForeground(1, notification);
     }
 
     @Override
@@ -87,6 +135,16 @@ public class IOService extends Service implements WebSocketClient.Listener {
         return START_STICKY;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+            Log.e(TAG, "BroadcastReceiver unregistered");
+        }
+        Log.e(TAG, "Service destroyed");
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -94,7 +152,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
     }
 
     private void addMessage(String message) {
-
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("message", message);
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1
@@ -113,14 +170,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
         intent.putExtra("notification", message);
         sendBroadcast(intent);  // Надсилання повідомлення Activity 1
     }
-
-    /**
-     * Обробляє отримані повідомлення від сервера.
-     * Якщо повідомлення отримано від цього ж користувача або для нього, воно передається в listener.
-     * Якщо повідомлення не для цього користувача, воно зберігається.
-     *
-     * @param message Повідомлення, яке отримано від сервера.
-     */
 
     @Override
     public void onListener(String message) {
@@ -141,6 +190,4 @@ public class IOService extends Service implements WebSocketClient.Listener {
             Log.e("IOService", "Не JSON повідомлення" + message);
         }
     }
-
-
 }
