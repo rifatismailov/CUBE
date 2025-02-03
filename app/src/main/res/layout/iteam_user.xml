@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,120 +8,53 @@
         android:id="@+id/qrCodeUser"
         android:layout_width="55dp"
         android:layout_height="55dp"
+        android:layout_alignParentStart="true"
         android:layout_marginStart="5dp"
-
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp" />
 
-    <TextView
-        android:id="@+id/userName"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="7dp"
-        android:layout_marginEnd="6dp"
-        android:layout_toEndOf="@+id/qrCodeUser"
-        android:fontFamily="@font/roboto_bold"
-        android:text="userName"
-        android:textColor="#049fd9"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        tools:ignore="HardcodedText" />
-
     <LinearLayout
+        android:id="@+id/view_name_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/idNumber"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="1dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="1dp"
-        android:layout_marginBottom="2dp"
-        android:layout_toStartOf="@+id/messageSize"
-        android:layout_toEndOf="@+id/userName"
-        android:orientation="horizontal">
+        android:layout_toEndOf="@+id/qrCodeUser">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RSA" />
+        <include layout="@layout/iteam_user_name_id" />
 
-
-        <com.example.cube.draw.ColorfulDotsView
-            android:id="@+id/rPublicKey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/white" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="2dp"
+        android:layout_toEndOf="@+id/view_name_id"
+        android:gravity="center">
+
+        <include layout="@layout/iteam_user_key" />
+    </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/bottomView"
-        android:layout_below="@+id/userName"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="1dp"
-        android:layout_marginBottom="1dp"
-        android:layout_toStartOf="@+id/messageSize"
-        android:layout_toEndOf="@+id/idNumber"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="AES" />
-
-
-        <com.example.cube.draw.ColorfulDotsView
-            android:id="@+id/receiverKey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/white" />
+        android:layout_alignBottom="@+id/linearLayout3"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/linearLayout3" >
+        <include layout="@layout/iteam_user_notification" />
     </LinearLayout>
 
-
-    <TextView
-        android:id="@+id/idNumber"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/userName"
-        android:layout_marginStart="6dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="3dp"
-        android:layout_toEndOf="@+id/qrCodeUser"
-        android:fontFamily="@font/poppins_extralight"
-        android:text="idNumber"
-        android:textColor="#1d2124"
-        android:textSize="15sp"
-        tools:ignore="HardcodedText" />
-
-
-    <TextView
-        android:id="@+id/messageSize"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="25dp"
-        android:layout_alignBottom="@+id/idNumber"
+        android:layout_height="21sp"
+        android:layout_marginStart="70dp"
+        android:layout_below="@+id/view_name_id"
+        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="6dp"
-        android:layout_marginBottom="5dp"
-        android:background="@drawable/check_message_style"
-        android:fontFamily="@font/roboto_bold"
-        android:gravity="center"
-        android:hyphenationFrequency="full"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:textColor="#fff"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        tools:ignore="SmallSp" />
-
-    <View
-        android:id="@+id/bottomView"
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"
-        android:layout_below="@+id/idNumber"
-        android:layout_marginStart="65dp"
-        android:layout_marginTop="10dp"
-        android:background="#909090" />
+        >
+        <include layout="@layout/iteam_user_message" />
+    </LinearLayout>
 </RelativeLayout>

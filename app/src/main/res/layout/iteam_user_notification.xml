@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="right"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/userStatus"
+        android:layout_width="100dp"
+        android:layout_height="20dp"
+        android:background="#000"
+        android:fontFamily="@font/roboto_bold"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="Status"
+        android:textColor="#fff"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        tools:ignore="SmallSp" />
+
+    <TextView
+        android:id="@+id/messageSize"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:background="@drawable/check_message_style"
+        android:fontFamily="@font/roboto_bold"
+        android:gravity="center"
+        android:hyphenationFrequency="full"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textColor="#fff"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        tools:ignore="SmallSp" />
+</LinearLayout>

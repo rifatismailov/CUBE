@@ -9,10 +9,13 @@
     tools:context=".MainActivity">
 
     <!-- Основний контент з CoordinatorLayout -->
+
+    <!-- Навігаційне меню (бічне) -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
+
         tools:context=".MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
@@ -46,8 +49,8 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/id"
@@ -75,9 +78,9 @@
                         android:layout_marginEnd="5dp"
                         android:layout_marginBottom="5dp"
                         android:layout_weight="1"
-                        android:visibility="visible"
                         android:dividerHeight="5dp"
-                        android:scrollbars="vertical" />
+                        android:scrollbars="vertical"
+                        android:visibility="visible" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -98,7 +101,6 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- Навігаційне меню (бічне) -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
