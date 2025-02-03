@@ -1,3 +1,5 @@
+
+
 package com.example.web_socket_service.socket;
 
 import static android.content.ContentValues.TAG;
@@ -13,19 +15,27 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
+
 import android.widget.RemoteViews;
+
 import com.example.web_socket_service.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * IOService — Android service that manages communication with a WebSocket server.
+ * It handles sending and receiving messages, maintaining notification updates, and managing service lifecycle.
+ */
 public class IOService extends Service implements WebSocketClient.Listener {
+
     private NotificationManager notificationManager;
-    private String channelId = "web_socket_channel";
-    private String channelName = "WebSocket Service";
+    private String channelId = "cube_web_socket_channel";
+    private String channelName = "Cube_WebSocket Service";
     private final int notificationId = 1;
     private WebSocketClient webSocketClient;
     private ServerURL serverURL;
@@ -36,11 +46,14 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private String ip;
     private String port;
 
+    /**
+     * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // Реєстрація BroadcastReceiver з декількома фільтрами
+        // Initialize the BroadcastReceiver to listen for multiple events
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -74,7 +87,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             }
         };
 
-        // Реєстрація receiver для різних фільтрів
+        // Registering receiver for multiple intent filters
         IntentFilter filter = new IntentFilter();
         filter.addAction("CUBE_ID_SENDER");
         filter.addAction("CUBE_ID_RECIVER");
@@ -88,12 +101,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
             registerReceiver(receiver, filter);
         }
 
-        // Запуск сервісу як foreground service
+        // Start foreground service for Android O and above
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService();
         }
     }
 
+    /**
+     * Sends a message via WebSocket if the connection is active.
+     *
+     * @param message Message to send.
+     */
     private void sendMessage(String message) {
         if (webSocketClient != null && webSocketClient.isConnected()) {
             Log.e(TAG, "Sending message: " + message);
@@ -103,10 +121,12 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
+    /**
+     * Starts the service as a foreground service and displays a notification.
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startForegroundService() {
-        // Створення каналу для нотифікацій для Android O та вище
-
+        // Create notification channel
         NotificationChannel channel = new NotificationChannel(
                 channelId,
                 channelName,
@@ -117,40 +137,47 @@ public class IOService extends Service implements WebSocketClient.Listener {
             notificationManager.createNotificationChannel(channel);
         }
 
-        // Створюємо кастомний макет для повідомлення
+        // Create custom notification layout
         RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
         notificationLayout.setTextViewText(R.id.notification_title, "CUBE is running");
         notificationLayout.setTextViewText(R.id.notification_text, "Server address " + ip);
 
-        // Побудова самої нотифікації
+        // Build the notification
         Notification notification = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
                 .setAutoCancel(true)
                 .build();
 
-        // Переведення сервісу в foreground
+        // Move the service to foreground
         startForeground(notificationId, notification);
     }
 
+    /**
+     * Updates the foreground service notification.
+     *
+     * @param about      Notification title
+     * @param newMessage Notification message
+     */
     private void updateNotification(String about, String newMessage) {
-        // Створюємо кастомний макет для оновленого повідомлення
         RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
         notificationLayout.setTextViewText(R.id.notification_title, about);
         notificationLayout.setTextViewText(R.id.notification_text, newMessage);
 
         Notification updatedNotification = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
                 .setAutoCancel(true)
                 .build();
 
-        // Оновлення нотифікації
         notificationManager.notify(notificationId, updatedNotification);
     }
 
+    /**
+     * Handles the service's start command and initializes WebSocket connection.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
@@ -163,11 +190,14 @@ public class IOService extends Service implements WebSocketClient.Listener {
             serverURL.setPort(port);
             webSocketClient = new WebSocketClient(this);
             webSocketClient.connect(serverURL.getServerAddress(), serverURL.getRegistration());
-            updateNotification("CUBE is running","Server address " + ip);
+            updateNotification("CUBE is running", "Server address " + ip);
         }
         return START_STICKY;
     }
 
+    /**
+     * Cleans up resources when the service is destroyed.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -184,26 +214,44 @@ public class IOService extends Service implements WebSocketClient.Listener {
         return null;
     }
 
+    /**
+     * Sends a broadcast message.
+     *
+     * @param message Message to broadcast.
+     */
     private void addMessage(String message) {
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("message", message);
-        sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+        sendBroadcast(intent);
     }
 
+    /**
+     * Saves a message by broadcasting it.
+     *
+     * @param message Message to save.
+     */
     private void saveMessage(String message) {
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("save_message", message);
-        sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+        sendBroadcast(intent);
     }
 
+    /**
+     * Handles WebSocket notifications.
+     */
     @Override
     public void onNotification(String message) {
         Log.e("IOService", message);
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("notification", message);
-        sendBroadcast(intent);  // Надсилання повідомлення Activity 1
+        sendBroadcast(intent);
     }
 
+    /**
+     * Listens for incoming WebSocket messages and processes them.
+     *
+     * @param message Incoming message from WebSocket.
+     */
     @Override
     public void onListener(String message) {
         try {
@@ -219,8 +267,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 }
             }
         } catch (JSONException e) {
-            Log.e("IOService", " Помилка обробки JSON під час отримання повідомлення - " + e.getMessage());
-            Log.e("IOService", "Не JSON повідомлення" + message);
+            Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
+            Log.e("IOService", "Not a JSON message: " + message);
         }
     }
 }

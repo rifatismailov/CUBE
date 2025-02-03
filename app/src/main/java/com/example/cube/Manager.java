@@ -33,11 +33,9 @@ public class Manager {
         JSONObject jsonObject = accountManager.getAccount(secretKey);
         if (jsonObject != null) {
             createAccount(jsonObject);
-            Log.e("DatabaseHelper", "Manager JSONObject Not null.");
-
+            Log.e("Manager", "Manager JSONObject Not null.");
         } else {
-            Log.e("DatabaseHelper", "Manager JSONObject null.");
-
+            Log.e("Manager", "Manager JSONObject null.");
         }
     }
 
@@ -47,13 +45,11 @@ public class Manager {
             JSONObject jsonObject = new JSONObject(result);
             if (jsonObject != null) {
                 accountManager.setAccount(jsonObject, secretKey);
-                Log.e("DatabaseHelper", "account setAccount. ");
+                Log.e("Manager", "account setAccount. ");
             }
-
             createAccount(jsonObject);
-
         } catch (JSONException e) {
-            Log.e("DatabaseHelper", e.toString());
+            Log.e("Manager", e.toString());
         }
     }
 
@@ -73,7 +69,7 @@ public class Manager {
             String password = jsonObject.optString(FIELD.PASSWORD.getFIELD(), "");
             String imageOrgName = jsonObject.optString("imageOrgName", "");
             String imageName = jsonObject.optString("imageName", "");
-            Log.e("DatabaseHelper", imageOrgName + " > " + imageName);
+            Log.e("Manager", imageOrgName + " > " + imageName);
 
             if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(name) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(password)) {
                 Toast.makeText((Context) accountOps, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();

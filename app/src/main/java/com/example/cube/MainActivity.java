@@ -13,7 +13,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -274,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     /**
-     * Ініціалізація списку користувачів.
+     * Ініціалізація списку контактів.
      */
     private void initUserList() {
         userList.clear();
@@ -324,10 +323,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Метод для запуску ChatActivity з передачею даних про користувача.
+     * Метод для запуску ChatActivity з передачею даних про користувача та контакту з ким від буде спілкуватися.
      *
      * @param view     Поточний елемент View.
-     * @param userData Дані користувача для чату.
+     * @param userData Дані контакту для чату.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void startChat(View view, @NonNull UserData userData) {
@@ -397,30 +396,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Обробка натискання на елемент списку користувачів.
+     * Обробка натискання на елемент списку контактів.
      *
-     * @param adapterView Віджет-список.
+     * @param adapterView Віджет списку.
      * @param view        Об'єкт View.
      * @param i           Позиція вибраного елемента.
      * @param l           Ідентифікатор вибраного елемента.
-     * @user Основний користувач, який був вибраний.
-     * <p>
-     * Пояснення до коду: пишу для себе, але може бути корисно для вас також.
+     *                    <p>
+     *                    Пояснення до коду: пишу для себе, але це може бути корисно й для вас.
      * @onItemClick Відповідає за обробку натискання на контакти, які у вас є.
      * <p>
-     * Під час натискання перевіряються 4 параметри:
-     * @publicKey Перевірка існування publicKey — це RSA-ключ, за допомогою якого
-     * шифруються спеціальні повідомлення, що будуть відправлятися вам користувачем,
+     * Під час натискання перевіряються такі параметри:
+     * @publicKey Перевірка наявності publicKey — це RSA-ключ,
+     * за допомогою якого шифруються спеціальні повідомлення, що надсилатимуться від
+     * контакту, з яким ви будете спілкуватися.
+     * @senderKey Перевірка наявності senderKey — це AES-ключ,
+     * за допомогою якого шифруються повідомлення, які надсилає до вас контакт,
      * з яким ви спілкуєтеся.
-     * @senderKey Перевірка існування senderKey — це AES-ключ, за допомогою якого
-     * шифруються повідомлення, що буде відправляти вам користувач, з яким ви спілкуєтеся.
-     * @receiverPublicKey Перевірка існування receiverPublicKey користувача, якому ви пишете —
-     * це RSA-ключ, за допомогою якого шифруються спеціальні повідомлення для відправки
-     * до користувача, з яким ви спілкуєтеся.
-     * @receiverKey Перевірка існування receiverKey користувача, якому ви пишете —
-     * це AES-ключ, за допомогою якого шифруються повідомлення, які ви будете відправляти
-     * до користувача, з яким ви спілкуєтеся.
+     * @receiverPublicKey Перевірка наявності receiverPublicKey контакту,
+     * якому ви хочете написати. Це RSA-ключ, за допомогою якого
+     * шифруються спеціальні повідомлення для відправлення до цього контакту.
+     * @receiverKey Перевірка наявності receiverKey користувача, якому ви пишете.
+     * Це AES-ключ, за допомогою якого шифруються повідомлення для
+     * відправлення до контакту, з яким ви спілкуєтеся.
      */
+
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -448,7 +448,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             // відправка публічного ключа отримувачу
             sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
-            //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
+            //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
         } else {
@@ -457,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
                     // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
                     sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
-                    //Анулюймо користувача так як нам треба отримувати повідомлення якщо вони і будуть йти
+                    //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
                     //serverConnection.setReceiverId(receiverId);
                 } else {
@@ -489,6 +489,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    /**
+     * Обробка довгого натискання для генерації нових ключів
+     * в подальшому буде змінено на більш функціональний підхід
+     */
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
         user = userList.get(i);
@@ -541,40 +545,53 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     /**
-     * Передача зображення акаунта
-     * Під час передачі ми передаємо два зображення:
-     * 1. Маленьке — для контактів
-     * 2. Велике — для аватара
-     * Під час передачі передається посилання на файл (він шифрується та відправляється у зашифрованому вигляді).
-     * Передається ID, яке складається з:
-     * - Відправника
-     * - Назви поточного файлу
-     * - Користувача, якому належить файл
-     * - Хеш-суми
-     * Також передається ключ для шифрування, де зазначається, хто запитує ці зображення.
+     * Метод передача зображення аккаунту
+     *
+     * @param recipient отримувача хто зробив запит на отримання зображень
+     *                  Під час передачі ми передаємо два зображення:
+     *                  1. Маленьке — для контактів
+     *                  2. Велике — для аватара
+     *                  Під час передачі передається посилання на файл (він шифрується та відправляється у зашифрованому вигляді).
+     *                  Передається ID, яке складається з:
+     *                  - отримувача
+     *                  - Назви коду файлу до якого він належить. Маленьке — для контактів або велике — для аватара
+     *                  - Хеш-суми
+     *                  зазначений метод передає данні для шифрування та данні для відправки файлу до отримувача.
      */
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
-    public void giveAvatar(String sender) {
+    public void giveAvatar(String recipient) {
         File file = new File(this.getExternalFilesDir(null), "imageProfile");
         FileDetect fileDetect = new FileDetect();
         String avatarImage = file + "/" + imageOrgName;
         String accountImage = file + "/" + imageName;
         for (UserData user : userList) {
-            if (user.getId().equals(sender)) {
+            if (user.getId().equals(recipient)) {
                 String key = user.getSenderKey();
-                uploadFile(new File(avatarImage), sender + ":imageOrgName:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
-                uploadFile(new File(accountImage), sender + ":accountImage:" + fileDetect.getFileHash(accountImage, "SHA-256"), key);
+                uploadFile(new File(avatarImage), recipient + ":imageOrgName:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
+                uploadFile(new File(accountImage), recipient + ":accountImage:" + fileDetect.getFileHash(accountImage, "SHA-256"), key);
                 break;
             }
         }
     }
 
-
+    /**
+     * Метод для обробки відповіді після запиту на отримання зображень контакту
+     *
+     * @param envelope    тіло повідомлення що містить основну інформацію для завантаження файлу
+     *                    а саме посилання на файл хеш суму
+     * @param avatar_name код зображення до якого він належить це може бути:
+     *                    1. Маленьке — для контактів
+     *                    2. Велике — для аватара
+     *                    Після отримання даних формуємо ідентифікатори для подальшої обробки файлів
+     * @envelope.getMessageId() Id повідомлення за яким прийшов відповідь тоб то від відправника
+     * @envelope.getSenderId() Id відправника
+     * @avatar_name містить код зображення
+     * ці данні додаються у HasMap (avatar_map.put(positionID, value)) для подальшої обробки
+     */
     private void addAvatar(Envelope envelope, String avatar_name) {
         try {
-            //Thread.sleep(3000);
             for (int position = 0; position < userList.size(); position++) {
                 if (userList.get(position).getId().equals(envelope.getSenderId())) {
                     addPositionID(envelope.getMessageId(), envelope.getSenderId() + ":" + avatar_name);
@@ -605,7 +622,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     /**
-     * Отримання зображення контакту який в нас збережений
+     * Отримання зображення контакту який в нас оригінального збережений
      */
     @Override
     public void getAvatarORG(Envelope envelope) {
@@ -629,23 +646,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             }
         }, 1);
-//        new Thread(() -> {
-//            try {
-//                FileEncryption fileEncryption = new FileEncryption(this, sender, serverUrl);
-//                SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
-//                String encryptedFile = fileEncryption.getEncFile(file, secretKey);
-//                addPositionID(sender, encryptedFile);
-//                Log.e("MainActivity", " encryptedFileName " + encryptedFile);
-//                fileEncryption.fileEncryption();
-//            } catch (Exception e) {
-//
-//            }
-//        }).start();
     }
 
     // Метод для додавання значення
-    public void addPositionID(String positionID, String fileName) {
-        avatar_map.put(positionID, fileName);
+    public void addPositionID(String positionID, String value) {
+        avatar_map.put(positionID, value);
     }
 
     // Метод для отримання та автоматичного видалення значення
@@ -665,6 +670,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);
     }
 
+    /**
+     * Метод для додовання AES ключа контакту
+     *
+     * @param sender          відправник в нас збережений як контакт
+     * @param receivedMessage саме повідомлення з ключем яки зашифрований нашим публічним ключем RSA
+     *                        після отримання даних додаємо до бази даних контакту
+     */
     @Override
     public void addAESKey(String sender, String receivedMessage) {
         try {
@@ -890,6 +902,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendHandshake(userId, user.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", user.getPublicKey());
     }
 
+    /**
+     * Прогрес завантаження зображень контакту після запиту на отримання зображень
+     */
     @Override
     public void setProgressShow(String positionId, int progress, String info) {
         String body_map = avatar_map.get(positionId);
@@ -901,6 +916,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         Log.e("MainActivity", "[" + positionId + "]: " + progress + " " + info);
     }
+
+    /**
+     * Метод який виконується після шифрування файлу д відправи
+     *
+     * @param positionId Id позиції за яким виконується дія а саме:
+     *                   в нас два зображення оригінальне та обрізане з обличчям.
+     *                   Вони обробляються в різних позиціях окремо і щоб зрозуміти
+     *                   хто який ми робимо ідентифікатор Id що містить такі данні
+     * @param info
+     */
 
     @Override
     public void endProgress(String positionId, String info) {
@@ -931,11 +956,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     break;
                 }
             }
-            Log.e("MainActivity", "[" + positionId + " fileName " + fileName + " ]: " + info);
         } catch (Exception e) {
-
+            Log.e("MainActivity", "[Помилка після шифрування файлу для відправки аватар до контактів] " + e);
         }
-
     }
 
     @Override
@@ -943,12 +966,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    /**
+     * Метод за допомогою ми оновлюємо зображення аватару контактів
+     *
+     * @param position   позиція контакту
+     * @param positionId Id позиції
+     * @param url        місце розташування зображення контакту
+     * @param has        Хеш сума зображення
+     *                   після завантаження файлу та декодування йго у зображення
+     *                   зображення зберігаєтеся у спеціальні директорії (Директорія /storage/emulated/0/Android/data/com.example.cube/files/imageProfile)
+     *                   та отримується посилання на нього (Приклад /storage/emulated/0/Android/data/com.example.cube/files/imageProfile/file.png)
+     *                   яке зберігається у базі даних контакту за допомогою методу contactManager.updateContact(user, secretKey);
+     *                   куди передається об'єкт UserData з посиланням на файли зображення AvatarImageUrl та AccountImageUrl
+     */
     @Override
     public void updateItem(int position, String positionId, String url, String has) {
         String avatar = getAvatarInfoAndRemove(positionId);
         String[] positionName = avatar.split(":");
-        Log.e("MainActivity", "user " + positionName[0] + " avatar_name " + positionName[1] + " [" + positionId + " fileName " + url + " ]: " + has);
-
         for (UserData user : userList) {
             if (user.getId().equals(positionName[0])) {
                 if (positionName[1].equals("avatar_org")) {
@@ -965,9 +999,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Метод для отримання ключа для разщифрування файшлу
-     * в нашому випадку в нас тут слугу  positionId Id-Повідомлення яке прийшло та за яким збережений Id контакту
-     * Звертаємося до avatar_map та оримуємо ID контакту для отримання ключа
+     * Метод для отримання ключа для розшифрування файлу
+     *
+     * @param positionId Id-Повідомлення яке прийшло та за яким збережений Id контакту та код зображення
+     *                   Звертаємося до avatar_map та отримуємо масив через який ми отримуємо ID контакту для отримання ключа
+     *                   для розшифрування файлу
      */
     @Override
     public String getKey(String positionId) {
