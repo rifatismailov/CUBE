@@ -101,22 +101,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Manager manager;
     private final List<UserData> userList = new ArrayList<>();  // Список користувачів
     private Map<String, UserData> contacts = new HashMap<>();  // Контакти користувачів
-
     private List<Logger> logs;
     private LogAdapter logAdapter;
-
     private SecretKey secretKey;  // AES-ключ
-
     private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private HashMap<String, String> avatar_map = new HashMap<>();
-
     private int numMessage = 0;  // Лічильник повідомлень
-
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
-    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1001;
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName) {
@@ -139,7 +133,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Додає новий контакт, отриманий через QR-код або інші джерела.
      *
      * @param id_contact дані контакту у вигляді рядка JSON.
+     *
      */
+
     @Override
     public void setContact(String id_contact, String public_key_contact, String name_contact) {
         // Додаємо новий контакт до списку користувачів
@@ -493,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Обробка довгого натискання для генерації нових ключів
      * в подальшому буде змінено на більш функціональний підхід
      */
+
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
         user = userList.get(i);
@@ -513,6 +510,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Отримання повідомлення та відправка у клас для обробки операції.
      *
      * @param message Текст повідомлення.
+     *
      */
     public void onReceived(String message) {
         new Operation(this).onReceived(message);
@@ -522,7 +520,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Зберігає отримане повідомлення.
      *
      * @param message дані повідомлення, яке зберігається.
+     *
      */
+
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
@@ -596,19 +596,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (userList.get(position).getId().equals(envelope.getSenderId())) {
                     addPositionID(envelope.getMessageId(), envelope.getSenderId() + ":" + avatar_name);
                     Log.e("MainActivity", userList.get(position).getId() + " Key " + userList.get(position).getReceiverKey());
-                    String message = Encryption.AES.decrypt(envelope.getMessage(), userList.get(position).getReceiverKey());
+                    //String message = Encryption.AES.decrypt(envelope.getMessage(), userList.get(position).getReceiverKey());
                     String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), userList.get(position).getReceiverKey());
                     String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), userList.get(position).getReceiverKey());
                     File externalDir = new File(getExternalFilesDir(null), "imageProfile");
-                    Log.e("MainActivity", "message " + message + " messageID " + envelope.getMessageId() + " fileUrl " + fileUrl + " fileHash " + fileHash);
+                    /*Потрібно реалізація перевірки хеш суми яку ми отримали з хеш сумою файлу після декодування для безпеки*/
                     URL url = new URL(fileUrl);
-                    new Downloader(this, url, externalDir, position, envelope.getMessageId());
+                    new Downloader(this, url, externalDir, position, envelope.getMessageId(), fileHash);
                     break;
                 }
             }
         } catch (Exception e) {
             Log.e("MainActivity", " Error " + e);
-
         }
     }
 
@@ -825,8 +824,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     "\"imageOrgName\":\"" + imageOrgName + "\"," +
                     "\"imageName\":\"" + imageName + "\"" +
                     "}";
-            Log.e("DatabaseHelper", "setImageAccount. ");
-
             manager.writeAccount(jsonData);
             navigationManager.setAvatarImage(imageOrgName);
             navigationManager.setAccountImage(imageName);

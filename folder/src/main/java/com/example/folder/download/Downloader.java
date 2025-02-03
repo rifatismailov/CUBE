@@ -35,16 +35,17 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
     private final String directory;
     private final int position;
     private final String positionId;
+    private String fileHash;
     private final DownloaderHandler downloaderHandler;
 
     /**
      * Основний конструктор класу  Downloader який приймає такі поля:
      *
-     * @context Контекст основного активності
-     * @url адреса де знаходиться файл
-     * @externalDir місце куди буде збережено файл
-     * @position позиція у активності
-     * @positionId ІД позиції у активності
+     * @param context     Контекст основного активності
+     * @param url         адреса де знаходиться файл
+     * @param externalDir місце куди буде збережено файл
+     * @param position    позиція у активності
+     * @param positionId  ІД позиції у активності
      */
     public Downloader(Context context, URL url, File externalDir, int position, String positionId) {
         // Перевірка та створення директорії
@@ -64,6 +65,37 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
         this.fileOMG = (FileOMG) context;
         this.position = position;
         this.positionId = positionId;
+    }
+
+    /**
+     * Основний конструктор класу  Downloader який приймає такі поля:
+     *
+     * @param context     Контекст основного активності
+     * @param url         адреса де знаходиться файл
+     * @param externalDir місце куди буде збережено файл
+     * @param position    позиція у активності
+     * @param positionId  ІД позиції у активності
+     * @param fileHash    хеш сума файлу
+     */
+    public Downloader(Context context, URL url, File externalDir, int position, String positionId, String fileHash) {
+        // Перевірка та створення директорії
+        if (!externalDir.exists()) {
+            boolean mkdirs = externalDir.mkdirs();
+            if (!mkdirs) {
+                Log.e("Downloader", "Не вдалося створити директорію");
+            }
+        }
+
+        fileName = getFileNameFromUrl(url.toString());
+        new FileDownload(this).downloadFile(url, new File(externalDir + "/" + fileName));
+        this.directory = externalDir.getAbsolutePath();
+        this.context = context;
+        folder = (Folder) context;
+        downloaderHandler = (DownloaderHandler) context;
+        this.fileOMG = (FileOMG) context;
+        this.position = position;
+        this.positionId = positionId;
+        this.fileHash = fileHash;
     }
 
 
