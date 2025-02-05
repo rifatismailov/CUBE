@@ -74,7 +74,9 @@ public class UserAdapter extends ArrayAdapter<UserData> {
                     "\"name\":\"" + name + "\"," +
                     "\"lastName\":\"" + lastName + "\"" +
                     "}";
-            image.setImageBitmap(QRCode.getQRCode(jsonData, "Ka"));
+            String result = userData.getName().substring(0, 2);  // Отримуємо перші дві букви
+
+            image.setImageBitmap(QRCode.getQRCode(jsonData, result));
         }
 
         TextView userName = view.findViewById(R.id.userName);

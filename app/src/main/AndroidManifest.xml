@@ -5,8 +5,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.PRIVATE_EXTERNAL_STORAGE"
+        tools:ignore="SystemPermissionTypo" />
 
     <application
         android:allowBackup="true"
@@ -21,18 +28,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-
         <service
             android:name="com.example.web_socket_service.socket.IOService"
             android:enabled="true"
-            android:exported="false"
-            android:permission="TODO"></service>
+            android:exported="true"
+            />
 
-        <activity
-            android:name=".NewsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_news"
-            android:theme="@style/Theme.CUBE.NoActionBar" />
         <activity
             android:name=".chat.ChatActivity"
             android:exported="false"
@@ -46,10 +47,9 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+    </application>
 </manifest>

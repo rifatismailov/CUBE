@@ -20,18 +20,25 @@
         android:textStyle="bold"
         tools:ignore="SmallSp" />
 
-    <TextView
-        android:id="@+id/messageSize"
-        android:layout_width="wrap_content"
-        android:layout_height="25dp"
-        android:background="@drawable/check_message_style"
-        android:fontFamily="@font/roboto_bold"
-        android:gravity="center"
-        android:hyphenationFrequency="full"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:textColor="#fff"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        tools:ignore="SmallSp" />
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/messageSize"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:background="@drawable/check_message_style"
+            android:fontFamily="@font/roboto_bold"
+            android:gravity="center"
+            android:hyphenationFrequency="full"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="#fff"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            tools:ignore="SmallSp" />
+    </LinearLayout>
+
 </LinearLayout>

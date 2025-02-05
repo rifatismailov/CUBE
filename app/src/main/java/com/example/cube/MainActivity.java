@@ -13,6 +13,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -95,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String imageOrgName;
     private String imageName;
     private UserData user;           // Об'єкт користувача
-    private DatabaseHelper dbHelper;
-    private SQLiteDatabase db;
     private ContactManager contactManager;
     private Manager manager;
     private final List<UserData> userList = new ArrayList<>();  // Список користувачів
@@ -105,10 +104,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private LogAdapter logAdapter;
     private SecretKey secretKey;  // AES-ключ
     private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
-    private HashMap<String, String> avatar_map = new HashMap<>();
+    private final HashMap<String, String> avatar_map = new HashMap<>();
     private int numMessage = 0;  // Лічильник повідомлень
     private UserAdapter userAdapter;                // Адаптер для відображення користувачів
-    private ActivityResultLauncher<Intent> activityResultLauncher;
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
 
@@ -203,10 +201,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         /*З початку Android 13 необхідно запитувати у користувача дозвіл на відображення нотифікацій. Це робиться так:*/
         setContentView(binding.getRoot());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
                         1001);
             }
         }
@@ -234,17 +232,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
 
 
-        password = "1234567890123456";  // Пароль
-        byte[] keyBytes = password.getBytes();  // Генерація байт ключа
+        //password = "1234567890123456";  // Пароль
+        byte[] keyBytes = "1234567890123456".getBytes();  // Генерація байт ключа
         secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
-        dbHelper = new DatabaseHelper(this);
-        db = dbHelper.getWritableDatabase();
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         manager = new Manager(this, db, secretKey);
         manager.readAccount();
         contactManager = new ContactManager(db);
 
 
-        registerServer();
+            registerServer();
+
 
         startService();
         binding.setting.setOnClickListener(this);
@@ -346,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void registerServer() {
         IntentFilter filter = new IntentFilter(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD());
-        registerReceiver(serverMessageReceiver, filter, Context.RECEIVER_EXPORTED);
+        registerReceiver(serverMessageReceiver, filter, RECEIVER_EXPORTED);
     }
 
     public void startService() {
@@ -434,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             // Треба додати генерацію ключа AES
             String key = KeyGenerator.AES.generateKey(16);
-            if (key == null || key.isEmpty()) {
+            if (key.isEmpty()) {
                 Log.e("MainActivity", "Failed to generate AES key");
                 return;
             }
@@ -637,10 +636,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
                 String encryptedFile = fileEncryption.getEncFile(file, secretKey);
                 addPositionID(sender, encryptedFile);
-                Log.e("MainActivity", " encryptedFileName " + encryptedFile);
                 fileEncryption.fileEncryption();
             } catch (Exception e) {
-
+                Log.e("MainActivity", "Помилка під час шифрування файлу " + e);
             }
         }, 1);
     }

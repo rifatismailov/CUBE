@@ -241,6 +241,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
      */
     @Override
     public void onNotification(String message) {
+        String[] info = message.split(":");
+        updateNotification("CUBE is running", info[0]);
         Log.e("IOService", message);
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("notification", message);

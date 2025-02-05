@@ -33,13 +33,12 @@ public class WebSocketClient {
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
-                listener.onNotification("Connected to server...");
+                listener.onNotification("Connected to server...:");
                 webSocket.send("REGISTER:" + CLIENT_ID);
             }
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
-                Log.e("IOService", "Web Socket onMessage with Service"+text);
 
                 listener.onListener(text);
             }

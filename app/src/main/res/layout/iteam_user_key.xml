@@ -6,24 +6,25 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_height="15dp"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AES"
-            android:textColor="#FFD700" />
+            android:textColor="#B0C4DE"
+            />
 
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/receiverKey"
             android:layout_width="70dp"
-            android:layout_height="20dp" />
+            android:layout_height="15dp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_height="15dp"
         android:layout_marginTop="2dp"
         android:orientation="horizontal">
 
@@ -31,11 +32,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="RSA"
-            android:textColor="#FFD700" />
+            android:textColor="#B0C4DE"
+            />
 
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/rPublicKey"
             android:layout_width="70dp"
-            android:layout_height="20dp" />
+            android:layout_height="15dp" />
     </LinearLayout>
 </LinearLayout>
