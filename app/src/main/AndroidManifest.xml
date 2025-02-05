@@ -31,8 +31,7 @@
         <service
             android:name="com.example.web_socket_service.socket.IOService"
             android:enabled="true"
-            android:exported="true"
-            />
+            android:exported="true" />
 
         <activity
             android:name=".chat.ChatActivity"

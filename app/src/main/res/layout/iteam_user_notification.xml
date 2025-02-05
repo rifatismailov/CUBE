@@ -28,7 +28,7 @@
         <TextView
             android:id="@+id/messageSize"
             android:layout_width="wrap_content"
-            android:layout_height="25dp"
+            android:layout_height="20dp"
             android:background="@drawable/check_message_style"
             android:fontFamily="@font/roboto_bold"
             android:gravity="center"

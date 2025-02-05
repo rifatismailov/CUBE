@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="general_settings"
+        android:title="Загальні налаштування">
+
+        <EditTextPreference
+            android:key="username"
+            android:title="Ім'я користувача"
+            android:summary="Введіть ваше ім'я користувача"
+            android:inputType="text"/>
+
+        <EditTextPreference
+            android:key="userLastName"
+            android:title="Прізвище користувача"
+            android:summary="Введіть ваше прізвище користувача"
+            android:inputType="text"/>
+        <EditTextPreference
+            android:key="userId"
+            android:title="ID користувача"
+            android:summary="Введіть ваше ID користувача"
+            android:inputType="text"/>
+
+        <SwitchPreferenceCompat
+            android:key="notifications"
+            android:title="Сповіщення"
+            android:summary="Увімкнення/Вимкнення сповіщень"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="server_settings"
+        android:title="Налаштування серверу">
+
+        <EditTextPreference
+            android:key="messaging_server_ip"
+            android:title="IP сервера обміну повідомленнями"
+            android:summary="Введіть IP адресу сервера"
+            android:inputType="text"/>
+
+        <EditTextPreference
+            android:key="messaging_server_port"
+            android:title="Port сервера обміну повідомленнями"
+            android:summary="Введіть порт сервера"
+            android:inputType="number"/>
+
+        <EditTextPreference
+            android:key="file_server_ip"
+            android:title="IP сервера обміну файлами"
+            android:summary="Введіть IP адресу сервера"
+            android:inputType="text"/>
+
+        <EditTextPreference
+            android:key="file_server_port"
+            android:title="Port сервера обміну файлами"
+            android:summary="Введіть порт сервера"
+            android:inputType="number"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="action_settings"
+        android:title="Дії">
+
+        <Preference
+            android:key="generate_json"
+            android:title="Згенерувати JSON"
+            android:summary="Створити JSON з налаштувань"
+            android:icon="@android:drawable/ic_menu_save"
+            android:widgetLayout="@layout/preference_button"/>
+        <Preference
+            android:key="developer_info"
+            android:title="Інформація про розробника"
+            android:summary="Дізнайтеся більше про розробника"
+            android:icon="@android:drawable/ic_menu_info_details"/>
+    </PreferenceCategory>
+</PreferenceScreen>

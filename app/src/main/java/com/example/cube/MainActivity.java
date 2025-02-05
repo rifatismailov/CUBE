@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Додає новий контакт, отриманий через QR-код або інші джерела.
      *
      * @param id_contact дані контакту у вигляді рядка JSON.
-     *
      */
 
     @Override
@@ -241,9 +240,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         manager.readAccount();
         contactManager = new ContactManager(db);
 
-
-            registerServer();
-
+        registerServer();
 
         startService();
         binding.setting.setOnClickListener(this);
@@ -507,7 +504,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Отримання повідомлення та відправка у клас для обробки операції.
      *
      * @param message Текст повідомлення.
-     *
      */
     public void onReceived(String message) {
         new Operation(this).onReceived(message);
@@ -517,7 +513,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Зберігає отримане повідомлення.
      *
      * @param message дані повідомлення, яке зберігається.
-     *
      */
 
     public void saveMessage(String message) {
