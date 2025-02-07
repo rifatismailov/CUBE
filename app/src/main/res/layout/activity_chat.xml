@@ -30,7 +30,7 @@
                 app:srcCompat="@drawable/ic_left_arrow"
                 app:tint="@color/white" />
 
-            <com.example.cube.draw.CircularImageView
+            <com.example.cube.draw.ContactCircularImageView
                 android:id="@+id/profile"
                 android:layout_width="55sp"
                 android:layout_height="55sp"

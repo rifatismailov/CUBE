@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/image_account" />
             <option value="$PROJECT_DIR$/myemoji" />
             <option value="$PROJECT_DIR$/qrcode" />
+            <option value="$PROJECT_DIR$/setting" />
             <option value="$PROJECT_DIR$/textvisualization" />
             <option value="$PROJECT_DIR$/web_socket_service" />
           </set>

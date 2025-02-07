@@ -9,12 +9,13 @@ import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
-public class CircularImageView extends AppCompatImageView {
+public class ContactCircularImageView extends AppCompatImageView {
     private Path path;
     private Paint imagePaint;
     private Paint borderPaint;
     private Paint progressPaint;
     private Paint backgroundPaint;
+    private Paint statusPaint;
 
     private RectF rect;
     private int borderColor = 0xFF000000; // Чорний колір за замовчуванням
@@ -22,8 +23,9 @@ public class CircularImageView extends AppCompatImageView {
     private float currentProgress = 0f; // Прогрес від 0 до 100
     private int progressColor = 0xFF049FD9; // Помаранчевий колір прогресу
     private int backgroundColor = 0xFF049fd9; // Синій колір заднього фону
+    private int statusColor = 0xFF000000; // Чорний колір за замовчуванням для маленького кола
 
-    public CircularImageView(Context context, AttributeSet attrs) {
+    public ContactCircularImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -56,6 +58,12 @@ public class CircularImageView extends AppCompatImageView {
         backgroundPaint.setAntiAlias(true);
         backgroundPaint.setStyle(Paint.Style.FILL);
         backgroundPaint.setColor(backgroundColor);
+
+        // Налаштування для маленького кола
+        statusPaint = new Paint();
+        statusPaint.setAntiAlias(true);
+        statusPaint.setStyle(Paint.Style.FILL);
+        statusPaint.setColor(statusColor);
     }
 
     @Override
@@ -98,6 +106,13 @@ public class CircularImageView extends AppCompatImageView {
                     progressPaint
             );
         }
+
+        // Малювання маленького кола
+        float smallCircleRadius = getWidth() / 10f;
+        float smallCircleX = getWidth() - smallCircleRadius - borderWidth;
+        float smallCircleY = getHeight() - smallCircleRadius - borderWidth;
+
+        canvas.drawCircle(smallCircleX, smallCircleY, smallCircleRadius, statusPaint);
     }
 
     // Метод для оновлення прогресу
@@ -117,10 +132,36 @@ public class CircularImageView extends AppCompatImageView {
     }
 
     // Метод для зміни кольору заднього фону
+    @Override
     public void setBackgroundColor(int color) {
         this.backgroundColor = color;
         backgroundPaint.setColor(color);
         invalidate();
+    }
+
+    // Метод для зміни кольору маленького кола
+    public void setStatusColor(int color) {
+        this.statusColor = color;
+        statusPaint.setColor(color);
+        invalidate();
+    }
+
+    // Метод для зміни кольору маленького кола за командою
+    public void updateStatusColor(String command) {
+        switch (command) {
+            case "A0010":
+                setStatusColor(0xFF00FF00); // Зелений
+                break;
+            case "A0011":
+                setStatusColor(0xFFFFFF00); // Жовтий
+                break;
+            case "A0111":
+                setStatusColor(0xFF000000); // Чорний за замовчуванням
+                break;
+            default:
+                setStatusColor(0xFF000000); // Чорний за замовчуванням
+                break;
+        }
     }
 
     // Метод для очищення прогресу

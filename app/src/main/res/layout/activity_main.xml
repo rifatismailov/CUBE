@@ -53,20 +53,27 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/id"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#fff"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-
-                        <TextView
                             android:id="@+id/name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#fff"
+                            android:fontFamily="@font/roboto_bold"
+                            android:text="userName"
+                            android:textColor="#049fd9"
                             android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:id="@+id/id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_extralight"
+                            android:text="idNumber"
+                            android:textColor="#B0C4DE"
+                            android:textSize="15sp"
+                            tools:ignore="HardcodedText" />
+
+
                     </LinearLayout>
 
                     <!-- RecyclerView, що займає весь залишковий простір -->

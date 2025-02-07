@@ -20,6 +20,6 @@ include ':folder'
 include ':textvisualization'
 include ':myemoji'
 include ':qrcode'
-
 include ':web_socket_service'
 include ':image_account'
+include ':setting'

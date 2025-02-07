@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -13,8 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AES"
-            android:textColor="#B0C4DE"
-            />
+            android:textColor="#B0C4DE" />
 
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/receiverKey"
@@ -25,15 +24,13 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="15dp"
-        android:layout_marginTop="2dp"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="RSA"
-            android:textColor="#B0C4DE"
-            />
+            android:textColor="#B0C4DE" />
 
         <com.example.cube.draw.ColorfulDotsView
             android:id="@+id/rPublicKey"

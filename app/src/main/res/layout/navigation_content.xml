@@ -12,35 +12,56 @@
         <include layout="@layout/drawer_header" />
     </LinearLayout>
 
+    <!-- файл: res/layout/navigation_control.xml -->
+    <!-- файл: res/layout/navigation_control.xml -->
     <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Акаунт"
             android:textStyle="bold"
-            android:typeface="monospace" />
+            android:typeface="monospace"
+            app:icon="@drawable/ic_account"
+            app:iconGravity="textStart"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_settings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Налаштування"
             android:textStyle="bold"
-            android:typeface="monospace" />
+            android:typeface="monospace"
+            app:icon="@drawable/ic_settings"
+            app:iconGravity="textStart"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_logout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Вихід"
             android:textStyle="bold"
-            android:typeface="monospace" />
+            android:typeface="monospace"
+            app:icon="@drawable/ic_logout"
+            app:iconGravity="textStart"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"/>
     </LinearLayout>
+
+
 
 </LinearLayout>
