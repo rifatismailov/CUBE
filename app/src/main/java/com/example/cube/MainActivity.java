@@ -340,11 +340,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void startService() {
         // Запуск сервісу
-        Intent serviceIntent = new Intent(this, IOService.class);
-        serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
-        serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
-        serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
-        startService(serviceIntent);
+        if (!manager.userSetting().getId().isEmpty() &&
+                !manager.userSetting().getServerIp().isEmpty() &&
+                !manager.userSetting().getServerPort().isEmpty()) {
+            if (new UrlBuilder.IPValidator().validate(manager.userSetting().getServerIp()) &&
+                    new UrlBuilder.PortValidator().validate(manager.userSetting().getServerPort())) {
+                Intent serviceIntent = new Intent(this, IOService.class);
+                serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
+                serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
+                serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
+                startService(serviceIntent);
+            }
+        }
     }
 
     private void notifyIdReciverChanged(String receiverId) {
@@ -1017,5 +1024,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onSetting(JSONObject jsonObject) {
         manager.writeAccount(jsonObject);
+        startService();
     }
 }

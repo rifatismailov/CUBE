@@ -1,6 +1,9 @@
 package com.example.setting;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class UrlBuilder {
     private String protocol;
     private String ip;
@@ -77,6 +80,47 @@ public class UrlBuilder {
         public UrlBuilder build() {
             return new UrlBuilder(this);
         }
+    }
+
+
+    public static class IPValidator {
+        private static final String IP_ADDRESS_PATTERN =
+                "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+
+        private final Pattern pattern;
+        private Matcher matcher;
+
+        public IPValidator() {
+            pattern = Pattern.compile(IP_ADDRESS_PATTERN);
+        }
+
+        public boolean validate(final String ip) {
+            matcher = pattern.matcher(ip);
+            return matcher.matches();
+        }
+    }
+
+
+    public static class PortValidator {
+        private static final String PORT_PATTERN =
+                "^([0-9]{1,5})$";
+
+        private final Pattern pattern;
+        private Matcher matcher;
+
+        public PortValidator() {
+            pattern = Pattern.compile(PORT_PATTERN);
+        }
+
+        public boolean validate(final String port) {
+            matcher = pattern.matcher(port);
+            if (matcher.matches()) {
+                int portNumber = Integer.parseInt(port);
+                return portNumber >= 0 && portNumber <= 65535;
+            }
+            return false;
+        }
+
     }
 
 }
