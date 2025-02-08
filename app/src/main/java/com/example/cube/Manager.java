@@ -38,7 +38,9 @@ public class Manager {
             Log.e("Manager", "Manager JSONObject null.");
         }
     }
-
+    public JSONObject getAccount() {
+        return accountManager.getAccount(secretKey);
+    }
     public void writeAccount(String result) {
         try {
             // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду

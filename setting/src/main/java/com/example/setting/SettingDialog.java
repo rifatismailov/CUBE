@@ -2,22 +2,44 @@ package com.example.setting;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.annotation.NonNull;
+
 import org.json.JSONObject;
 
-public class SettingDialog extends Dialog {
-    private OnInputListener onInputListener;
+import java.io.File;
 
-    public SettingDialog(@NonNull Context context) {
+public class SettingDialog extends Dialog {
+    private JSONObject jsonObject;
+    private TextInputEditText inputUsername;
+    private TextInputEditText inputUserLastName;
+    private TextInputEditText inputUserId;
+    private TextInputEditText input_userPassword;
+    private TextInputEditText inputMessagingServerIp;
+    private TextInputEditText inputMessagingServerPort;
+    private TextInputEditText inputFileServerIp;
+    private TextInputEditText inputFileServerPort;
+    private SwitchMaterial switchNotifications;
+    private final File externalDir;
+    private ImageView avatarImage;
+    private ImageView accountImage;
+    public SettingDialog(@NonNull Context context, JSONObject jsonObject) {
         super(context, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen);
+        this.jsonObject = jsonObject;
+        externalDir = new File(context.getExternalFilesDir(null), "imageProfile");
+
     }
 
     @Override
@@ -39,44 +61,79 @@ public class SettingDialog extends Dialog {
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
-
-        TextInputEditText inputUsername = findViewById(R.id.input_username);
-        TextInputEditText inputUserLastName = findViewById(R.id.input_userLastName);
-        TextInputEditText inputUserId = findViewById(R.id.input_userId);
-        TextInputEditText inputMessagingServerIp = findViewById(R.id.input_messaging_server_ip);
-        TextInputEditText inputMessagingServerPort = findViewById(R.id.input_messaging_server_port);
-        TextInputEditText inputFileServerIp = findViewById(R.id.input_file_server_ip);
-        TextInputEditText inputFileServerPort = findViewById(R.id.input_file_server_port);
-        SwitchMaterial switchNotifications = findViewById(R.id.switch_notifications);
+        UserSetting userSetting = new UserSetting(jsonObject);
+        inputUserId = findViewById(R.id.input_userId);
+        inputUsername = findViewById(R.id.input_username);
+        inputUserLastName = findViewById(R.id.input_userLastName);
+        input_userPassword = findViewById(R.id.input_userPassword);
+        inputMessagingServerIp = findViewById(R.id.input_messaging_server_ip);
+        inputMessagingServerPort = findViewById(R.id.input_messaging_server_port);
+        inputFileServerIp = findViewById(R.id.input_file_server_ip);
+        inputFileServerPort = findViewById(R.id.input_file_server_port);
+        switchNotifications = findViewById(R.id.switch_notifications);
         MaterialButton buttonSave = findViewById(R.id.button_save);
+        avatarImage=findViewById(R.id.avatarImage);
+        accountImage=findViewById(R.id.accountImage);
+        inputUserId.setText(userSetting.getId());
+        inputUsername .setText(userSetting.getName());
+        inputUserLastName .setText(userSetting.getLastName());
+        input_userPassword .setText(userSetting.getPassword());
+        inputMessagingServerIp .setText(userSetting.getServerIp());
+        inputMessagingServerPort .setText(userSetting.getServerPort());
+        inputFileServerIp.setText(userSetting.getFileServerIp());
+        inputFileServerPort.setText(userSetting.getFileServerPort());
+        switchNotifications.setChecked(userSetting.isNotifications());
+        Log.e("UserSetting", userSetting.getAvatarImageUrl()+" " + userSetting.getAccountImageUrl());
 
+        setAvatarImage(userSetting.getAvatarImageUrl());
+        setAccountImage(userSetting.getAccountImageUrl());
         buttonSave.setOnClickListener(v -> {
-            try {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("username", inputUsername.getText().toString());
-                jsonObject.put("userLastName", inputUserLastName.getText().toString());
-                jsonObject.put("userId", inputUserId.getText().toString());
-                jsonObject.put("messagingServerIp", inputMessagingServerIp.getText().toString());
-                jsonObject.put("messagingServerPort", inputMessagingServerPort.getText().toString());
-                jsonObject.put("fileServerIp", inputFileServerIp.getText().toString());
-                jsonObject.put("fileServerPort", inputFileServerPort.getText().toString());
-                jsonObject.put("notifications", switchNotifications.isChecked());
+            saveSetting();
 
-                if (onInputListener != null) {
-                    onInputListener.onInput(jsonObject.toString());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            dismiss();
+            // dismiss();
         });
     }
 
-    public void setOnInputListener(OnInputListener onInputListener) {
-        this.onInputListener = onInputListener;
+    public void saveSetting() {
+        try {
+            UserSetting userSetting = new UserSetting.Builder()
+                    .setId(inputUserId.getText().toString())
+                    .setName(inputUsername.getText().toString())
+                    .setLastName(inputUserLastName.getText().toString())
+                    .setPassword(input_userPassword.getText().toString())
+                    .setServerIp(inputMessagingServerIp.getText().toString())
+                    .setServerPort(inputMessagingServerPort.getText().toString())
+                    .setFileServerIp(inputFileServerIp.getText().toString())
+                    .setFileServerPort(inputFileServerPort.getText().toString())
+                    .setNotifications(switchNotifications.isChecked())
+                    .build();
+            JSONObject jsonObject = userSetting.toJson();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void setAvatarImage(String image) {
+        File file = new File(externalDir + "/" + image);
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+            avatarImage.setImageBitmap(bitmap);
+        } else {
+            avatarImage.setImageResource(R.color.blue); // Резервне зображення
+        }
     }
 
+    public void setAccountImage(String image) {
+        File file = new File(externalDir + "/" + image);
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            accountImage.setImageBitmap(bitmap);
+        } else {
+            accountImage.setImageResource(R.color.green); // Резервне зображення
+        }
+    }
     public interface OnInputListener {
         void onInput(String jsonData);
     }
