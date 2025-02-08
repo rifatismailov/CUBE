@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <include layout="@layout/image_header" />
+        <include layout="@layout/drawer_header" />
     </LinearLayout>
 
     <!-- файл: res/layout/navigation_control.xml -->

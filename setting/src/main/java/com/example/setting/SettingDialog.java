@@ -3,6 +3,7 @@ package com.example.setting;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import com.google.android.material.button.MaterialButton;
@@ -24,10 +25,19 @@ public class SettingDialog extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_input);
 
-        // Make dialog full screen
+        // Make dialog full screen and cover the top part of the screen
         Window window = getWindow();
         if (window != null) {
             window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+
+            // Remove the status bar
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+            // Set the window to be "immersive" (covering status bar)
+            window.getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
         TextInputEditText inputUsername = findViewById(R.id.input_username);

@@ -3,16 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white">
-
+    android:background="@color/white"
+    android:fitsSystemWindows="true"
+    >
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical">
-
-
-
+        <include layout="@layout/image_account_header" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,6 +42,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Введіть Ім'я користувача"
+
                     app:boxBackgroundMode="none">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -52,6 +52,10 @@
                         android:background="@null"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле Прізвище користувача -->
@@ -75,6 +79,10 @@
                         android:background="@null"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле ID користувача -->
@@ -83,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+               >
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -98,6 +106,10 @@
                         android:background="@null"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Перемикач Сповіщення -->
@@ -142,7 +154,7 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+              >
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -157,6 +169,10 @@
                         android:background="@null"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле Port сервера обміну повідомленнями -->
@@ -165,7 +181,7 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+                >
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -180,6 +196,10 @@
                         android:background="@null"
                         android:inputType="number" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле IP сервера обміну файлами -->
@@ -188,7 +208,7 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+                >
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -203,6 +223,10 @@
                         android:background="@null"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле Port сервера обміну файлами -->
@@ -211,7 +235,7 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+                >
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -224,8 +248,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@null"
+
                         android:inputType="number" />
                 </com.google.android.material.textfield.TextInputLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Кнопка Зберегти -->
@@ -240,5 +269,6 @@
                 android:textStyle="bold"
                 app:cornerRadius="8dp" />
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
