@@ -55,6 +55,8 @@ import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
 import com.example.setting.SettingDialog;
+import com.example.setting.UrlBuilder;
+import com.example.setting.UserSetting;
 import com.example.web_socket_service.socket.Envelope;
 import com.example.web_socket_service.socket.IOService;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -84,18 +86,14 @@ import javax.crypto.spec.SecretKeySpec;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         View.OnClickListener, ContactCreator.CreatorOps, Manager.AccountOps, Operation.Operable,
         NavigationManager.Navigation, AdapterView.OnItemLongClickListener, ImageExplorer.ImgExplorer,
-        ContactInterface, FileOMG, Folder, Downloader.DownloaderHandler {
+        ContactInterface, FileOMG, Folder, Downloader.DownloaderHandler, SettingDialog.IClassSetting {
 
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
-    private String userId;           // ID користувача
     private String receiverId = null;       // ID отримувача
-    private String name;             // Ім'я користувача
-    private String lastName;         // Прізвище користувача
-    private String password;         // Пароль
-    private String imageOrgName;
-    private String imageName;
+    private String avatarImageUrl;
+    private String accountImageUrl;
     private UserData user;           // Об'єкт користувача
     private ContactManager contactManager;
     private Manager manager;
@@ -112,20 +110,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private NavigationManager navigationManager;
 
     @Override
-    public void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName) {
+    public void setAccount(String userId, String name, String lastName, String password, String avatarImageUrl, String accountImageUrl) {
         String accountName = name + " " + lastName;
-        this.userId = userId;
-        this.name = name;
-        this.lastName = lastName;
-        this.password = password;
-        this.imageOrgName = imageOrgName;
-        this.imageName = imageName;
+        this.avatarImageUrl = avatarImageUrl;
+        this.accountImageUrl = accountImageUrl;
         binding.id.setText(userId);
         binding.name.setText(accountName);
         user_name.setText(accountName);
         user_id.setText(userId);
-        navigationManager.setAvatarImage(imageOrgName);
-        navigationManager.setAccountImage(imageName);
+        navigationManager.setAvatarImage(avatarImageUrl);
+        navigationManager.setAccountImage(accountImageUrl);
     }
 
     /**
@@ -139,10 +133,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Додаємо новий контакт до списку користувачів
         UserData newUser = new UserData(id_contact, public_key_contact, name_contact, "");
         userList.add(newUser);
-
         // Оновлюємо мапу контактів
         contacts.put(newUser.getId(), newUser);
-
         // Зберігаємо контакти у базу даних
         contactManager.setContacts(contacts, secretKey);
     }
@@ -249,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         initUserList();
         new Handler().postDelayed(() -> {
-            if (userId == null)
+            if (manager.userSetting().getId() == null)
                 scannerQrAccount();
         }, 100);
     }
@@ -326,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         IntentFilter filter = new IntentFilter(FIELD.REPLY_FROM_CHAT.getFIELD());
         registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra(FIELD.SENDER_ID.getFIELD(), userId);
+        intent.putExtra(FIELD.SENDER_ID.getFIELD(), manager.userSetting().getId());
         intent.putExtra(FIELD.NAME.getFIELD(), userData.getName());
         intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), userData.getId());
         intent.putExtra(FIELD.STATUS.getFIELD(), "online");
@@ -349,9 +341,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void startService() {
         // Запуск сервісу
         Intent serviceIntent = new Intent(this, IOService.class);
-        serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), userId);
-        serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), "192.168.1.237");
-        serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), "8080");
+        serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
+        serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
+        serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
         startService(serviceIntent);
     }
 
@@ -438,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             user.setSenderKey(key);
 
             // відправка публічного ключа отримувачу
-            sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+            sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
             //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
             receiverId = null;
             //serverConnection.setReceiverId(receiverId);
@@ -447,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (user.getReceiverPublicKey() == null) {
                     // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
                     // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
-                    sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+                    sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
                     //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
                     //serverConnection.setReceiverId(receiverId);
@@ -465,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                             String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
                             if (AES != null && !AES.isEmpty()) {
-                                sendHandshake(userId, receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                                sendHandshake(manager.userSetting().getId(), receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
                             } else {
                                 Log.e("MainActivity", "Failed to encrypt AES key");
                             }
@@ -496,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user.setPrivateKey(keyGenerator.getPrivateKey());
         String key = KeyGenerator.AES.generateKey(16);
         user.setSenderKey(key);
-        sendHandshake(userId, receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
+        sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), user.getPublicKey());
         receiverId = null;
         return false;
     }
@@ -557,12 +549,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void giveAvatar(String recipient) {
         File file = new File(this.getExternalFilesDir(null), "imageProfile");
         FileDetect fileDetect = new FileDetect();
-        String avatarImage = file + "/" + imageOrgName;
-        String accountImage = file + "/" + imageName;
+        String avatarImage = file + "/" + avatarImageUrl;
+        String accountImage = file + "/" + accountImageUrl;
         for (UserData user : userList) {
             if (user.getId().equals(recipient)) {
                 String key = user.getSenderKey();
-                uploadFile(new File(avatarImage), recipient + ":imageOrgName:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
+                uploadFile(new File(avatarImage), recipient + ":avatarImageUrl:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
                 uploadFile(new File(accountImage), recipient + ":accountImage:" + fileDetect.getFileHash(accountImage, "SHA-256"), key);
                 break;
             }
@@ -623,8 +615,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void uploadFile(File file, String sender, String key) {
-
-        String serverUrl = "http://192.168.1.237:8020/api/files/upload";
+        String serverUrl = new UrlBuilder.Builder()
+                .setProtocol("http")
+                .setIp(manager.userSetting().getFileServerIp())
+                .setPort(manager.userSetting().getFileServerPort())
+                .setDirectory("/api/files/upload")
+                .build()
+                .buildUrl();
         // Виконуємо шифрування у фоновому потоці
         new Handler().postDelayed(() -> {
             try {
@@ -704,7 +701,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 updateReceiverPublicKey(sender, publicKey);
                 PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                 String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
-                sendHandshake(userId, sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
             }
         } catch (JSONException e) {
             Log.e("MainActivity", "Помилка під час парсінгу JSON: " + e);
@@ -760,7 +757,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @SuppressLint("SetTextI18n")
     ActivityResultLauncher<ScanOptions> qrCodeAddAccount = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
-            manager.writeAccount(result.getContents());
+            manager.writeAccount(manager.getJson(result.getContents()));
         }
     });
 
@@ -806,19 +803,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void setImageAccount(String imageOrgName, String imageName) {
+    public void setImageAccount(String avatarImageUrl, String accountImageUrl) {
         runOnUiThread(() -> {
-            String jsonData = "{" +
-                    "\"userId\":\"" + this.userId + "\"," +
-                    "\"name\":\"" + this.name + "\"," +
-                    "\"lastName\":\"" + this.lastName + "\"," +
-                    "\"password\":\"" + this.password + "\"," +
-                    "\"imageOrgName\":\"" + imageOrgName + "\"," +
-                    "\"imageName\":\"" + imageName + "\"" +
-                    "}";
-            manager.writeAccount(jsonData);
-            navigationManager.setAvatarImage(imageOrgName);
-            navigationManager.setAccountImage(imageName);
+            UserSetting userSetting = new UserSetting(manager.getAccount());
+            userSetting.setAvatarImageUrl(avatarImageUrl);
+            userSetting.setAccountImageUrl(accountImageUrl);
+            manager.writeAccount(userSetting.toJson());
+            navigationManager.setAvatarImage(avatarImageUrl);
+            navigationManager.setAccountImage(accountImageUrl);
         });
     }
 
@@ -888,7 +880,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onImageClickContact(int position) {
         user = userList.get(position);
-        sendHandshake(userId, user.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", user.getPublicKey());
+        sendHandshake(manager.userSetting().getId(), user.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", user.getPublicKey());
     }
 
     /**
@@ -921,16 +913,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             String path = getAvatarInfoAndRemove(positionId);
             String fileName = path.substring(path.lastIndexOf("/") + 1);
-            String serverUrl = "http://192.168.1.237:8020/api/files/download/" + fileName;
+            String serverUrl = new UrlBuilder.Builder()
+                    .setProtocol("http")
+                    .setIp(manager.userSetting().getFileServerIp())
+                    .setPort(manager.userSetting().getFileServerPort())
+                    .setDirectory("/api/files/download")
+                    .setFileName(fileName)
+                    .build()
+                    .buildUrl();
             String[] position = positionId.split(":");
             for (UserData user : userList) {
                 if (user.getId().equals(position[0])) {
-                    if (position[1].equals("imageOrgName")) {
+                    if (position[1].equals("avatarImageUrl")) {
                         String rMessage = Encryption.AES.encrypt("avatar_org", user.getSenderKey());
                         String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
                         String Has = Encryption.AES.encrypt(position[2], user.getSenderKey());
 
-                        sendMessageToService(new Envelope(userId, position[0], FIELD.AVATAR_ORG.getFIELD(),
+                        sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR_ORG.getFIELD(),
                                 rMessage,
                                 Url, Has, UUID.randomUUID().toString()).toJson().toString());
                     } else {
@@ -938,7 +937,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
                         String Has = Encryption.AES.encrypt(position[2], user.getSenderKey());
 
-                        sendMessageToService(new Envelope(userId, position[0], FIELD.AVATAR.getFIELD(),
+                        sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR.getFIELD(),
                                 rMessage,
                                 Url, Has, UUID.randomUUID().toString()).toJson().toString());
                     }
@@ -1013,6 +1012,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void showSetting() {
         SettingDialog inputDialog = new SettingDialog(this, manager.getAccount());
         inputDialog.show();
+    }
 
+    @Override
+    public void onSetting(JSONObject jsonObject) {
+        manager.writeAccount(jsonObject);
     }
 }

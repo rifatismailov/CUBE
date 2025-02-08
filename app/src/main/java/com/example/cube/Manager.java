@@ -8,17 +8,16 @@ import android.widget.Toast;
 
 import com.example.cube.control.FIELD;
 import com.example.cube.db.AccountManager;
+import com.example.setting.UserSetting;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 
 import javax.crypto.SecretKey;
 
 public class Manager {
     AccountOps accountOps;
-    SQLiteDatabase db;
     SecretKey secretKey;
     AccountManager accountManager;
 
@@ -33,26 +32,24 @@ public class Manager {
         JSONObject jsonObject = accountManager.getAccount(secretKey);
         if (jsonObject != null) {
             createAccount(jsonObject);
-            Log.e("Manager", "Manager JSONObject Not null.");
         } else {
             Log.e("Manager", "Manager JSONObject null.");
         }
     }
+
     public JSONObject getAccount() {
         return accountManager.getAccount(secretKey);
     }
-    public void writeAccount(String result) {
-        try {
-            // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
-            JSONObject jsonObject = new JSONObject(result);
-            if (jsonObject != null) {
-                accountManager.setAccount(jsonObject, secretKey);
-                Log.e("Manager", "account setAccount. ");
-            }
-            createAccount(jsonObject);
-        } catch (JSONException e) {
-            Log.e("Manager", e.toString());
+
+    public UserSetting userSetting() {
+        return new UserSetting(getAccount());
+    }
+
+    public void writeAccount(JSONObject jsonObject) {
+        if (jsonObject != null) {
+            accountManager.setAccount(jsonObject, secretKey);
         }
+        createAccount(jsonObject);
     }
 
     /**
@@ -62,6 +59,7 @@ public class Manager {
      */
 
     private void createAccount(JSONObject jsonObject) {
+
         if (jsonObject == null) {
             Toast.makeText((Context) accountOps, "Не вдалося завантажити файл JSON.", Toast.LENGTH_SHORT).show();
         } else {
@@ -69,9 +67,8 @@ public class Manager {
             String name = jsonObject.optString(FIELD.NAME.getFIELD(), "");
             String lastName = jsonObject.optString(FIELD.LAST_NAME.getFIELD(), "");
             String password = jsonObject.optString(FIELD.PASSWORD.getFIELD(), "");
-            String imageOrgName = jsonObject.optString("imageOrgName", "");
-            String imageName = jsonObject.optString("imageName", "");
-            Log.e("Manager", imageOrgName + " > " + imageName);
+            String imageOrgName = jsonObject.optString("avatarImageUrl", "");
+            String imageName = jsonObject.optString("accountImageUrl", "");
 
             if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(name) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(password)) {
                 Toast.makeText((Context) accountOps, "Невірні дані у файлі JSON.", Toast.LENGTH_SHORT).show();
@@ -101,6 +98,18 @@ public class Manager {
             throw new RuntimeException(e);
         }
     }
+
+    public JSONObject getJson(String result) {
+        JSONObject jsonObject = null;
+        try {
+            // Створюємо JSONObject з JSON-рядка, отриманого з QR-коду
+            jsonObject = new JSONObject(result);
+        } catch (JSONException e) {
+            return null;
+        }
+        return jsonObject;
+    }
+
 
     public interface AccountOps {
         void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName);

@@ -35,9 +35,13 @@ public class SettingDialog extends Dialog {
     private final File externalDir;
     private ImageView avatarImage;
     private ImageView accountImage;
+    private IClassSetting iClassSetting;
+    private UserSetting userSetting;
+
     public SettingDialog(@NonNull Context context, JSONObject jsonObject) {
         super(context, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen);
         this.jsonObject = jsonObject;
+        this.iClassSetting = (IClassSetting) context;
         externalDir = new File(context.getExternalFilesDir(null), "imageProfile");
 
     }
@@ -61,7 +65,7 @@ public class SettingDialog extends Dialog {
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
-        UserSetting userSetting = new UserSetting(jsonObject);
+        userSetting = new UserSetting(jsonObject);
         inputUserId = findViewById(R.id.input_userId);
         inputUsername = findViewById(R.id.input_username);
         inputUserLastName = findViewById(R.id.input_userLastName);
@@ -72,48 +76,52 @@ public class SettingDialog extends Dialog {
         inputFileServerPort = findViewById(R.id.input_file_server_port);
         switchNotifications = findViewById(R.id.switch_notifications);
         MaterialButton buttonSave = findViewById(R.id.button_save);
-        avatarImage=findViewById(R.id.avatarImage);
-        accountImage=findViewById(R.id.accountImage);
+        avatarImage = findViewById(R.id.avatarImage);
+        accountImage = findViewById(R.id.accountImage);
         inputUserId.setText(userSetting.getId());
-        inputUsername .setText(userSetting.getName());
-        inputUserLastName .setText(userSetting.getLastName());
-        input_userPassword .setText(userSetting.getPassword());
-        inputMessagingServerIp .setText(userSetting.getServerIp());
-        inputMessagingServerPort .setText(userSetting.getServerPort());
+        inputUsername.setText(userSetting.getName());
+        inputUserLastName.setText(userSetting.getLastName());
+        input_userPassword.setText(userSetting.getPassword());
+        inputMessagingServerIp.setText(userSetting.getServerIp());
+        inputMessagingServerPort.setText(userSetting.getServerPort());
         inputFileServerIp.setText(userSetting.getFileServerIp());
         inputFileServerPort.setText(userSetting.getFileServerPort());
         switchNotifications.setChecked(userSetting.isNotifications());
-        Log.e("UserSetting", userSetting.getAvatarImageUrl()+" " + userSetting.getAccountImageUrl());
+        Log.e("UserSetting", userSetting.getAvatarImageUrl() + " " + userSetting.getAccountImageUrl());
 
         setAvatarImage(userSetting.getAvatarImageUrl());
         setAccountImage(userSetting.getAccountImageUrl());
         buttonSave.setOnClickListener(v -> {
             saveSetting();
 
-            // dismiss();
+            dismiss();
         });
     }
 
     public void saveSetting() {
         try {
-            UserSetting userSetting = new UserSetting.Builder()
+            UserSetting saveSetting = new UserSetting.Builder()
                     .setId(inputUserId.getText().toString())
                     .setName(inputUsername.getText().toString())
                     .setLastName(inputUserLastName.getText().toString())
                     .setPassword(input_userPassword.getText().toString())
+                    .setAvatarImageUrl(userSetting.getAvatarImageUrl())
+                    .setAccountImageUrl(userSetting.getAccountImageUrl())
                     .setServerIp(inputMessagingServerIp.getText().toString())
                     .setServerPort(inputMessagingServerPort.getText().toString())
                     .setFileServerIp(inputFileServerIp.getText().toString())
                     .setFileServerPort(inputFileServerPort.getText().toString())
                     .setNotifications(switchNotifications.isChecked())
                     .build();
-            JSONObject jsonObject = userSetting.toJson();
+            iClassSetting.onSetting(saveSetting.toJson());
+            //JSONObject jsonObject = userSetting.toJson();
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public void setAvatarImage(String image) {
         File file = new File(externalDir + "/" + image);
         if (file.exists()) {
@@ -134,7 +142,8 @@ public class SettingDialog extends Dialog {
             accountImage.setImageResource(R.color.green); // Резервне зображення
         }
     }
-    public interface OnInputListener {
-        void onInput(String jsonData);
+
+    public interface IClassSetting {
+        void onSetting(JSONObject jsonObject);
     }
 }

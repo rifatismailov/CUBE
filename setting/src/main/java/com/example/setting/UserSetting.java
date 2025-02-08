@@ -158,8 +158,8 @@ public class UserSetting {
             this.name = jsonObject.optString("name", "");
             this.lastName = jsonObject.optString("lastName", "");
             this.password = jsonObject.optString("password", "");
-            this.avatarImageUrl = jsonObject.optString("imageOrgName", "");
-            this.accountImageUrl = jsonObject.optString("imageName", "");
+            this.avatarImageUrl = jsonObject.optString("avatarImageUrl", "");
+            this.accountImageUrl = jsonObject.optString("accountImageUrl", "");
             this.serverIp = jsonObject.optString("serverIp", "");
             this.serverPort = jsonObject.optString("serverPort", "");
             this.fileServerIp = jsonObject.optString("fileServerIp", "");
@@ -178,7 +178,7 @@ public class UserSetting {
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("id", id);
+            jsonObject.put("userId", id);
             jsonObject.put("name", name);
             jsonObject.put("lastName", lastName);
             jsonObject.put("password", password);
