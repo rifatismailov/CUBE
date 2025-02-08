@@ -37,8 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
-                android:orientation="vertical"
-                android:paddingVertical="0dp">
+                android:orientation="vertical">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -66,8 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
-                android:orientation="vertical"
-                android:paddingVertical="8dp">
+                android:orientation="vertical">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -291,11 +289,12 @@
                 android:layout_height="wrap_content"
                 android:gravity="center|left"
                 android:orientation="horizontal">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@android:drawable/ic_menu_save"
-                    />
+                    android:background="@android:drawable/ic_menu_save" />
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -306,16 +305,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:icon="@android:drawable/ic_menu_save"
-                        android:text="Зберегти налаштування"
-                         />
+                        android:text="Зберегти налаштування" />
 
                     <TextView
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:icon="@android:drawable/ic_menu_save"
                         android:text="Збереження нових налаштувань"
-                        android:title="Зберегти налаштування"
-                        />
+                        android:title="Зберегти налаштування" />
                 </LinearLayout>
 
 

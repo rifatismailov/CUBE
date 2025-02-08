@@ -7,11 +7,8 @@
     <uses-permission
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission
-        android:name="android.permission.PRIVATE_EXTERNAL_STORAGE"
-        tools:ignore="SystemPermissionTypo" />
-
-    <application>
+    <application
+        >
 
 
     </application>

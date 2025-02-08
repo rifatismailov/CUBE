@@ -50,6 +50,7 @@ public class NavigationManager {
         switch (itemId) {
             case R.id.nav_account:
                 // Логіка для "Акаунт"
+                navigation.showAccount();
                 break;
             case R.id.nav_settings:
                 // Логіка для "Налаштування"
@@ -74,7 +75,7 @@ public class NavigationManager {
 
             avatarImage.setImageBitmap(bitmap);
         } else {
-            avatarImage.setImageResource(R.drawable.ukraineflag); // Резервне зображення
+            avatarImage.setImageResource(R.color.blue); // Резервне зображення
         }
     }
 
@@ -84,14 +85,14 @@ public class NavigationManager {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
             accountImage.setImageBitmap(bitmap);
         } else {
-            accountImage.setImageResource(R.drawable.ukraineflag); // Резервне зображення
+            accountImage.setImageResource(R.color.yellow); // Резервне зображення
         }
     }
 
     public interface Navigation {
         void scannerQrAccount();
-
         void imageNavigation();
         void showSetting();
+        void showAccount();
     }
 }

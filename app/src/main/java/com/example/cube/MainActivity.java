@@ -54,6 +54,7 @@ import com.example.folder.file.Folder;
 import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
+import com.example.setting.AccountDialog;
 import com.example.setting.SettingDialog;
 import com.example.setting.UrlBuilder;
 import com.example.setting.UserSetting;
@@ -1021,9 +1022,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         inputDialog.show();
     }
 
+
     @Override
     public void onSetting(JSONObject jsonObject) {
         manager.writeAccount(jsonObject);
         startService();
+    }
+    @Override
+    public void showAccount() {
+        AccountDialog accountDialog = new AccountDialog(this, manager.getAccount());
+        accountDialog.show(getSupportFragmentManager(), "AccountDialog");
+
     }
 }

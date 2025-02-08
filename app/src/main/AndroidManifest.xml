@@ -38,10 +38,7 @@
             android:exported="false"
             android:label="@string/title_activity_chat"
             android:theme="@style/Theme.CUBE.NoActionBar" />
-        <activity
-            android:name="com.example.setting.SettingActivity"
-            android:exported="true"
-           />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
