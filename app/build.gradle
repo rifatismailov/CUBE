@@ -50,6 +50,8 @@ dependencies {
     implementation project(path: ':qrcode')
     implementation project(path: ':web_socket_service')
     implementation project(path: ':image_account')
+    implementation project(path: ':setting')
+
 
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.github.bumptech.glide:glide:4.12.0'

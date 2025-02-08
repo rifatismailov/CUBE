@@ -11,25 +11,26 @@ import androidx.preference.PreferenceManager;
 
 import org.json.JSONObject;
 
-
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-        // Встановлення початкових значень (опціонально)
+        // Встановлення початкових значень
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+
         setupInitialValues(sharedPreferences);
 
         // Обробка натискання кнопки "Згенерувати JSON"
-        Preference generateJsonButton = findPreference("generate_json");
+        Preference generateJsonButton = findPreference("generate_new_setting");
         if (generateJsonButton != null) {
             generateJsonButton.setOnPreferenceClickListener(preference -> {
                 String jsonSettings = getPreferencesAsJson();
                 // Можете зберегти JSON у базу даних або інше сховище
                 saveSettingsToDatabase(jsonSettings);
-                Toast.makeText(getContext(), "JSON згенеровано", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Налаштування збережено", Toast.LENGTH_SHORT).show();
                 return true;
             });
         }
@@ -54,12 +55,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         if (userLastName != null) {
             userLastName.setText(sharedPreferences.getString("userLastName", ""));
         }
+
         EditTextPreference userId = findPreference("userId");
         if (userId != null) {
             userId.setText(sharedPreferences.getString("userId", ""));
         }
-
-        boolean notificationsEnabled = sharedPreferences.getBoolean("notifications", true);
 
         EditTextPreference messagingServerIp = findPreference("messaging_server_ip");
         if (messagingServerIp != null) {
@@ -85,6 +85,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public String getPreferencesAsJson() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
+        String username = sharedPreferences.getString("username", "");
+        String userLastName = sharedPreferences.getString("userLastName", "");
+        String userId = sharedPreferences.getString("userId", "");
         String messagingServerIp = sharedPreferences.getString("messaging_server_ip", "");
         String messagingServerPort = sharedPreferences.getString("messaging_server_port", "");
         String fileServerIp = sharedPreferences.getString("file_server_ip", "");
@@ -92,6 +95,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         JSONObject jsonObject = new JSONObject();
         try {
+            jsonObject.put("username", username);
+            jsonObject.put("userLastName", userLastName);
+            jsonObject.put("userId", userId);
             jsonObject.put("messagingServerIp", messagingServerIp);
             jsonObject.put("messagingServerPort", messagingServerPort);
             jsonObject.put("fileServerIp", fileServerIp);
@@ -100,7 +106,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             e.printStackTrace();
         }
         return jsonObject.toString();
-
     }
 
     private void saveSettingsToDatabase(String jsonSettings) {

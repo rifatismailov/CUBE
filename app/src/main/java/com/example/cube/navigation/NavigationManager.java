@@ -18,6 +18,9 @@ import com.example.cube.R;
 
 import java.io.File;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 public class NavigationManager {
 
     private Activity activity;
@@ -62,6 +65,7 @@ public class NavigationManager {
                 break;
             case R.id.nav_settings:
                 // Логіка для "Налаштування"
+                navigation.showSetting();
                 break;
             case R.id.nav_logout:
                 navigation.scannerQrAccount();
@@ -100,5 +104,6 @@ public class NavigationManager {
         void scannerQrAccount();
 
         void imageNavigation();
+        void showSetting();
     }
 }

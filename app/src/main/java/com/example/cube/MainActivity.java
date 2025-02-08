@@ -54,6 +54,8 @@ import com.example.folder.file.Folder;
 import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
 import com.example.qrcode.QR;
+import com.example.setting.SettingActivity;
+import com.example.setting.SettingDialog;
 import com.example.web_socket_service.socket.Envelope;
 import com.example.web_socket_service.socket.IOService;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -1003,5 +1005,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
         return null;
+    }
+
+    /**
+     * Метод виклику вікна налаштування
+     */
+    @Override
+    public void showSetting() {
+//        Intent intent = new Intent(this, SettingActivity.class);
+//        intent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), userId);
+//        intent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), "192.168.1.237");
+//        intent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), "8080");
+//        startActivity(intent);
+        SettingDialog inputDialog = new SettingDialog(this);
+        inputDialog.show();
+
     }
 }
