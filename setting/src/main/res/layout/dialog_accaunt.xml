@@ -23,19 +23,9 @@
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
             android:background="@android:color/darker_gray"
-            android:layout_marginBottom="50dp"/>
+           />
 
-        <!-- Лейаут для кнопок внизу -->
-        <LinearLayout
-            android:id="@+id/layout_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal">
 
-            <include layout="@layout/button_layout" />
-
-        </LinearLayout>
     </RelativeLayout>
 
 

@@ -3,6 +3,7 @@ package com.example.setting;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +15,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import com.example.setting.R;
 import com.example.setting.fragment.ImageFragment;
 import com.example.setting.fragment.TextFragment;
 
@@ -25,10 +24,11 @@ import org.json.JSONObject;
 
 import java.io.File;
 
-public class AccountDialog extends DialogFragment {
+public class AccountDialog extends DialogFragment implements ImageFragment.ChangeFragment, TextFragment.ChangeFragment {
     private JSONObject jsonObject;
     private final File externalDir;
     private Context context;
+    private boolean checkFragment = false;
 
     public AccountDialog(@NonNull Context context, JSONObject jsonObject) {
         this.jsonObject = jsonObject;
@@ -56,24 +56,7 @@ public class AccountDialog extends DialogFragment {
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
-        Button buttonImage = view.findViewById(R.id.button_image);
-        Button buttonText = view.findViewById(R.id.button_text);
-        FrameLayout frameContent = view.findViewById(R.id.frame_content);
-
-        buttonImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                replaceFragment(new ImageFragment());
-            }
-        });
-
-        buttonText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                replaceFragment(new TextFragment());
-            }
-        });
-
+        replaceFragment(new TextFragment(AccountDialog.this));
         return view;
     }
 
@@ -81,5 +64,17 @@ public class AccountDialog extends DialogFragment {
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.frame_content, fragment)
                 .commit();
+    }
+
+    @Override
+    public void changeFragment() {
+        if (!checkFragment) {
+            checkFragment = true;
+            replaceFragment(new ImageFragment(this));
+        } else {
+            checkFragment = false;
+            replaceFragment(new TextFragment(this));
+
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,12 +15,33 @@ import com.example.setting.R;
 
 
 public class ImageFragment extends Fragment {
+    private ChangeFragment changeFragment;
+
+    public ImageFragment(ChangeFragment changeFragment) {
+        this.changeFragment = changeFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ImageView imageView = new ImageView(getContext());
-        imageView.setImageResource(R.color.blue); // Замініть на ваше зображення
-        imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        return imageView;
+        // Підключення макета з XML
+        return inflater.inflate(R.layout.fragment_qrcode, container, false);
+    }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ImageView imageView = view.findViewById(R.id.qrCodeImage);
+        imageView.setImageResource(R.color.blue); // Змінити на ваш ресурс
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeFragment.changeFragment();
+            }
+        });
+    }
+
+    public interface ChangeFragment{
+        void changeFragment();
     }
 }
