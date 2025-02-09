@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.example.cube.contact.UserData;
+import com.example.cube.contact.ContactData;
 import com.example.cube.control.FIELD;
 import com.example.web_socket_service.socket.Envelope;
 
@@ -112,14 +112,14 @@ public class Operation {
      * @param userList    Список користувачів для оновлення.
      * @return Оновлений лічильник номерів повідомлень.
      */
-    public int saveMessage(Envelope envelope, HashMap<Integer, Envelope> saveMessage, int numMessage, List<UserData> userList) {
+    public int saveMessage(Envelope envelope, HashMap<Integer, Envelope> saveMessage, int numMessage, List<ContactData> userList) {
         try {
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             if (operation.equals(FIELD.MESSAGE.getFIELD())) {
                 saveMessage.put(numMessage, envelope);
                 numMessage++;
-                for (UserData user : userList) {
+                for (ContactData user : userList) {
                     // Оновлюємо кількість повідомлень для користувача
                     if (user.getId().equals(envelope.getSenderId())) {
                         user.setSize(user.getSize() + 1);

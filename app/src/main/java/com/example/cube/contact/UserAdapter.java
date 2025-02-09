@@ -22,15 +22,15 @@ import com.example.qrcode.QRCode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserAdapter extends ArrayAdapter<UserData> {
-    private List<UserData> mList;
+public class UserAdapter extends ArrayAdapter<ContactData> {
+    private List<ContactData> mList;
     private Context mContext;
     private ContactInterface contactInterface;
-    UserData userData;
+    ContactData contactData;
     private ContactCircularImageView image;
     private int layout;
 
-    public UserAdapter(@NonNull Context context, int layout, List<UserData> objects) {
+    public UserAdapter(@NonNull Context context, int layout, List<ContactData> objects) {
 
         super(context, layout, objects);
         this.mList = objects;
@@ -45,58 +45,58 @@ public class UserAdapter extends ArrayAdapter<UserData> {
     public View getView(final int position, View view, final ViewGroup parent) {
 
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
-        userData = mList.get(position);
+        contactData = mList.get(position);
         image = view.findViewById(R.id.qrCodeUser);
-        if (userData.getProgress() > 0) {
-            image.setProgress(userData.getProgress()); // Встановлюємо прогрес в circular image
+        if (contactData.getProgress() > 0) {
+            image.setProgress(contactData.getProgress()); // Встановлюємо прогрес в circular image
         }
-        if (userData.getProgress() == 100) {
+        if (contactData.getProgress() == 100) {
             image.clearProgress();
         }
 
-        Log.e("MainActivity", "AccountImageUrl " + userData.getAccountImageUrl());
+        Log.e("MainActivity", "AccountImageUrl " + contactData.getAccountImageUrl());
 
-        if (userData.getAccountImageUrl() != null && !userData.getAccountImageUrl().isEmpty()) {
-            Log.e("MainActivity", "AccountImageUrl " + userData.getAccountImageUrl());
+        if (contactData.getAccountImageUrl() != null && !contactData.getAccountImageUrl().isEmpty()) {
+            Log.e("MainActivity", "AccountImageUrl " + contactData.getAccountImageUrl());
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 2; // Зменшити розмір у два рази
-            Bitmap bitmap = BitmapFactory.decodeFile(userData.getAccountImageUrl(), options);
+            Bitmap bitmap = BitmapFactory.decodeFile(contactData.getAccountImageUrl(), options);
             image.setImageBitmap(bitmap);
         } else {
             String name = "Kiki";
             String lastName = "Kamureno";
             String jsonData = "{" +
-                    "\"userId\":\"" + this.userData.getId() + "\"," +
+                    "\"userId\":\"" + this.contactData.getId() + "\"," +
                     "\"name\":\"" + name + "\"," +
                     "\"lastName\":\"" + lastName + "\"" +
                     "}";
-            String result = userData.getName().substring(0, 2);  // Отримуємо перші дві букви
+            String result = contactData.getName().substring(0, 2);  // Отримуємо перші дві букви
 
             image.setImageBitmap(QRCode.getQRCode(jsonData, result));
         }
 
         TextView userName = view.findViewById(R.id.userName);
-        userName.setText(userData.getName());
+        userName.setText(contactData.getName());
 
         TextView idNumber = view.findViewById(R.id.idNumber);
-        idNumber.setText(userData.getId());
+        idNumber.setText(contactData.getId());
 
         ColorfulDotsView rPublicKey = view.findViewById(R.id.rPublicKey);
-        List<String> chunksPublicKey = splitHash(Encryption.getHash(userData.getReceiverPublicKey()), 10);
+        List<String> chunksPublicKey = splitHash(Encryption.getHash(contactData.getReceiverPublicKey()), 10);
         rPublicKey.setHashes(chunksPublicKey);
         //rPublicKey.setText(Encryption.getHash(userData.getReceiverPublicKey()));
 
         ColorfulDotsView receiverKey = view.findViewById(R.id.receiverKey);
         //receiverKey.setText( Encryption.getHash(userData.getReceiverKey()));
-        List<String> chunksReceiverKey = splitHash(Encryption.getHash(userData.getReceiverKey()), 10);
+        List<String> chunksReceiverKey = splitHash(Encryption.getHash(contactData.getReceiverKey()), 10);
         receiverKey.setHashes(chunksReceiverKey);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 contactInterface.onImageClickContact(position);
 
-                if (userData.getAccountImageUrl() != null && !userData.getAccountImageUrl().isEmpty()) {
+                if (contactData.getAccountImageUrl() != null && !contactData.getAccountImageUrl().isEmpty()) {
                     // вікно відображення QR коду або зображення та повної інформації
                 } else {
                     // вікно відображення QR коду або зображення та повної інформації
@@ -107,7 +107,7 @@ public class UserAdapter extends ArrayAdapter<UserData> {
         });
 
         TextView messageSize = view.findViewById(R.id.messageSize);
-        messageSize.setText(userData.getMessageSize());
+        messageSize.setText(contactData.getMessageSize());
         if (messageSize.getText().toString().isEmpty()) {
             messageSize.setVisibility(View.GONE);
         } else {
@@ -120,8 +120,8 @@ public class UserAdapter extends ArrayAdapter<UserData> {
     public void setProgressForPosition(int position, int progress) {
         // Оновлюємо конкретну позицію
         if (position >= 0 && position < mList.size()) {
-            UserData userData = mList.get(position);
-            userData.setProgress(progress);  // Оновлюємо прогрес для конкретного користувача
+            ContactData contactData = mList.get(position);
+            contactData.setProgress(progress);  // Оновлюємо прогрес для конкретного користувача
 
             // Оновлюємо тільки цю позицію
             notifyDataSetChanged();  // або notifyItemChanged(position);

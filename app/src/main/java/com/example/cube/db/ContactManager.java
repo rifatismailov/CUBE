@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.cube.contact.UserData;
+import com.example.cube.contact.ContactData;
 import com.example.cube.encryption.Encryption;
 
 import org.json.JSONObject;
@@ -51,8 +51,8 @@ public class ContactManager {
      * @param secretKey The key used to decrypt contact data.
      * @return A map of contact IDs to UserData objects.
      */
-    public Map<String, UserData> getContacts(SecretKey secretKey) {
-        Map<String, UserData> contacts = new HashMap<>();
+    public Map<String, ContactData> getContacts(SecretKey secretKey) {
+        Map<String, ContactData> contacts = new HashMap<>();
         Cursor cursor = null;
         try {
             cursor = database.query(TABLE_CONTACTS, null, null, null, null, null, null);
@@ -62,14 +62,14 @@ public class ContactManager {
 
                 // Decrypt the contact data
                 String decryptedJson = Encryption.AES.decryptCBCdb(encryptedData, secretKey);
-                UserData userData = new UserData(new JSONObject(decryptedJson));
+                ContactData contactData = new ContactData(new JSONObject(decryptedJson));
 
                 // Assign default name if none exists
-                if (userData.getName() == null || userData.getName().isEmpty()) {
-                    userData.setName("No name");
+                if (contactData.getName() == null || contactData.getName().isEmpty()) {
+                    contactData.setName("No name");
                 }
 
-                contacts.put(id, userData);
+                contacts.put(id, contactData);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,9 +88,9 @@ public class ContactManager {
      * @param contacts  A map of contact IDs to UserData objects.
      * @param secretKey The key used to encrypt contact data.
      */
-    public void setContacts(Map<String, UserData> contacts, SecretKey secretKey) {
+    public void setContacts(Map<String, ContactData> contacts, SecretKey secretKey) {
         try {
-            for (Map.Entry<String, UserData> entry : contacts.entrySet()) {
+            for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
                 String id = entry.getKey();
 
                 // Convert UserData to JSON and encrypt it
@@ -117,15 +117,15 @@ public class ContactManager {
      * Updates a specific contact in the database.
      * The updated data is encrypted using the provided SecretKey.
      *
-     * @param userData  The updated UserData object.
+     * @param contactData  The updated UserData object.
      * @param secretKey The key used to encrypt contact data.
      */
-    public void updateContact(UserData userData, SecretKey secretKey) {
+    public void updateContact(ContactData contactData, SecretKey secretKey) {
         try {
-            String id = userData.getId();
+            String id = contactData.getId();
 
             // Convert UserData to JSON and encrypt it
-            String json = userData.toJson().toString();
+            String json = contactData.toJson().toString();
             String encryptedJson = Encryption.AES.encryptCBCdb(json, secretKey);
 
             // Prepare data for update

@@ -1,9 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/navigation_cube"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,56 +13,66 @@
         <include layout="@layout/drawer_header" />
     </LinearLayout>
 
-    <!-- файл: res/layout/navigation_control.xml -->
-    <!-- файл: res/layout/navigation_control.xml -->
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="8dp">
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/nav_account"
+            style="@style/CustomButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/white"
+            android:elevation="0dp"
             android:text="Акаунт"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             android:typeface="monospace"
             app:icon="@drawable/ic_account"
             app:iconGravity="textStart"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp"/>
+            app:iconTint="@android:color/black"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"/>
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/nav_settings"
+            style="@style/CustomButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/white"
+            android:elevation="0dp"
             android:text="Налаштування"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             android:typeface="monospace"
             app:icon="@drawable/ic_settings"
             app:iconGravity="textStart"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp"/>
+            app:iconTint="@android:color/black"
+            android:layout_below="@id/nav_account"
+            android:layout_centerHorizontal="true"/>
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/nav_logout"
-            android:layout_width="match_parent"
+            style="@style/CustomButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/white"
+            android:elevation="0dp"
             android:text="Вихід"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             android:typeface="monospace"
             app:icon="@drawable/ic_logout"
             app:iconGravity="textStart"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
+            app:iconTint="@android:color/black"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"/>
-    </LinearLayout>
-
-
+    </RelativeLayout>
 
 </LinearLayout>

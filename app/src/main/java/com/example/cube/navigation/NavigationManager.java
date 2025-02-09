@@ -5,17 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.Button;
 import android.widget.ImageView;
+
 import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.example.cube.R;
+
 import java.io.File;
 
 public class NavigationManager {
 
     private Activity activity;
-    Navigation navigation;
+    private Navigation navigation;
     private DrawerLayout drawerLayout;
-    ImageView avatarImage;
-    ImageView accountImage;
+    private ImageView avatarImage;
+    private ImageView accountImage;
     private Button accountButton, settingsButton, logoutButton;
     private final File externalDir;
 
@@ -91,8 +94,11 @@ public class NavigationManager {
 
     public interface Navigation {
         void scannerQrAccount();
+
         void imageNavigation();
+
         void showSetting();
+
         void showAccount();
     }
 }

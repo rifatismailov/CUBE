@@ -1,13 +1,10 @@
 package com.example.cube.contact;
 
-import android.util.Log;
-import android.widget.ImageView;
-
 import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class UserData implements Serializable {
+public class ContactData implements Serializable {
     private String id;
     private String publicKey;
     private String privateKey;
@@ -22,11 +19,11 @@ public class UserData implements Serializable {
     private int progress;  // Додаємо змінну для прогресу
 
     // Конструктор
-    public UserData() {
+    public ContactData() {
 
     }
 
-    public UserData(String id, String publicKey, String name, String messageSize) {
+    public ContactData(String id, String publicKey, String name, String messageSize) {
         this.id = id;
         this.publicKey = publicKey;
         this.name = name;
@@ -134,7 +131,7 @@ public class UserData implements Serializable {
     }
 
     // Конструктор для десеріалізації з JSONObject
-    public UserData(JSONObject jsonObject) {
+    public ContactData(JSONObject jsonObject) {
         try {
             this.id = jsonObject.optString("id", "No ID");
             this.publicKey = jsonObject.optString("publicKey", "");
