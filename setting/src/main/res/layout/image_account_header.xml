@@ -4,47 +4,11 @@
     android:background="@color/white">
 
     <!-- Основне зображення (не кругле) -->
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <!-- Ваше зображення -->
-        <ImageView
-            android:id="@+id/avatarImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:src="@color/text_primary" />
-
-
-        <!-- Шар затемнення -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#80000000" /> <!-- Напівпрозорий чорний колір -->
-
-    </FrameLayout>
-
+    <include layout="@layout/image_avatar" />
 
     <!-- Кругле зображення -->
 
-    <FrameLayout
-        android:layout_width="80sp"
-        android:layout_height="80sp"
-        android:layout_gravity="bottom|center_vertical"
-        android:layout_marginStart="16dp"
+    <include layout="@layout/image_account" />
 
-        android:layout_marginBottom="10sp">
-
-
-        <com.example.setting.ContactCircularImageView
-            android:id="@+id/accountImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="2dp"
-            android:scaleType="centerCrop"
-            android:src="@color/green" />
-    </FrameLayout>
 
 </FrameLayout>

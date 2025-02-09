@@ -4,32 +4,40 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
-
     <FrameLayout
-        android:id="@+id/frame_content"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="200dp"
-        android:background="@android:color/darker_gray" />
+        android:background="@color/white">
 
-    <LinearLayout
+        <!-- Основне зображення (не кругле) -->
+        <include layout="@layout/image_avatar" />
+
+    </FrameLayout>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        android:layout_height="match_parent">
+        <!-- Фрагмент зверху -->
+        <FrameLayout
+            android:id="@+id/frame_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="50dp"/>
 
-        <Button
-            android:id="@+id/button_image"
-            android:layout_width="0dp"
+        <!-- Лейаут для кнопок внизу -->
+        <LinearLayout
+            android:id="@+id/layout_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Показати зображення" />
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/button_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Показати текст"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
+            <include layout="@layout/button_layout" />
+
+        </LinearLayout>
+    </RelativeLayout>
+
+
+
 </LinearLayout>

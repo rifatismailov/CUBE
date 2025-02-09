@@ -1,7 +1,6 @@
 package com.example.setting.fragment;
 
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,15 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.setting.R;
+
 public class TextFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        TextView textView = new TextView(getContext());
-        textView.setText("Це текст, який буде відображено");
-        textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        textView.setGravity(Gravity.CENTER);
-        textView.setTextSize(18);
-        return textView;
+        // Підключення макета з XML
+        return inflater.inflate(R.layout.fragment_text, container, false);
     }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        TextView textView = view.findViewById(R.id.textView);
+        textView.setText("Цей підхід дозволяє гнучко змінювати макет через XML та додавати нові елементи без змін у коді класу.\n" +
+                "Для роботи з елементами макета в коді можна використовувати метод findViewById()");
+    }
+
 }
