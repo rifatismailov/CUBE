@@ -162,17 +162,17 @@ public class Operation {
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
      */
     public interface Operable {
+        void addMessage(String message);
+
         void giveAvatar(String sender);
 
         void getAvatar(Envelope envelope);
 
         void getAvatarORG(Envelope envelope);
 
-        void addMessage(String message);
+        void addAESKey(String sender, String receivedMessage);
 
         void addHandshake(Envelope envelope);
-
-        void addAESKey(String sender, String receivedMessage);
 
         void updateAdapter();
     }

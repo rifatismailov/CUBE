@@ -22,7 +22,7 @@ import com.example.qrcode.QRCode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserAdapter extends ArrayAdapter<ContactData> {
+public class ContactAdapter extends ArrayAdapter<ContactData> {
     private List<ContactData> mList;
     private Context mContext;
     private ContactInterface contactInterface;
@@ -30,7 +30,7 @@ public class UserAdapter extends ArrayAdapter<ContactData> {
     private ContactCircularImageView image;
     private int layout;
 
-    public UserAdapter(@NonNull Context context, int layout, List<ContactData> objects) {
+    public ContactAdapter(@NonNull Context context, int layout, List<ContactData> objects) {
 
         super(context, layout, objects);
         this.mList = objects;

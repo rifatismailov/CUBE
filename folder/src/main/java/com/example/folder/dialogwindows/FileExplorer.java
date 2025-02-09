@@ -196,7 +196,6 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
 
     public void onFinish(String encFile) {
 
-
         FileDetect fileDetect = new FileDetect();
         folder.addFile(messageId, directory + "/" + fileName, encFile, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
         alertDialog.cancel();

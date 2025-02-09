@@ -35,7 +35,7 @@ import android.widget.TextView;
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.ContactCreator;
 import com.example.cube.contact.ContactInterface;
-import com.example.cube.contact.UserAdapter;
+import com.example.cube.contact.ContactAdapter;
 import com.example.cube.contact.ContactData;
 import com.example.cube.databinding.ActivityMainBinding;
 import com.example.cube.db.DatabaseHelper;
@@ -50,6 +50,7 @@ import com.example.cube.control.FIELD;
 import com.example.folder.download.Downloader;
 import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileOMG;
+import com.example.folder.file.FilePathBuilder;
 import com.example.folder.file.Folder;
 import com.example.folder.upload.FileEncryption;
 import com.example.image_account.ImageExplorer;
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
     private int numMessage = 0;  // Лічильник повідомлень
-    private UserAdapter userAdapter;                // Адаптер для відображення користувачів
+    private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
 
@@ -225,8 +226,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
             contactDataList.add(entry.getValue());
         }
-        userAdapter = new UserAdapter(this, R.layout.iteam_user, contactDataList);
-        binding.contentMain.userList.setAdapter(userAdapter);
+        contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
+        binding.contentMain.userList.setAdapter(contactAdapter);
         binding.contentMain.userList.setOnItemClickListener(this);
         binding.contentMain.userList.setOnItemLongClickListener(this);
     }
@@ -375,6 +376,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
                 serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
                 serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
+                // Зупиняємо сервіс, якщо він працює
+                stopService(serviceIntent);
+
+                // Перезапускаємо сервіс із новими параметрами
                 startService(serviceIntent);
             }
         }
@@ -482,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             startChat(binding.getRoot().getRootView(), contactData);
                             new Operation(this).openSaveMessage(receiverId, saveMessage);
                             contactData.setMessageSize("");
-                            userAdapter.notifyDataSetChanged();
+                            contactAdapter.notifyDataSetChanged();
                             notifyIdReciverChanged(receiverId);
                         }
                     } else {
@@ -527,12 +532,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Отримання повідомлення та відправка у клас для обробки операції.
+     * Отримання повідомлення та відправка у клас Operation для обробки операції.
      *
      * @param message Текст повідомлення.
      */
     public void onReceived(String message) {
         new Operation(this).onReceived(message);
+    }
+
+    /**
+     * Додає повідомлення до broadcast для передачі його в ChatActivity.
+     *
+     * @param message Текст повідомлення.
+     */
+    @Override
+    public void addMessage(String message) {
+        Intent intent = new Intent(FIELD.DATA_TO_CHAT.getFIELD());
+        intent.putExtra(FIELD.DATE_FROM_USERS_ACTIVITY.getFIELD(), message);
+        sendBroadcast(intent);
     }
 
     /**
@@ -578,21 +595,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    @Override
     public void giveAvatar(String recipient) {
-        File file = new File(this.getExternalFilesDir(null), "imageProfile");
         FileDetect fileDetect = new FileDetect();
-        String avatarImage = file + "/" + manager.userSetting().getAvatarImageUrl();
-        String accountImage = file + "/" + manager.userSetting().getAccountImageUrl();
-        for (ContactData user : contactDataList) {
-            if (user.getId().equals(recipient)) {
-                String key = user.getSenderKey();
-                uploadFile(new File(avatarImage), recipient + ":avatarImageUrl:" + fileDetect.getFileHash(avatarImage, "SHA-256"), key);
-                uploadFile(new File(accountImage), recipient + ":accountImage:" + fileDetect.getFileHash(accountImage, "SHA-256"), key);
-                break;
+
+        try {
+            File avatarImage = FilePathBuilder
+                    .withDirectory(FilePathBuilder.getDirectory(this, "imageProfile"))
+                    .setFileName(manager.userSetting().getAvatarImageUrl())
+                    .newFile();
+
+            File accountImage = FilePathBuilder
+                    .withDirectory(FilePathBuilder.getDirectory(this, "imageProfile"))
+                    .setFileName(manager.userSetting().getAccountImageUrl())
+                    .newFile();
+
+            for (ContactData user : contactDataList) {
+                if (user.getId().equals(recipient)) {
+                    String key = user.getSenderKey();
+                    uploadFile(avatarImage, recipient + ":avatarImageUrl:" + fileDetect.getFileHash(avatarImage.toString(), "SHA-256"), key);
+                    uploadFile(accountImage, recipient + ":accountImage:" + fileDetect.getFileHash(accountImage.toString(), "SHA-256"), key);
+                    break;
+                }
             }
+        } catch (RuntimeException e) {
+            Log.e("MainActivity", "Помилка виконання у методі [giveAvatar]: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e("MainActivity", "Несподівана помилка у методі [giveAvatar]: " + e.getMessage());
         }
     }
+
 
     /**
      * Метод для обробки відповіді після запиту на отримання зображень контакту
@@ -614,13 +645,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (contactDataList.get(position).getId().equals(envelope.getSenderId())) {
                     addPositionID(envelope.getMessageId(), envelope.getSenderId() + ":" + avatar_name);
                     Log.e("MainActivity", contactDataList.get(position).getId() + " Key " + contactDataList.get(position).getReceiverKey());
-                    //String message = Encryption.AES.decrypt(envelope.getMessage(), userList.get(position).getReceiverKey());
                     String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), contactDataList.get(position).getReceiverKey());
                     String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), contactDataList.get(position).getReceiverKey());
-                    File externalDir = new File(getExternalFilesDir(null), "imageProfile");
                     /*Потрібно реалізація перевірки хеш суми яку ми отримали з хеш сумою файлу після декодування для безпеки*/
                     URL url = new URL(fileUrl);
-                    new Downloader(this, url, externalDir, position, envelope.getMessageId(), fileHash);
+                    new Downloader(this, url, FilePathBuilder.getDirectory(this, "imageProfile"),
+                            position, envelope.getMessageId(), fileHash);
                     break;
                 }
             }
@@ -679,17 +709,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return avatar_map.remove(positionID);
     }
 
-    /**
-     * Додає повідомлення до broadcast для передачі його в ChatActivity.
-     *
-     * @param message Текст повідомлення.
-     */
-    @Override
-    public void addMessage(String message) {
-        Intent intent = new Intent(FIELD.DATA_TO_CHAT.getFIELD());
-        intent.putExtra(FIELD.DATE_FROM_USERS_ACTIVITY.getFIELD(), message);
-        sendBroadcast(intent);
-    }
 
     /**
      * Метод для додовання AES ключа контакту
@@ -712,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     break;
                 }
             }
-            userAdapter.notifyDataSetChanged();
+            contactAdapter.notifyDataSetChanged();
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка під час парсинга ключа [" + sender + "]: " + e);
         }
@@ -773,14 +792,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             }
         }
-        userAdapter.notifyDataSetChanged();
+        contactAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Оновлення адаптера контактів
+     */
     @Override
     public void updateAdapter() {
-        userAdapter.notifyDataSetChanged();
+        contactAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Метод виклику сканера для сканування Qr коду з даними аккаунту
+     * Qr код містить:
+     * ID користувача
+     * Імʼя та прізвище
+     * особистий пароль згенерований під час реєстрації на сервері
+     * Дані для підключення до серверів
+     */
     @Override
     public void scannerQrAccount() {
         //manager.clearMessagesTable();
@@ -793,7 +823,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Якщо вміст QR-коду не порожній, додається новий аккаунту користувача.
      */
     @SuppressLint("SetTextI18n")
-    ActivityResultLauncher<ScanOptions> qrCodeAddAccount = registerForActivityResult(new ScanContract(), result -> {
+    private ActivityResultLauncher<ScanOptions> qrCodeAddAccount = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
             manager.writeAccount(manager.getJson(result.getContents()));
         }
@@ -816,7 +846,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Якщо вміст QR-коду не порожній, додається новий контакт.
      */
     @SuppressLint("SetTextI18n")
-    ActivityResultLauncher<ScanOptions> qrCodeAddContact = registerForActivityResult(new ScanContract(), result -> {
+    private ActivityResultLauncher<ScanOptions> qrCodeAddContact = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
             manager.createContact(result.getContents());
         }
@@ -826,7 +856,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Константа для запиту вибору зображення
     private static final int PICK_IMAGE_REQUEST = 1;
 
-    ImageExplorer imageExplorer;
+    private ImageExplorer imageExplorer;
 
     @Override
     public void imageNavigation() {
@@ -932,7 +962,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String[] getBody = body_map.split(":");
         for (int position = 0; position < contactDataList.size(); position++) {
             if (contactDataList.get(position).getId().equals(getBody[0])) {
-                userAdapter.setProgressForPosition(position, progress);
+                contactAdapter.setProgressForPosition(position, progress);
             }
         }
         Log.e("MainActivity", "[" + positionId + "]: " + progress + " " + info);
@@ -1023,7 +1053,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             }
         }
-        userAdapter.notifyDataSetChanged();
+        contactAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -1065,6 +1095,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void showAccount() {
         AccountDialog accountDialog = new AccountDialog(this, manager.getAccount());
         accountDialog.show(getSupportFragmentManager(), "AccountDialog");
-
     }
 }
