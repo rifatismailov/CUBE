@@ -1,21 +1,21 @@
 package com.example.setting;
 
-import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.example.folder.file.FilePathBuilder;
 import com.example.setting.fragment.ImageFragment;
 import com.example.setting.fragment.TextFragment;
 
@@ -29,10 +29,14 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
     private final File externalDir;
     private Context context;
     private boolean checkFragment = false;
+    private final UserSetting userSetting;
+    private File accountImage;
 
     public AccountDialog(@NonNull Context context, JSONObject jsonObject) {
+        this.context = context;
         this.jsonObject = jsonObject;
-        this.externalDir = new File(context.getExternalFilesDir(null), "imageProfile");
+        this.externalDir = FilePathBuilder.getDirectory(context, "imageProfile");
+        userSetting = new UserSetting(jsonObject);
     }
 
     @Override
@@ -55,8 +59,27 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
+        ImageView imageView = view.findViewById(R.id.avatarImage);
 
-        replaceFragment(new TextFragment(AccountDialog.this));
+
+        File avatarImage = FilePathBuilder
+                .withDirectory(externalDir)
+                .setFileName(userSetting.getAvatarImageUrl())
+                .newFile();
+
+        accountImage = FilePathBuilder
+                .withDirectory(externalDir)
+                .setFileName(userSetting.getAccountImageUrl())
+                .newFile();
+
+        if (avatarImage.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(avatarImage.getAbsolutePath());
+            imageView.setImageBitmap(bitmap);
+        } else {
+            imageView.setImageResource(R.color.blue); // Default image
+        }
+
+        replaceFragment(new TextFragment(this, userSetting, accountImage));
         return view;
     }
 
@@ -70,10 +93,10 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
     public void changeFragment() {
         if (!checkFragment) {
             checkFragment = true;
-            replaceFragment(new ImageFragment(this));
+            replaceFragment(new ImageFragment(this, userSetting, accountImage));
         } else {
             checkFragment = false;
-            replaceFragment(new TextFragment(this));
+            replaceFragment(new TextFragment(this, userSetting, accountImage));
 
         }
     }

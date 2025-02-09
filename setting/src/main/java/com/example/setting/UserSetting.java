@@ -1,14 +1,14 @@
 /**
- * The UserSetting class represents user account and connection settings.
- * It provides functionality to create user settings, serialize/deserialize them to/from JSON,
- * and manage user-specific preferences such as server configurations and notification preferences.
+ * Клас UserSetting представляє налаштування облікового запису користувача та підключення.
+ * Він забезпечує функціональні можливості для створення налаштувань користувача, серіалізації/десеріалізації їх у/з JSON,
+ * і керувати індивідуальними параметрами користувача, такими як конфігурації сервера та параметри сповіщень.
  */
 package com.example.setting;
 
 import org.json.JSONObject;
 
 /**
- * Represents the settings of a user, including personal and server information.
+ * Представляє налаштування користувача, включаючи особисту інформацію та інформацію про сервер.
  */
 public class UserSetting {
 
@@ -26,16 +26,16 @@ public class UserSetting {
     private boolean notifications; // Notification preference
 
     /**
-     * Constructor to initialize user settings.
+     * Конструктор для ініціалізації налаштувань користувача.
      *
-     * @param id           Unique user ID
-     * @param name         User's first name
-     * @param lastName     User's last name
-     * @param password     User's password
-     * @param serverIp     Main server IP
-     * @param serverPort   Main server port
-     * @param fileServerIp File server IP
-     * @param fileServerPort File server port
+     * @param id Унікальний ідентифікатор користувача
+     * @param name Ім'я користувача
+     * @param lastName Прізвище користувача
+     * @param password Пароль користувача
+     * @param serverIp IP головного сервера
+     * @param serverPort Головний порт сервера
+     * @param fileServerIp IP файлового сервера
+     * @param fileServerPort Порт файлового сервера
      */
     public UserSetting(String id, String name, String lastName, String password,
                        String serverIp, String serverPort, String fileServerIp, String fileServerPort) {
@@ -50,7 +50,7 @@ public class UserSetting {
     }
 
     /**
-     * Constructor for building user settings using the Builder pattern.
+     * Конструктор для побудови налаштувань користувача за шаблоном Builder.
      */
     private UserSetting(Builder builder) {
         this.id = builder.id;
@@ -67,7 +67,7 @@ public class UserSetting {
     }
 
     /**
-     * Builder class for creating UserSetting objects in a flexible manner.
+     * Клас Builder для створення об’єктів UserSetting у гнучкий спосіб.
      */
     public static class Builder {
         private String id;
@@ -138,9 +138,9 @@ public class UserSetting {
         }
 
         /**
-         * Builds and returns a UserSetting object.
+         * Створює та повертає об'єкт UserSetting.
          *
-         * @return UserSetting instance
+         * Екземпляр @return UserSetting
          */
         public UserSetting build() {
             return new UserSetting(this);
@@ -148,9 +148,9 @@ public class UserSetting {
     }
 
     /**
-     * Constructs a UserSetting object from a JSONObject.
+     * Створює об'єкт UserSetting з JSONObject.
      *
-     * @param jsonObject JSON object containing user settings data
+     * @param jsonObject Об’єкт JSON, що містить дані налаштувань користувача
      */
     public UserSetting(JSONObject jsonObject) {
         try {
@@ -171,9 +171,9 @@ public class UserSetting {
     }
 
     /**
-     * Serializes the current UserSetting object to a JSONObject.
+     * Серіалізує поточний об’єкт UserSetting у JSONObject.
      *
-     * @return JSONObject representing the user settings
+     * @return JSONObject, що представляє налаштування користувача
      */
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
@@ -194,7 +194,59 @@ public class UserSetting {
         }
         return jsonObject;
     }
-
+    /**
+     * Серіалізує поточний об’єкт UserSetting у JSONObject.
+     *
+     * @return JSONObject, що представляє налаштування користувача
+     * @param fields параметри за якими ми будемо повертати Json
+     */
+    public JSONObject toJson(String... fields) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            for (String field : fields) {
+                switch (field) {
+                    case "userId":
+                        jsonObject.put("userId", id);
+                        break;
+                    case "name":
+                        jsonObject.put("name", name);
+                        break;
+                    case "lastName":
+                        jsonObject.put("lastName", lastName);
+                        break;
+                    case "password":
+                        jsonObject.put("password", password);
+                        break;
+                    case "avatarImageUrl":
+                        jsonObject.put("avatarImageUrl", avatarImageUrl);
+                        break;
+                    case "accountImageUrl":
+                        jsonObject.put("accountImageUrl", accountImageUrl);
+                        break;
+                    case "serverIp":
+                        jsonObject.put("serverIp", serverIp);
+                        break;
+                    case "serverPort":
+                        jsonObject.put("serverPort", serverPort);
+                        break;
+                    case "fileServerIp":
+                        jsonObject.put("fileServerIp", fileServerIp);
+                        break;
+                    case "fileServerPort":
+                        jsonObject.put("fileServerPort", fileServerPort);
+                        break;
+                    case "notifications":
+                        jsonObject.put("notifications", notifications);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
     // Getter and setter methods
 
     public String getId() {

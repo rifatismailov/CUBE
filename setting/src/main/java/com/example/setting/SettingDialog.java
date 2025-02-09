@@ -16,6 +16,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.example.folder.file.FilePathBuilder;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -60,7 +61,7 @@ public class SettingDialog extends Dialog {
         super(context, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen);
         this.jsonObject = jsonObject;
         this.iClassSetting = (IClassSetting) context;
-        this.externalDir = new File(context.getExternalFilesDir(null), "imageProfile");
+        this.externalDir = FilePathBuilder.getDirectory(context, "imageProfile");
     }
 
     /**
