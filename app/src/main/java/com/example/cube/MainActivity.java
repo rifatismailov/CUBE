@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -31,7 +30,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
-
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.ContactCreator;
 import com.example.cube.contact.ContactInterface;
@@ -62,10 +60,8 @@ import com.example.web_socket_service.socket.Envelope;
 import com.example.web_socket_service.socket.IOService;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -76,7 +72,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -299,14 +294,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Видалення ресивера при знищенні активності.
+     * Видалення ресиверів при знищенні активності.
      */
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(dataReceiver);
-        unregisterReceiver(serverMessageReceiver);
+        try {
+            unregisterReceiver(dataReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.w("MainActivity", "dataReceiver не зареєстровано або вже видалено.");
+        }
+        try {
+            unregisterReceiver(serverMessageReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.w("MainActivity", "serverMessageReceiver не зареєстровано або вже видалено.");
+        }
     }
+
 
     /**
      * Метод для запуску ChatActivity з передачею даних про користувача та контакту з ким від буде спілкуватися.
@@ -341,7 +345,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void startService() {
         // Запуск сервісу
-        if (!manager.userSetting().getId().isEmpty() &&
+        if (manager.userSetting().getId() != null &&
+                manager.userSetting().getServerIp() != null &&
+                manager.userSetting().getServerPort() != null &&
+                !manager.userSetting().getId().isEmpty() &&
                 !manager.userSetting().getServerIp().isEmpty() &&
                 !manager.userSetting().getServerPort().isEmpty()) {
             if (new UrlBuilder.IPValidator().validate(manager.userSetting().getServerIp()) &&
@@ -756,6 +763,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         userAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void scannerQrAccount() {
+        //manager.clearMessagesTable();
+        new QR(qrCodeAddAccount);
+    }
 
     /**
      * Лаунчер для сканування QR-коду для додавання аккаунту користувача.
@@ -770,6 +782,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     });
 
     /**
+     * Викликає сканер QR-коду для додавання контакту.
+     */
+
+    @Override
+    public void scannerQrContact() {
+//        deleteDatabase("cube.db");
+//        finish();
+        new QR(qrCodeAddContact);
+    }
+
+    /**
      * Лаунчер для сканування QR-коду для додавання контакту.
      * Використовує ActivityResultLauncher для сканування та обробки результату.
      * Якщо вміст QR-коду не порожній, додається новий контакт.
@@ -781,11 +804,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     });
 
-    @Override
-    public void scannerQrAccount() {
-        //manager.clearMessagesTable();
-        new QR(qrCodeAddAccount);
-    }
 
     // Константа для запиту вибору зображення
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -810,6 +828,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
+    /**
+     * Отримання зображень для аккаунту та додовання посилань у базу даних
+     *
+     * @param avatarImageUrl  оригінальний розмір зображення
+     * @param accountImageUrl зображення яку було зрізано (це може бути ваше облича яке буде відображене у користувачів з якими ви спілкуєтесь)
+     */
     @Override
     public void setImageAccount(String avatarImageUrl, String accountImageUrl) {
         runOnUiThread(() -> {
@@ -850,16 +874,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    /**
-     * Викликає сканер QR-коду для додавання контакту.
-     */
-
-    @Override
-    public void scannerQrContact() {
-        deleteDatabase("cube.db");
-        finish();
-        // new QR(qrCodeAddContact);
-    }
 
     @Override
     public void onClick(View view) {
@@ -963,7 +977,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Метод за допомогою ми оновлюємо зображення аватару контактів
+     * Метод за допомогою якого ми оновлюємо зображення аватару контактів
      *
      * @param position   позиція контакту
      * @param positionId Id позиції
@@ -1028,6 +1042,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         manager.writeAccount(jsonObject);
         startService();
     }
+
     @Override
     public void showAccount() {
         AccountDialog accountDialog = new AccountDialog(this, manager.getAccount());

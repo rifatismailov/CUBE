@@ -15,7 +15,8 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            android:src="@drawable/photo_my" />
+            android:background="@color/yellow"
+           />
 
 
         <!-- Шар затемнення -->
@@ -44,7 +45,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/photo_my" />
+             />
     </FrameLayout>
 
 
