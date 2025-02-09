@@ -138,44 +138,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     /**
-     * BroadcastReceiver для отримання даних з ChatActivity через broadcast.
-     */
-    private final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
-            if (dataFromChat != null) {
-                receivingData(dataFromChat);
-            }
-        }
-    };
-
-
-    private final BroadcastReceiver serverMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
-                String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
-
-                if (message != null) {
-                    onReceived(message);
-                }
-
-                String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
-                if (save_message != null) {
-                    saveMessage(save_message);
-                }
-                String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
-                if (notification != null) {
-                    //saveMessage(save_message);
-                    setNotification("", notification);
-                }
-            }
-        }
-    };
-
-
-    /**
      * Метод onCreate викликається при створенні активності.
      *
      * @param savedInstanceState Збережений стан активності.
@@ -229,8 +191,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         manager = new Manager(this, db, secretKey);
         manager.readAccount();
         contactManager = new ContactManager(db);
-
-        registerServer();
+        registerChatActivityReceiver();
+        registerIOServiceReceiver();
 
         startService();
         binding.setting.setOnClickListener(this);
@@ -295,34 +257,86 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
+     * BroadcastReceiver для отримання даних з ChatActivity через broadcast.
+     */
+    private final BroadcastReceiver chatActivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
+            if (dataFromChat != null) {
+                receivingData(dataFromChat);
+            }
+        }
+    };
+
+    /**
+     * BroadcastReceiver для отримання даних з IOService через broadcast.
+     */
+    private final BroadcastReceiver ioServiceReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
+                String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
+
+                if (message != null) {
+                    onReceived(message);
+                }
+
+                String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
+                if (save_message != null) {
+                    saveMessage(save_message);
+                }
+                String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
+                if (notification != null) {
+                    //saveMessage(save_message);
+                    setNotification("", notification);
+                }
+            }
+        }
+    };
+
+    /**
      * Видалення ресиверів при знищенні активності.
      */
     @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
-            unregisterReceiver(dataReceiver);
+            unregisterReceiver(chatActivityReceiver);
         } catch (IllegalArgumentException e) {
-            Log.w("MainActivity", "dataReceiver не зареєстровано або вже видалено.");
+            Log.e("MainActivity", "dataReceiver не зареєстровано або вже видалено.");
         }
         try {
-            unregisterReceiver(serverMessageReceiver);
+            unregisterReceiver(ioServiceReceiver);
         } catch (IllegalArgumentException e) {
-            Log.w("MainActivity", "serverMessageReceiver не зареєстровано або вже видалено.");
+            Log.e("MainActivity", "serverMessageReceiver не зареєстровано або вже видалено.");
         }
     }
 
+    /**
+     * Реєстрація chatActivityReceiver для отримання даних з ChatActivity через broadcast.
+     */
+    private void registerChatActivityReceiver() {
+        IntentFilter filter = new IntentFilter(FIELD.REPLY_FROM_CHAT.getFIELD());
+        registerReceiver(chatActivityReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+    }
+
+    /**
+     * Реєстрація ioServiceReceiver для отримання даних з IOService через broadcast.
+     */
+    private void registerIOServiceReceiver() {
+        IntentFilter filter = new IntentFilter(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD());
+        registerReceiver(ioServiceReceiver, filter, RECEIVER_EXPORTED);
+    }
 
     /**
      * Метод для запуску ChatActivity з передачею даних про користувача та контакту з ким від буде спілкуватися.
      *
-     * @param view     Поточний елемент View.
+     * @param view        Поточний елемент View.
      * @param contactData Дані контакту для чату.
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    public void startChat(View view, @NonNull ContactData contactData) {
-        IntentFilter filter = new IntentFilter(FIELD.REPLY_FROM_CHAT.getFIELD());
-        registerReceiver(dataReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+    private void startChat(View view, @NonNull ContactData contactData) {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra(FIELD.SENDER_ID.getFIELD(), manager.userSetting().getId());
         intent.putExtra(FIELD.NAME.getFIELD(), contactData.getName());
@@ -335,15 +349,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), contactData.getReceiverKey());
         intent.putExtra(FIELD.AVATAR_ORG.getFIELD(), contactData.getAvatarImageUrl());
         intent.putExtra(FIELD.AVATAR.getFIELD(), contactData.getAccountImageUrl());
-
         startActivity(intent);
     }
 
-    private void registerServer() {
-        IntentFilter filter = new IntentFilter(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD());
-        registerReceiver(serverMessageReceiver, filter, RECEIVER_EXPORTED);
-    }
 
+    /**
+     * Метод який стартує сервіс для обміну повідомленнями
+     * У методі перевіряється параметри на наявність в них даних це
+     *
+     * @Id ідентифікаційним номер користувача
+     * @Server Ip адрес серверу повідомлень
+     * @Server Port порт серверу повідомлень
+     */
     public void startService() {
         // Запуск сервісу
         if (manager.userSetting().getId() != null &&
