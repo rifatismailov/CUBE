@@ -1,7 +1,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="80sp"
     android:layout_height="80sp"
-    android:layout_gravity="center|bottom">
+    android:layout_gravity="center">
 
     <com.example.setting.ContactCircularImageView
         android:id="@+id/accountImage"

@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,12 +51,7 @@ public class ImageFragment extends Fragment {
         options.inSampleSize = 2; // Зменшити розмір у два рази
         Bitmap bitmap = BitmapFactory.decodeFile(accountImage.toString(), options);
         imageView.setImageBitmap(QRCode.getQRCode(jsonData, bitmap));
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changeFragment.changeFragment();
-            }
-        });
+        imageView.setOnClickListener(view1 -> changeFragment.changeFragment());
     }
 
     public interface ChangeFragment {

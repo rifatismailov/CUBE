@@ -79,7 +79,7 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
             imageView.setImageResource(R.color.blue); // Default image
         }
 
-        replaceFragment(new TextFragment(this, userSetting, accountImage));
+        replaceFragment(new ImageFragment(this, userSetting, accountImage));
         return view;
     }
 
@@ -93,10 +93,10 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
     public void changeFragment() {
         if (!checkFragment) {
             checkFragment = true;
-            replaceFragment(new ImageFragment(this, userSetting, accountImage));
+            replaceFragment(new TextFragment(this, userSetting, accountImage));
         } else {
             checkFragment = false;
-            replaceFragment(new TextFragment(this, userSetting, accountImage));
+            replaceFragment(new ImageFragment(this, userSetting, accountImage));
 
         }
     }
