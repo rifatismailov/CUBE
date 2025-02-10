@@ -34,7 +34,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.ContactCreator;
@@ -294,14 +293,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
                     try {
-
                         String[] notificationAll=notification.split(":");
-                        Log.e("MainActivity", "notification: "+notificationAll[0]);
                         //saveMessage(save_message);
                         setNotification(notificationAll[0],"");
                     }catch (Exception e){
                         Log.e("MainActivity", "notification: "+e);
-
                     }
 
                 }

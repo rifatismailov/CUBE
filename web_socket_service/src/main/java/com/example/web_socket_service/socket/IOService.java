@@ -260,9 +260,9 @@ public class IOService extends Service implements WebSocketClient.Listener {
             if (message != null) {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
-                if (serverURL.getSenderId().equals(envelope.getSenderId()) && serverURL.getReciverId().equals(envelope.getReceiverId())) {
+                if (serverURL.getSenderId().equals(envelope.getSenderId()) && serverURL.getReceiverId().equals(envelope.getReceiverId())) {
                     addMessage(message);
-                } else if (serverURL.getReciverId() != null && serverURL.getReciverId().equals(envelope.getSenderId())) {
+                } else if (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) {
                     addMessage(message);
                 } else {
                     Log.e("IOService", "saveMessage: " + message);

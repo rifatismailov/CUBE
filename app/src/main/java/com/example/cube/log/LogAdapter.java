@@ -1,20 +1,14 @@
 package com.example.cube.log;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.cube.MainActivity;
 import com.example.cube.R;
-import com.example.cube.holder.SentViewHolder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LogAdapter extends RecyclerView.Adapter {
