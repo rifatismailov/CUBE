@@ -293,8 +293,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
-                    //saveMessage(save_message);
-                    setNotification("", notification);
+                    try {
+
+                        String[] notificationAll=notification.split(":");
+                        Log.e("MainActivity", "notification: "+notificationAll[0]);
+                        //saveMessage(save_message);
+                        setNotification(notificationAll[0],"");
+                    }catch (Exception e){
+                        Log.e("MainActivity", "notification: "+e);
+
+                    }
+
                 }
             }
         }
@@ -359,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        intent.putExtra(FIELD.SERVER_PORT.getFIELD(), manager.userSetting().getServerPort());
         intent.putExtra(FIELD.FILE_SERVER_IP.getFIELD(), manager.userSetting().getFileServerIp());
         intent.putExtra(FIELD.FILE_SERVER_PORT.getFIELD(), manager.userSetting().getFileServerPort());
-        Log.e("MainActivity",  manager.userSetting().getFileServerIp()+" "+manager.userSetting().getFileServerPort());
+        Log.e("MainActivity", manager.userSetting().getFileServerIp() + " " + manager.userSetting().getFileServerPort());
 
 
         startActivity(intent);
@@ -657,7 +666,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             for (int position = 0; position < contactDataList.size(); position++) {
                 if (contactDataList.get(position).getId().equals(envelope.getSenderId())) {
                     addPositionID(envelope.getMessageId(), envelope.getSenderId() + ":" + avatar_name);
-                    Log.e("MainActivity", contactDataList.get(position).getId() + " Key " + contactDataList.get(position).getReceiverKey());
                     String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), contactDataList.get(position).getReceiverKey());
                     String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), contactDataList.get(position).getReceiverKey());
                     /*Потрібно реалізація перевірки хеш суми яку ми отримали з хеш сумою файлу після декодування для безпеки*/

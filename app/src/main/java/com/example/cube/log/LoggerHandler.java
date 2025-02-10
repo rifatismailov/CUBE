@@ -7,6 +7,6 @@ public class LoggerHandler {
     @SuppressLint("SetTextI18n")
     public void setLog(LoggerViewHolder loggerViewHolder, Logger logger) {
         loggerViewHolder.binding.clas.setText(logger.getClas());
-        loggerViewHolder.binding.logger.setText(logger.getLog());
+        //loggerViewHolder.binding.logger.setText(logger.getLog());
     }
 }
