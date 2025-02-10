@@ -142,9 +142,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-
-
-
     /**
      * Метод onCreate викликається при створенні активності.
      *
@@ -348,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra(FIELD.SENDER_ID.getFIELD(), manager.userSetting().getId());
         intent.putExtra(FIELD.NAME.getFIELD(), contactData.getName());
+        intent.putExtra(FIELD.LAST_NAME.getFIELD(), contactData.getLastName());
         intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), contactData.getId());
         intent.putExtra(FIELD.STATUS.getFIELD(), "online");
         intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
@@ -357,6 +355,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.RECEIVER_KEY.getFIELD(), contactData.getReceiverKey());
         intent.putExtra(FIELD.AVATAR_ORG.getFIELD(), contactData.getAvatarImageUrl());
         intent.putExtra(FIELD.AVATAR.getFIELD(), contactData.getAccountImageUrl());
+//        intent.putExtra(FIELD.SERVER_IP.getFIELD(), manager.userSetting().getServerIp());
+//        intent.putExtra(FIELD.SERVER_PORT.getFIELD(), manager.userSetting().getServerPort());
+        intent.putExtra(FIELD.FILE_SERVER_IP.getFIELD(), manager.userSetting().getFileServerIp());
+        intent.putExtra(FIELD.FILE_SERVER_PORT.getFIELD(), manager.userSetting().getFileServerPort());
+        Log.e("MainActivity",  manager.userSetting().getFileServerIp()+" "+manager.userSetting().getFileServerPort());
+
+
         startActivity(intent);
     }
 

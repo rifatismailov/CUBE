@@ -38,6 +38,8 @@ import com.example.folder.download.Downloader;
 import com.example.folder.file.FileOMG;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
+import com.example.setting.UrlBuilder;
+import com.example.setting.UserSetting;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -59,6 +61,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private ArrayList<Message> messages;
     private String senderId;       // ІД відправника
     private String receiverName;
+    private String receiverLastName;
+
     private String receiverId;
     private String receiverStatus;
     private PublicKey publicKey;
@@ -69,6 +73,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private String receiverKey;
     private String avatarImageUrl;
     private String accountImageUrl;
+    private String fileServerIP;
+    private String fileServerPort;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -85,9 +91,9 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             BundleProcessor bundleProcessor = new BundleProcessor(bundle);
-
             senderId = bundleProcessor.getSenderId();
             receiverName = bundleProcessor.getReceiverName();
+            receiverLastName = bundleProcessor.getReceiverLastName();
             receiverId = bundleProcessor.getReceiverId();
             receiverStatus = bundleProcessor.getReceiverStatus();
             publicKey = bundleProcessor.getPublicKey();
@@ -97,7 +103,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             receiverKey = bundleProcessor.getReceiverKey();
             avatarImageUrl = bundleProcessor.getAvatarImageUrl();
             accountImageUrl = bundleProcessor.getAccountImageUrl();
-
+            fileServerIP=bundleProcessor.getFileServerIP();
+            fileServerPort=bundleProcessor.getFileServerPort();
         }
     }
 
@@ -107,7 +114,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         //DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = new DatabaseHelper(this).getWritableDatabase();
         manager = new MessageManager(db);
-
 
         // Реєструємо ресівер для отримання даних
         registerDataReceiver();
@@ -129,14 +135,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             Bitmap bitmap = BitmapFactory.decodeFile(accountImageUrl, options);
             binding.profile.setImageBitmap(bitmap);
         } else {
-            String name = "Kiki";
-            String lastName = "Kamureno";
-            String jsonData = "{" +
-                    "\"userId\":\"" + receiverId + "\"," +
-                    "\"name\":\"" + name + "\"," +
-                    "\"lastName\":\"" + lastName + "\"" +
-                    "}";
-            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData, "Ka"));
+
+            String jsonData = new UserSetting.Builder()
+                    .setId(receiverId)
+                    .setName(receiverName)
+                    .setLastName(receiverLastName)
+                    .build().toJson("userId", "name", "lastName").toString();
+            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData, receiverName.substring(0, 2)));
         }
         // Ініціалізація RecyclerView
         setupRecyclerView();
@@ -183,8 +188,16 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 binding.messageBox.setText("");
             }
         });
-
-        binding.attachmentBtn.setOnClickListener(v -> new FileExplorer(this, senderKey));
+        String serverUrl = new UrlBuilder.Builder()
+                .setProtocol("http")
+                .setIp(fileServerIP)
+                .setPort(fileServerPort)
+                .setDirectory("/api/files/upload")
+                .build()
+                .buildUrl();
+        binding.attachmentBtn.setOnClickListener(v -> {
+            new FileExplorer(this, serverUrl, senderKey);
+        });
         binding.profile.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
@@ -195,6 +208,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
         messages.addAll(messagesdb);

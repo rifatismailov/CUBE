@@ -12,6 +12,8 @@ import java.security.PublicKey;
 public class BundleProcessor {
     private String senderId;
     private String receiverName;
+    private String receiverLastName;
+
     private String receiverId;
     private String receiverStatus;
     private KeyGenerator.RSA keyGenerator;
@@ -22,6 +24,9 @@ public class BundleProcessor {
     private PublicKey receiverPublicKey;
     private String avatarImageUrl;
     private String accountImageUrl;
+    private String fileServerIP;
+    private String fileServerPort;
+
 
     public BundleProcessor(Bundle bundle) {
         keyGenerator = new KeyGenerator.RSA();
@@ -32,6 +37,7 @@ public class BundleProcessor {
         try {
             senderId = bundle.getString(FIELD.SENDER_ID.getFIELD());
             receiverName = bundle.getString(FIELD.NAME.getFIELD());
+            receiverLastName = bundle.getString(FIELD.LAST_NAME.getFIELD());
             receiverId = bundle.getString(FIELD.RECEIVER_ID.getFIELD());
             receiverStatus = bundle.getString(FIELD.STATUS.getFIELD());
 
@@ -54,6 +60,8 @@ public class BundleProcessor {
             receiverKey = bundle.getString(FIELD.RECEIVER_KEY.getFIELD());
             avatarImageUrl = bundle.getString(FIELD.AVATAR_ORG.getFIELD());
             accountImageUrl = bundle.getString(FIELD.AVATAR.getFIELD());
+            fileServerIP = bundle.getString(FIELD.FILE_SERVER_IP.getFIELD());
+            fileServerPort = bundle.getString(FIELD.FILE_SERVER_PORT.getFIELD());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -66,6 +74,9 @@ public class BundleProcessor {
 
     public String getReceiverName() {
         return receiverName;
+    }
+    public String getReceiverLastName() {
+        return receiverLastName;
     }
 
     public String getReceiverId() {
@@ -104,5 +115,12 @@ public class BundleProcessor {
         return accountImageUrl;
     }
 
+    public String getFileServerIP() {
+        return fileServerIP;
+    }
+
+    public String getFileServerPort() {
+        return fileServerPort;
+    }
 }
 

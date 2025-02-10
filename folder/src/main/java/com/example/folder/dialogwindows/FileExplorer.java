@@ -49,8 +49,8 @@ public class FileExplorer extends AlertDialog.Builder implements AdapterView.OnI
     private String directory;
     private ImageButton back;
     private String fileName;
-    private String senderKey;
-    private String serverUrl = "http://192.168.1.237:8020/api/files/upload";
+    private final String senderKey;
+    private final String serverUrl;
 
     /**
      * Конструктор класу Open.
@@ -58,10 +58,11 @@ public class FileExplorer extends AlertDialog.Builder implements AdapterView.OnI
      * @param context   Контекст, у якому працює діалог.
      * @param senderKey
      */
-    public FileExplorer(Context context, String senderKey) {
+    public FileExplorer(Context context,String serverUrl, String senderKey) {
         super(context);
         this.directory = DIR;
         this.context = context;
+        this.serverUrl=serverUrl;
         this.senderKey = senderKey;
         this.folder = (Folder) context;
         messageId = UUID.randomUUID().toString();
