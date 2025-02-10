@@ -46,10 +46,9 @@ public class Uploader {
 
             @Override
             public void onError() {
-                Log.e("Uploader", "ERROR: to sending");
 
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: to sending"));
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
                 }
             }
 
@@ -71,19 +70,18 @@ public class Uploader {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("Uploader", "ERROR: " + e);
-
                 if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: " + e));
+                    Log.e("Uploader", "Проблема інтернет-з'єднання:" + e);
+
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
                 }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR: server is not responding."));
+                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
                 } else {
-                    Log.e("Uploader", "Відповідь сервера: " + response.body().string());
 
                     ((Activity) context).runOnUiThread(() -> {
                         try {

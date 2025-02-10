@@ -90,7 +90,7 @@ public class Operation {
                 if (envelope.getSenderId().equals(receiverId)) {
                     try {
                         String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-                        if (operation.equals(FIELD.MESSAGE.getFIELD())) {
+                        if (operation.equals(FIELD.MESSAGE.getFIELD())||operation.equals(FIELD.FILE.getFIELD())) {
                             operable.addMessage(envelope.toJson().toString());
                         }
                         iterator.remove(); // Видаляємо елемент після обробки
@@ -116,7 +116,7 @@ public class Operation {
         try {
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-            if (operation.equals(FIELD.MESSAGE.getFIELD())) {
+            if (operation.equals(FIELD.MESSAGE.getFIELD())||operation.equals(FIELD.FILE.getFIELD())) {
                 saveMessage.put(numMessage, envelope);
                 numMessage++;
                 for (ContactData user : userList) {

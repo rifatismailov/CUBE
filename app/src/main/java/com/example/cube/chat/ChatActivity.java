@@ -62,7 +62,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private String senderId;       // ІД відправника
     private String receiverName;
     private String receiverLastName;
-
     private String receiverId;
     private String receiverStatus;
     private PublicKey publicKey;
@@ -103,8 +102,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             receiverKey = bundleProcessor.getReceiverKey();
             avatarImageUrl = bundleProcessor.getAvatarImageUrl();
             accountImageUrl = bundleProcessor.getAccountImageUrl();
-            fileServerIP=bundleProcessor.getFileServerIP();
-            fileServerPort=bundleProcessor.getFileServerPort();
+            fileServerIP = bundleProcessor.getFileServerIP();
+            fileServerPort = bundleProcessor.getFileServerPort();
         }
     }
 
@@ -474,8 +473,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void setProgressShow(String messageId, int progress, String info) {
-        Log.e("Downloader", "setProgressShow " + progress);
-
         try {
             runOnUiThread(() -> {
                 for (int i = 0; i < messages.size(); i++) {
@@ -489,10 +486,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
                         }
                         if (info.startsWith("ERROR")) {
-                            message.setTimestamp(info);
+                            String[] error = info.split(":");
+                            message.setTimestamp(error[1]);
                             manager.updateMessage(message);
                             adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
-
                         }
                         message.setProgress(progress);
                         adapter.notifyItemChanged(i); // Оновлюємо лише один елемент

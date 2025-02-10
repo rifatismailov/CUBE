@@ -60,10 +60,13 @@ public class SendMessageHandler {
             viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
+
         } else {
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.message.setVisibility(View.GONE);
-            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
+            //viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 58f, 58f));
+            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
+
         }
         if (!viewHolder.binding.fileHash.getText().toString().equals(message.getHas())) {
             viewHolder.binding.fileHash.setText(message.getHas());
@@ -163,7 +166,7 @@ public class SendMessageHandler {
             List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
             viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
             viewHolder.binding.messageNotifier.setHashes(hashes);
-            viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
+            // viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(58f, 0f, 10f, 10f));
         } else {
             viewHolder.binding.messageNotifier.setVisibility(View.GONE);
         }
@@ -187,17 +190,23 @@ public class SendMessageHandler {
     }
 
     private void updateFeelLayout(SentViewHolder viewHolder, Message message) {
-        if (message.getFeeling() >= 0 || "server".equals(message.getMessageStatus())) {
-            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-        } else {
-            viewHolder.binding.feelLayout.setVisibility(View.GONE);
-        }
+        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+
+//        if (message.getFeeling() >= 0 || "server".equals(message.getMessageStatus())) {
+//            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//        } else {
+//            viewHolder.binding.feelLayout.setVisibility(View.GONE);
+//        }
     }
 
     private void updateTimestamp(SentViewHolder viewHolder, Message message) {
         if (message.getTimestamp() != null) {
-            String[] time = message.getTimestamp().split(" ");
-            viewHolder.binding.time.setText(time[1]);
+            if (message.getTimestamp().contains(" ")) {
+                String[] time = message.getTimestamp().split(" ");
+                viewHolder.binding.time.setText(time[1]);
+            } else {
+                viewHolder.binding.time.setText(message.getTimestamp());
+            }
         }
     }
 
