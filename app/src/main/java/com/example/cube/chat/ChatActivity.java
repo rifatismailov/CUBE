@@ -234,6 +234,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     protected void onDestroy() {
         super.onDestroy();
         // Від'єднання ресівера, коли активність знищується
+        sendDataBackToActivity(FIELD.USER_END.getFIELD());
         unregisterReceiver(dataReceiver);
     }
 
@@ -264,7 +265,15 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setReceiverId(receiverId);
             manager.addMessage(message);
             messages.add(message);
-            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), encFile, message.getHas(), receiverKey, message.getMessageId());
+            String url = new UrlBuilder.Builder()
+                    .setProtocol("http")
+                    .setIp(fileServerIP)
+                    .setPort(fileServerPort)
+                    .setDirectory("/api/files/download/")
+                    .setFileName(new File(encFile).getName())
+                    .build()
+                    .buildUrl();
+            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId());
             adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
             binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
         });

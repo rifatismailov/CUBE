@@ -31,9 +31,10 @@ public class Manager {
 
         JSONObject jsonObject = accountManager.getAccount(secretKey);
         if (jsonObject != null) {
+            Log.e("Manager", "Manager JSONObject "+jsonObject);
+
             createAccount(jsonObject);
         } else {
-            Log.e("Manager", "Manager JSONObject null.");
         }
     }
 
