@@ -41,7 +41,6 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
     @NonNull
     @SuppressLint({"SuspiciousIndentation", "SetTextI18n"})
     public View getView(final int position, View view, final ViewGroup parent) {
-
         if (view == null) view = LayoutInflater.from(mContext).inflate(layout, null);
         contactData = contactList.get(position);
         ContactCircularImageView image = view.findViewById(R.id.qrCodeUser);

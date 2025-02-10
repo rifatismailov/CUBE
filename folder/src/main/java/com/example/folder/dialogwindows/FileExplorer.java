@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
@@ -34,7 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Клас Open відповідає за відображення діалогового вікна, яке дозволяє
  * користувачеві переглядати файли та директорії, а також завантажувати файли на сервер.
  */
-public class FileExplorer implements AdapterView.OnItemClickListener {
+public class FileExplorer extends AlertDialog.Builder implements AdapterView.OnItemClickListener {
     private static final String ALGORITHM = "AES";
 
     private final Context context;
@@ -49,6 +50,7 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     private ImageButton back;
     private String fileName;
     private String senderKey;
+    private String serverUrl = "http://192.168.1.237:8020/api/files/upload";
 
     /**
      * Конструктор класу Open.
@@ -57,6 +59,7 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
      * @param senderKey
      */
     public FileExplorer(Context context, String senderKey) {
+        super(context);
         this.directory = DIR;
         this.context = context;
         this.senderKey = senderKey;
@@ -68,11 +71,11 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     /**
      * Відображення діалогового вікна.
      */
+
     private void showDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         View layout = ((Activity) context).getLayoutInflater().inflate(R.layout.dialog_open, null);
-        dialog.setView(layout);
-        alertDialog = dialog.show();
+        setView(layout);
+        alertDialog = show();
         Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         listView = layout.findViewById(R.id.OpenListView);
@@ -166,25 +169,17 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void uploadFile(File file) {
         fileName = file.getName();
-        String serverUrl = "http://192.168.1.237:8020/api/files/upload";
-
         // Виконуємо шифрування у фоновому потоці
         new Thread(() -> {
             try {
                 FileEncryption fileEncryption = new FileEncryption(context, messageId, serverUrl);
                 SecretKey secretKey = new SecretKeySpec(senderKey.getBytes(), ALGORITHM);
                 String encryptedFile = fileEncryption.getEncFile(file, secretKey);
-                Log.e("FileEncryption"," encryptedFileName "+encryptedFile);
-
                 ((Activity) context).runOnUiThread(() -> onFinish(encryptedFile));
                 // Шифруємо файл
                 fileEncryption.fileEncryption();
             } catch (Exception e) {
                 Log.e("uploadFile", "Помилка завантаження файлу", e);
-                // Повідомлення про помилку в головному потоці
-                ((Activity) context).runOnUiThread(() ->
-                        Toast.makeText(context, "Помилка завантаження файлу", Toast.LENGTH_SHORT).show()
-                );
             }
         }).start();
     }
@@ -195,7 +190,6 @@ public class FileExplorer implements AdapterView.OnItemClickListener {
      */
 
     public void onFinish(String encFile) {
-
         FileDetect fileDetect = new FileDetect();
         folder.addFile(messageId, directory + "/" + fileName, encFile, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
         alertDialog.cancel();

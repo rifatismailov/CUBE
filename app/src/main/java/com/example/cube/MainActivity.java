@@ -1,6 +1,8 @@
 package com.example.cube;
 
 
+import static com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +34,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.contact.ContactCreator;
@@ -136,6 +140,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Зберігаємо контакти у базу даних
         contactManager.setContacts(contacts, secretKey);
     }
+
+
+
 
 
     /**
@@ -959,14 +966,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     @Override
     public void setProgressShow(String positionId, int progress, String info) {
-        String body_map = avatar_map.get(positionId);
-        String[] getBody = body_map.split(":");
-        for (int position = 0; position < contactDataList.size(); position++) {
-            if (contactDataList.get(position).getId().equals(getBody[0])) {
-                contactAdapter.setProgressForPosition(position, progress);
+        try {
+            String body_map = avatar_map.get(positionId);
+            String[] getBody = body_map.split(":");
+            for (int position = 0; position < contactDataList.size(); position++) {
+                if (contactDataList.get(position).getId().equals(getBody[0])) {
+                    contactAdapter.setProgressForPosition(position, progress);
+                }
             }
+        } catch (Exception e) {
+            Log.e("MainActivity", "[ Progress ]: " + e);
+
         }
-        Log.e("MainActivity", "[" + positionId + "]: " + progress + " " + info);
+
     }
 
     /**

@@ -20,9 +20,9 @@ import java.io.File;
 
 
 public class ImageFragment extends Fragment {
-    private ChangeFragment changeFragment;
-    private UserSetting userSetting;
-    private File accountImage;
+    private final ChangeFragment changeFragment;
+    private final UserSetting userSetting;
+    private final File accountImage;
 
     public ImageFragment(ChangeFragment changeFragment, UserSetting userSetting, File accountImage) {
         this.changeFragment = changeFragment;
