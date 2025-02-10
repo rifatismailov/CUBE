@@ -22,8 +22,8 @@
     <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
         <item name="boxBackgroundMode">outline</item> <!-- Тільки рамка -->
         <item name="boxStrokeColor">@color/box_stroke_color_selector</item> <!-- Колір рамки -->
-        <item name="boxStrokeWidth">1dp</item> <!-- Ширина рамки без фокусу -->
-        <item name="boxStrokeWidthFocused">3dp</item> <!-- Ширина рамки при фокусі -->
+        <item name="boxStrokeWidth">0.5dp</item> <!-- Ширина рамки без фокусу -->
+        <item name="boxStrokeWidthFocused">1dp</item> <!-- Ширина рамки при фокусі -->
         <item name="hintTextColor">@color/cardview_dark_background
         </item> <!-- Колір тексту підказки -->
         <item name="endIconMode">clear_text</item> <!-- Кнопка очищення тексту -->

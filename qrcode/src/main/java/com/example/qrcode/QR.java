@@ -76,7 +76,6 @@ public class QR {
         idNumber = linearlayout.findViewById(R.id.idNumber);
         idNumber.setText(id);
         dialog.create();
-
     }
 
     private void scanCode() {

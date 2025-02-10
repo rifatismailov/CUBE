@@ -1,9 +1,12 @@
 package com.example.cube.contact;
 
 import org.json.JSONObject;
-
 import java.io.Serializable;
 
+/**
+ * Represents contact data with associated attributes such as keys, names, and image URLs.
+ * Supports serialization to and from JSON.
+ */
 public class ContactData implements Serializable {
     private String id;
     private String publicKey;
@@ -12,65 +15,55 @@ public class ContactData implements Serializable {
     private String senderKey;
     private String receiverKey;
     private String name;
+    private String lastName;
     private String messageSize;
     private String avatarImageUrl;
     private String accountImageUrl;
     private int size;
-    private int progress;  // Додаємо змінну для прогресу
+    private int progress;
 
-    // Конструктор
-    public ContactData() {
-
+    private ContactData(Builder builder) {
+        this.id = builder.id;
+        this.publicKey = builder.publicKey;
+        this.privateKey = builder.privateKey;
+        this.receiverPublicKey = builder.receiverPublicKey;
+        this.senderKey = builder.senderKey;
+        this.receiverKey = builder.receiverKey;
+        this.name = builder.name;
+        this.lastName = builder.lastName;
+        this.messageSize = builder.messageSize;
+        this.avatarImageUrl = builder.avatarImageUrl;
+        this.accountImageUrl = builder.accountImageUrl;
+        this.size = builder.size;
+        this.progress = builder.progress;
     }
 
-    public ContactData(String id, String publicKey, String name, String messageSize) {
+    // Default constructor
+    public ContactData() {}
+
+    public ContactData(String id, String name, String lastName, String messageSize) {
         this.id = id;
-        this.publicKey = publicKey;
         this.name = name;
+        this.lastName = lastName;
         this.messageSize = messageSize;
     }
 
+    // Getters and setters
 
-    // Геттери для доступу до полів
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPublicKey() {
         return publicKey;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    // Сеттери для можливого оновлення полів
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMessageSize() {
-        return messageSize;
-    }
-
-    public void setMessageSize(String messageSize) {
-        this.messageSize = messageSize;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String getPrivateKey() {
@@ -105,6 +98,30 @@ public class ContactData implements Serializable {
         this.receiverKey = receiverKey;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getMessageSize() {
+        return messageSize;
+    }
+
+    public void setMessageSize(String messageSize) {
+        this.messageSize = messageSize;
+    }
+
     public String getAvatarImageUrl() {
         return avatarImageUrl;
     }
@@ -120,7 +137,14 @@ public class ContactData implements Serializable {
     public void setAccountImageUrl(String accountImageUrl) {
         this.accountImageUrl = accountImageUrl;
     }
-    // Інші поля і методи
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
 
     public int getProgress() {
         return progress;
@@ -130,7 +154,10 @@ public class ContactData implements Serializable {
         this.progress = progress;
     }
 
-    // Конструктор для десеріалізації з JSONObject
+    /**
+     * Constructs a ContactData object from a JSON representation.
+     * @param jsonObject JSON object containing contact information.
+     */
     public ContactData(JSONObject jsonObject) {
         try {
             this.id = jsonObject.optString("id", "No ID");
@@ -140,15 +167,18 @@ public class ContactData implements Serializable {
             this.senderKey = jsonObject.optString("senderKey", "");
             this.receiverKey = jsonObject.optString("receiverKey", "");
             this.name = jsonObject.optString("name", "No name");
+            this.lastName = jsonObject.optString("lastName", "No lastName");
             this.avatarImageUrl = jsonObject.optString("avatarImageUrl", "");
             this.accountImageUrl = jsonObject.optString("accountImageUrl", "");
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Метод для серіалізації в JSONObject
+    /**
+     * Converts the current ContactData object to a JSON representation.
+     * @return JSONObject containing contact information.
+     */
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         try {
@@ -159,11 +189,100 @@ public class ContactData implements Serializable {
             jsonObject.put("senderKey", senderKey);
             jsonObject.put("receiverKey", receiverKey);
             jsonObject.put("name", name);
+            jsonObject.put("lastName", lastName);
             jsonObject.put("avatarImageUrl", avatarImageUrl);
             jsonObject.put("accountImageUrl", accountImageUrl);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    /**
+     * Builder class for constructing ContactData objects.
+     */
+    public static class Builder {
+        private String id;
+        private String publicKey;
+        private String privateKey;
+        private String receiverPublicKey;
+        private String senderKey;
+        private String receiverKey;
+        private String name;
+        private String lastName;
+        private String messageSize;
+        private String avatarImageUrl;
+        private String accountImageUrl;
+        private int size;
+        private int progress;
+
+        public Builder setId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setPublicKey(String publicKey) {
+            this.publicKey = publicKey;
+            return this;
+        }
+
+        public Builder setPrivateKey(String privateKey) {
+            this.privateKey = privateKey;
+            return this;
+        }
+
+        public Builder setReceiverPublicKey(String receiverPublicKey) {
+            this.receiverPublicKey = receiverPublicKey;
+            return this;
+        }
+
+        public Builder setSenderKey(String senderKey) {
+            this.senderKey = senderKey;
+            return this;
+        }
+
+        public Builder setReceiverKey(String receiverKey) {
+            this.receiverKey = receiverKey;
+            return this;
+        }
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setLastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder setMessageSize(String messageSize) {
+            this.messageSize = messageSize;
+            return this;
+        }
+
+        public Builder setAvatarImageUrl(String avatarImageUrl) {
+            this.avatarImageUrl = avatarImageUrl;
+            return this;
+        }
+
+        public Builder setAccountImageUrl(String accountImageUrl) {
+            this.accountImageUrl = accountImageUrl;
+            return this;
+        }
+
+        public Builder setSize(int size) {
+            this.size = size;
+            return this;
+        }
+
+        public Builder setProgress(int progress) {
+            this.progress = progress;
+            return this;
+        }
+
+        public ContactData build() {
+            return new ContactData(this);
+        }
     }
 }

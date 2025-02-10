@@ -87,11 +87,11 @@ public class Manager {
         try {
             // Створюємо JSONObject з контактних даних
             JSONObject jsonObject = new JSONObject(contact);
-            String name_contact = jsonObject.getString(FIELD.CONTACT_NAME.getFIELD());
-            String id_contact = jsonObject.getString(FIELD.CONTACT_ID.getFIELD());
-            String public_key_contact = jsonObject.getString(FIELD.CONTACT_PUBLIC_KEY.getFIELD());
-            // Додаємо новий контакт до списку користувачів
-            accountOps.setContact(id_contact, public_key_contact, name_contact);
+            String name_contact = jsonObject.getString(FIELD.NAME.getFIELD());
+            String lastName_contact= jsonObject.getString(FIELD.LAST_NAME.getFIELD());
+            String id_contact = jsonObject.getString(FIELD.USER_ID.getFIELD());
+             // Додаємо новий контакт до списку користувачів
+            accountOps.setContact(id_contact, name_contact,lastName_contact);
             // Оновлюємо мапу контактів
 
         } catch (Exception e) {
@@ -114,6 +114,6 @@ public class Manager {
     public interface AccountOps {
         void setAccount(String userId, String name, String lastName, String password, String imageOrgName, String imageName);
 
-        void setContact(String id_contact, String public_key_contact, String name_contact);
+        void setContact(String id_contact, String name_contact,String lastName_contact);
     }
 }

@@ -127,9 +127,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
 
     @Override
-    public void setContact(String id_contact, String public_key_contact, String name_contact) {
+    public void setContact(String id_contact, String name_contact, String lastName_contact) {
         // Додаємо новий контакт до списку користувачів
-        ContactData newUser = new ContactData(id_contact, public_key_contact, name_contact, "");
+        ContactData newUser = new ContactData(id_contact, name_contact, lastName_contact, "");
         contactDataList.add(newUser);
         // Оновлюємо мапу контактів
         contacts.put(newUser.getId(), newUser);
@@ -448,29 +448,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactData = contactDataList.get(i);
         contactData.setSize(0);
         receiverId = contactData.getId();
-        if (contactData.getPublicKey().isEmpty()) {
+        if (contactData.getPublicKey().isEmpty() || contactData.getPublicKey() == null) {
             //generate PublicKey
             try {
                 KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
                 keyGenerator.key();
                 contactData.setPublicKey(keyGenerator.getPublicKey());
                 contactData.setPrivateKey(keyGenerator.getPrivateKey());
+                // Треба додати генерацію ключа AES
+                String key = KeyGenerator.AES.generateKey(16);
+                if (key.isEmpty()) {
+                    Log.e("MainActivity", "Failed to generate AES key");
+                    return;
+                }
+                contactData.setSenderKey(key);
+
+                // відправка публічного ключа отримувачу
+                sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+                //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
+                receiverId = null;
             } catch (Exception e) {
                 Log.e("MainActivity", "Error generating RSA keys: " + e.toString());
             }
 
-            // Треба додати генерацію ключа AES
-            String key = KeyGenerator.AES.generateKey(16);
-            if (key.isEmpty()) {
-                Log.e("MainActivity", "Failed to generate AES key");
-                return;
-            }
-            contactData.setSenderKey(key);
 
-            // відправка публічного ключа отримувачу
-            sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-            //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-            receiverId = null;
             //serverConnection.setReceiverId(receiverId);
         } else {
             try {

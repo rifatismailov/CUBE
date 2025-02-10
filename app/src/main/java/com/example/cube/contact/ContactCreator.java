@@ -15,20 +15,21 @@ import android.widget.LinearLayout;
 
 
 import com.example.cube.R;
+import com.example.setting.UserSetting;
 
 import java.util.Objects;
 
 public class ContactCreator implements View.OnClickListener {
 
-    AlertDialog alertDialog;
-    Context context;
-    Activity activity;
-    CreatorOps creatorOps;
-    ImageButton qr_code_scanner;
-    LinearLayout save_contact;
-    EditText name_contact;
-    EditText id_contact;
-    EditText public_key_contact;
+    private AlertDialog alertDialog;
+    private Context context;
+    private Activity activity;
+    private CreatorOps creatorOps;
+    private ImageButton qr_code_scanner;
+    private LinearLayout save_contact;
+    private EditText id;
+    private EditText name;
+    private EditText lastName;
 
     public ContactCreator(Context context) {
         this.context = context;
@@ -46,9 +47,9 @@ public class ContactCreator implements View.OnClickListener {
         alertDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Налаштуйте розмір, якщо потрібно
         qr_code_scanner = linearlayout.findViewById(R.id.qrCode_addScan);
         save_contact = linearlayout.findViewById(R.id.save_contact);
-        name_contact = linearlayout.findViewById(R.id.name_contact);
-        id_contact = linearlayout.findViewById(R.id.id_contact);
-        public_key_contact = linearlayout.findViewById(R.id.public_key_contact);
+        name = linearlayout.findViewById(R.id.name_contact);
+        id = linearlayout.findViewById(R.id.id_contact);
+        lastName = linearlayout.findViewById(R.id.last_name_contact);
         qr_code_scanner.setOnClickListener(this);
         save_contact.setOnClickListener(this);
         // Налаштування позиції діалогу
@@ -66,18 +67,24 @@ public class ContactCreator implements View.OnClickListener {
     public void onClick(View view) {
         if (view == qr_code_scanner) {
             creatorOps.scannerQrContact();
+            alertDialog.cancel(); // Cancel dialog on the UI thread
+
         } else if (view == save_contact) {
-            creatorOps.saveContact(
-                    "{ \"name_contact\":\"" + name_contact.getText()
-                            + "\",\"id_contact\":\"" + id_contact.getText()
-                            + "\",\"public_key_contact\":\"" + public_key_contact.getText() + "\"}");
+            if (!id.getText().toString().isEmpty() && !name.getText().toString().isEmpty() && !lastName.getText().toString().isEmpty()) {
+                creatorOps.saveContact(
+                        new UserSetting.Builder()
+                                .setId(id.getText().toString())
+                                .setName(name.getText().toString())
+                                .setLastName(lastName.getText().toString())
+                                .build().toJson("userId", "name", "lastName").toString());
+                alertDialog.cancel(); // Cancel dialog on the UI thread
+
+            }
         }
-        alertDialog.cancel(); // Cancel dialog on the UI thread
     }
 
     public interface CreatorOps {
         void saveContact(String contact);
-
         void scannerQrContact();
     }
 }
