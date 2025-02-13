@@ -1,10 +1,10 @@
 package com.example.cube.log;
 
-public class Logger {
+public class NotificationLogger {
     private String clas;
     private String log;
 
-    public Logger(String clas, String log) {
+    public NotificationLogger(String clas, String log) {
         this.clas = clas;
         this.log = log;
     }

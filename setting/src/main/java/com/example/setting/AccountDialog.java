@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,26 +61,30 @@ public class AccountDialog extends DialogFragment implements ImageFragment.Chang
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
         ImageView imageView = view.findViewById(R.id.avatarImage);
+        try {
+            File avatarImage = FilePathBuilder
+                    .withDirectory(externalDir)
+                    .setFileName(userSetting.getAvatarImageUrl())
+                    .newFile();
 
+            accountImage = FilePathBuilder
+                    .withDirectory(externalDir)
+                    .setFileName(userSetting.getAccountImageUrl())
+                    .newFile();
 
-        File avatarImage = FilePathBuilder
-                .withDirectory(externalDir)
-                .setFileName(userSetting.getAvatarImageUrl())
-                .newFile();
+            if (avatarImage.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(avatarImage.getAbsolutePath());
+                imageView.setImageBitmap(bitmap);
+            } else {
+                imageView.setImageResource(R.color.blue); // Default image
+            }
 
-        accountImage = FilePathBuilder
-                .withDirectory(externalDir)
-                .setFileName(userSetting.getAccountImageUrl())
-                .newFile();
-
-        if (avatarImage.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(avatarImage.getAbsolutePath());
-            imageView.setImageBitmap(bitmap);
-        } else {
-            imageView.setImageResource(R.color.blue); // Default image
+            replaceFragment(new ImageFragment(this, userSetting, accountImage));
+        } catch (Exception e) {
+            Log.e("AccountDialog", e.toString());
         }
 
-        replaceFragment(new ImageFragment(this, userSetting, accountImage));
+
         return view;
     }
 

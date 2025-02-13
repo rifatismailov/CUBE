@@ -1,8 +1,6 @@
 package com.example.cube;
 
 
-import static com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -45,8 +42,8 @@ import com.example.cube.db.DatabaseHelper;
 import com.example.cube.db.ContactManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
-import com.example.cube.log.LogAdapter;
-import com.example.cube.log.Logger;
+import com.example.cube.log.NotificationAdapter;
+import com.example.cube.log.NotificationLogger;
 import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
@@ -102,8 +99,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Manager manager;
     private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
     private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
-    private List<Logger> logs;
-    private LogAdapter logAdapter;
+    private List<NotificationLogger> notificationLoggers;
+    private NotificationAdapter notificationAdapter;
     private SecretKey secretKey;  // AES-ключ
     private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
@@ -164,11 +161,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
 
-        logs = new ArrayList<>();
-        logAdapter = new LogAdapter(this, logs);
+        notificationLoggers = new ArrayList<>();
+        notificationAdapter = new NotificationAdapter(this, notificationLoggers);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.log.setLayoutManager(layoutManager);
-        binding.log.setAdapter(logAdapter);
+        binding.log.setAdapter(notificationAdapter);
 
         // Ініціалізація DrawerLayout і NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -267,8 +264,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void onReceive(Context context, Intent intent) {
             String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
+            String sleep = intent.getStringExtra("sleep");
+            String awake = intent.getStringExtra("awake");
+
+
             if (dataFromChat != null) {
                 receivingData(dataFromChat);
+            }
+            if (sleep != null) {
+                Log.e("MainActivity", "sleep " + sleep);
+            }
+            if (awake != null) {
+                Log.e("MainActivity", "awake " + awake);
+
             }
         }
     };
@@ -285,7 +293,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (message != null) {
                     onReceived(message);
                 }
-
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
                 if (save_message != null) {
                     saveMessage(save_message);
@@ -293,18 +300,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
                     try {
-                        String[] notificationAll=notification.split(":");
+                        String[] notificationAll = notification.split(":");
                         //saveMessage(save_message);
-                        setNotification(notificationAll[0],"");
-                    }catch (Exception e){
-                        Log.e("MainActivity", "notification: "+e);
+                        setNotification(notificationAll[0], "");
+                    } catch (Exception e) {
+                        Log.e("MainActivity", e.toString());
                     }
-
                 }
             }
         }
     };
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+        Log.e("MainActivity", "MainActivity sleep");
+
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("MainActivity", "MainActivity awake");
+    }
     /**
      * Видалення ресиверів при знищенні активності.
      */
@@ -465,67 +482,72 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactData = contactDataList.get(i);
         contactData.setSize(0);
         receiverId = contactData.getId();
-        if (contactData.getPublicKey().isEmpty() || contactData.getPublicKey() == null) {
-            //generate PublicKey
-            try {
-                KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
-                keyGenerator.key();
-                contactData.setPublicKey(keyGenerator.getPublicKey());
-                contactData.setPrivateKey(keyGenerator.getPrivateKey());
-                // Треба додати генерацію ключа AES
-                String key = KeyGenerator.AES.generateKey(16);
-                if (key.isEmpty()) {
-                    Log.e("MainActivity", "Failed to generate AES key");
-                    return;
-                }
-                contactData.setSenderKey(key);
+        try {
+            if (contactData.getPublicKey().isEmpty() || contactData.getPublicKey() == null) {
+                //generate PublicKey
+                try {
+                    KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
+                    keyGenerator.key();
+                    contactData.setPublicKey(keyGenerator.getPublicKey());
+                    contactData.setPrivateKey(keyGenerator.getPrivateKey());
+                    // Треба додати генерацію ключа AES
+                    String key = KeyGenerator.AES.generateKey(16);
+                    if (key.isEmpty()) {
+                        Log.e("MainActivity", "Failed to generate AES key");
+                        return;
+                    }
+                    contactData.setSenderKey(key);
 
-                // відправка публічного ключа отримувачу
-                sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-                //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-                receiverId = null;
-            } catch (Exception e) {
-                Log.e("MainActivity", "Error generating RSA keys: " + e.toString());
-            }
-
-
-            //serverConnection.setReceiverId(receiverId);
-        } else {
-            try {
-                if (contactData.getReceiverPublicKey() == null) {
-                    // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
-                    // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
+                    // відправка публічного ключа отримувачу
                     sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
                     //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
-                    //serverConnection.setReceiverId(receiverId);
-                } else {
-                    if (receiverId != null && !receiverId.isEmpty()) {
-                        if (!contactData.getReceiverKey().isEmpty()) {
-                            startChat(binding.getRoot().getRootView(), contactData);
-                            new Operation(this).openSaveMessage(receiverId, saveMessage);
-                            contactData.setMessageSize("");
-                            contactAdapter.notifyDataSetChanged();
-                            notifyIdReciverChanged(receiverId);
-                        }
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Error generating RSA keys: " + e.toString());
+                }
+
+
+                //serverConnection.setReceiverId(receiverId);
+            } else {
+                try {
+                    if (contactData.getReceiverPublicKey() == null) {
+                        // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
+                        // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
+                        sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+                        //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
+                        receiverId = null;
+                        //serverConnection.setReceiverId(receiverId);
                     } else {
-                        try {
-                            PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
-                            String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
-                            if (AES != null && !AES.isEmpty()) {
-                                sendHandshake(manager.userSetting().getId(), receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
-                            } else {
-                                Log.e("MainActivity", "Failed to encrypt AES key");
+                        if (receiverId != null && !receiverId.isEmpty()) {
+                            if (!contactData.getReceiverKey().isEmpty()) {
+                                startChat(binding.getRoot().getRootView(), contactData);
+                                new Operation(this).openSaveMessage(receiverId, saveMessage);
+                                contactData.setMessageSize("");
+                                contactAdapter.notifyDataSetChanged();
+                                notifyIdReciverChanged(receiverId);
                             }
-                        } catch (Exception e) {
-                            Log.e("MainActivity", "Error during AES key encryption: " + e.toString());
+                        } else {
+                            try {
+                                PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
+                                String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
+                                if (AES != null && !AES.isEmpty()) {
+                                    sendHandshake(manager.userSetting().getId(), receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                                } else {
+                                    Log.e("MainActivity", "Failed to encrypt AES key");
+                                }
+                            } catch (Exception e) {
+                                Log.e("MainActivity", "Error during AES key encryption: " + e.toString());
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    Log.e("MainActivity", e.toString());
                 }
-            } catch (Exception e) {
-                Log.e("MainActivity", e.toString());
             }
+        } catch (Exception e) {
+
         }
+
     }
 
     /**
@@ -589,9 +611,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void setNotification(String clas, String log) {
         runOnUiThread(() -> {
-            logs.add(new Logger(clas, log));
-            logAdapter.notifyItemInserted(logs.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.log.smoothScrollToPosition(logs.size() - 1); // Прокрутити до нового елемента
+            notificationLoggers.add(new NotificationLogger(clas, log));
+            // Повідомити, що новий елемент було вставлено
+            notificationAdapter.notifyItemInserted(notificationLoggers.size() - 1);
+            // Прокрутити до нового елемента
+            binding.log.smoothScrollToPosition(notificationLoggers.size() - 1);
             Log.e(clas, log);
         });
     }

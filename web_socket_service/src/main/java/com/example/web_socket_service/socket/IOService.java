@@ -257,16 +257,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
     @Override
     public void onListener(String message) {
         try {
+
             if (message != null) {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
+                returnMessageDeliver(envelope);
+
                 if (serverURL.getSenderId().equals(envelope.getSenderId()) && serverURL.getReceiverId().equals(envelope.getReceiverId())) {
                     addMessage(message);
                 } else if (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) {
                     addMessage(message);
                 } else {
-                    Log.e("IOService", "saveMessage: " + message);
-
                     saveMessage(message);
                 }
             }
@@ -275,4 +276,34 @@ public class IOService extends Service implements WebSocketClient.Listener {
             Log.e("IOService", "Not a JSON message: " + message);
         }
     }
+
+    /**
+     * Метод сповіщення сервер о отриманні повідомлення
+     *
+     * @param envelope повідомлення яке прийшло
+     *                 отримуємо такі данні для відправки сповіщення:
+     * @envelope.getSenderId() Id відправника
+     * @envelope.getReceiverId() Id отримувача тоб то нащ
+     * @envelope.getMessageId() Id повідомлення з яким воно прийшло
+     */
+    private void returnMessageDeliver(Envelope envelope) {
+        Log.e("IOService", "Message : " + envelope.toJson());
+        if (!envelope.getOperation().equals("messageStatus")) {
+
+            String message = new Envelope.Builder().
+                    setSenderId(envelope.getReceiverId()).
+                    setReceiverId(envelope.getSenderId()).
+                    setOperation("messageStatus").
+                    setMessageStatus("delivered").
+                    setMessageId(envelope.getMessageId()).
+                    build().
+                    toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                    toString();
+            sendMessage(message);
+
+            Log.e("IOService", "Message deliver: " + message);
+        }
+
+    }
 }
+

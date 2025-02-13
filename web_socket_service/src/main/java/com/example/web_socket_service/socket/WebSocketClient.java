@@ -16,14 +16,24 @@ public class WebSocketClient {
     private WebSocket webSocket;
     private String SERVER_URL;
     private String CLIENT_ID;
+    private int retryCount = 0;
+    private final int MAX_RETRY = 3;
+    private boolean isRegistered = false; // Чи отримали відповідь від сервера
+    private boolean isCheckingStatus = false; // Запобігає множинним перевіркам
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
     Listener listener;
-    public WebSocketClient(Listener listener){
-        this.listener=listener;
+
+    public WebSocketClient(Listener listener) {
+        this.listener = listener;
     }
+
     // Метод для підключення до сервера
     public void connect(String SERVER_URL, String CLIENT_ID) {
         this.SERVER_URL = SERVER_URL;
         this.CLIENT_ID = CLIENT_ID;
+
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS) // Підтримка постійного з'єднання
@@ -33,14 +43,19 @@ public class WebSocketClient {
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
-                listener.onNotification("Connected to server...:");
-                webSocket.send("REGISTER:" + CLIENT_ID);
+                listener.onNotification("Connected to server...");
+                register();
             }
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
-
-                listener.onListener(text);
+                if (text.equals("REGISTER_OK")) {
+                    Log.e("IOService", "REGISTER_OK:" + CLIENT_ID);
+                    isRegistered = true;
+                    retryCount = 0; // Скидаємо лічильник невдалих спроб
+                } else {
+                    listener.onListener(text);
+                }
             }
 
             @Override
@@ -51,7 +66,7 @@ public class WebSocketClient {
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
-                listener.onNotification( "Connection closed: " + reason);
+                listener.onNotification("Connection closed: " + reason);
                 reconnect();
             }
 
@@ -66,30 +81,77 @@ public class WebSocketClient {
         client.dispatcher().executorService().shutdown();
     }
 
+    private void register() {
+        isRegistered = false;
+        retryCount = 0;
+
+        if (isConnected()) {
+            startStatusCheck();
+        } else {
+            Log.e("IOService", "WebSocket is closed");
+        }
+    }
+
+    // ✅ Запускає перевірку статусу кожні 3 секунди (тільки один раз!)
+    private void startStatusCheck() {
+        if (isCheckingStatus) return; // Запобігає множинному виклику
+        isCheckingStatus = true;
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (webSocket != null) {
+                    if (isConnected()) {
+                        Log.d("WebSocket", "Checking registration status... Attempt: " + retryCount);
+                        webSocket.send("CHECK_STATUS:" + CLIENT_ID);
+                    }
+                    if (!isRegistered) {
+                        retryCount++;
+                        if (retryCount >= MAX_RETRY) {
+                            if (isConnected()) {
+                                Log.d("WebSocket", "Re-registering...");
+                                webSocket.send("REGISTER:" + CLIENT_ID);
+                                retryCount = 0;
+                            }
+                        }
+                    }
+                }
+                handler.postDelayed(this, 3000); // Повторюємо через 3 секунди
+            }
+        }, 3000);
+    }
+
+    // ✅ Зупиняє таймер перед перепідключенням
+    private void stopStatusCheck() {
+        isCheckingStatus = false; // Скидаємо флаг
+        handler.removeCallbacksAndMessages(null); // Видаляємо всі заплановані завдання
+    }
+
     // Метод для відправки повідомлень
     public void sendMessage(String message) {
-        /**Проблема тут я ту не отримую данні через деякий час хоча з сервера я отримую повідомлення */
-            Log.e("IOService", "Web Socket Message To Service"+message);
-            if (webSocket != null) {
-                webSocket.send(message);
-            } else {
-                Log.e("IOService", "WebSocket is not connected.");
-            }
+        Log.e("IOService", "Web Socket Message To Service: " + message);
+        if (webSocket != null) {
+            webSocket.send(message);
+        } else {
+            Log.e("IOService", "WebSocket is not connected.");
+        }
     }
 
     // Закриття з'єднання
     public void closeConnection() {
+        stopStatusCheck(); // Зупиняємо перевірку перед закриттям
         if (webSocket != null) {
             webSocket.close(1000, "Closing connection");
         }
     }
 
-
-    // Метод для перепідключення
+    // ✅ Оновлений метод перепідключення
     private void reconnect() {
+        stopStatusCheck(); // Зупиняємо старий таймер перед перепідключенням
+
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             listener.onNotification("Reconnecting...");
-            connect(SERVER_URL,CLIENT_ID); // Спроба перепідключення
+            connect(SERVER_URL, CLIENT_ID); // Спроба перепідключення
         }, 5000); // Затримка перед перепідключенням
     }
 
@@ -97,11 +159,16 @@ public class WebSocketClient {
         return webSocket != null;
     }
 
+    public boolean isClosed() {
+        return webSocket == null;
+    }
+
     /**
      * Інтерфейс для обробки подій та логів.
      */
     public interface Listener {
         void onNotification(String message);
+
         void onListener(String message);
     }
 }

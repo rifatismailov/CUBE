@@ -118,8 +118,10 @@ public class MessageManager {
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
         values.put(COLUMN_TIMESTAMP, message.getTimestamp());
+        // буває дублювання та якщо воно є просто перезаписуємо
+        database.insertWithOnConflict(TABLE_MESSAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 
-        database.insert(TABLE_MESSAGES, null, values);
+        //database.insert(TABLE_MESSAGES, null, values);
     }
 
     /**

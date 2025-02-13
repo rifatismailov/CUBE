@@ -3,12 +3,14 @@ package com.example.folder.dialogwindows;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -74,19 +76,29 @@ public class FileExplorer extends AlertDialog.Builder implements AdapterView.OnI
      */
 
     private void showDialog() {
-        View layout = ((Activity) context).getLayoutInflater().inflate(R.layout.dialog_open, null);
-        setView(layout);
-        alertDialog = show();
-        Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        try {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.dialog_open, null);
+            setView(layout);
+            alertDialog = show();
+            Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        listView = layout.findViewById(R.id.OpenListView);
-        listView.setOnItemClickListener(this);
+            listView = layout.findViewById(R.id.OpenListView);
+            listView.setOnItemClickListener(this);
 
-        back = layout.findViewById(R.id.back);
-        back.setOnClickListener(v -> navigateBack());
+            back = layout.findViewById(R.id.back);
+            back.setOnClickListener(v -> navigateBack());
 
-        displayDirectoryContents(directory);
+            displayDirectoryContents(directory);
+        } catch (Resources.NotFoundException e) {
+            Log.e("showDialog", "Resource not found: " + e.getMessage());
+            Toast.makeText(context, "Resource not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.e("showDialog", "Unexpected error: " + e.getMessage());
+            Toast.makeText(context, "Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
+
 
     /**
      * Отримання списку файлів і папок у директорії.

@@ -228,7 +228,24 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         intent.putExtra(FIELD.DATA_FROM_CHAT.getFIELD(), response);
         sendBroadcast(intent);
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+        // Надсилаємо Intent про засинання
+        Intent intent = new Intent(FIELD.REPLY_FROM_CHAT.getFIELD());
+        intent.putExtra("sleep", receiverId);
+        sendBroadcast(intent);
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Надсилаємо Intent про пробудження
+        Intent intent = new Intent(FIELD.REPLY_FROM_CHAT.getFIELD());
+        intent.putExtra("awake", receiverId);
+        sendBroadcast(intent);
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -364,22 +381,30 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         });
     }
 
+
     // Перевірка, чи знаходиться RecyclerView на останній позиції
     private boolean isRecyclerViewAtBottom() {
-        // Отримуємо поточну позицію прокручування
         LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
-        assert layoutManager != null;
+        if (layoutManager == null) return false;
+
         int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
         int totalItemCount = layoutManager.getItemCount();
-        return lastVisiblePosition == totalItemCount - 2;
+
+        return totalItemCount > 0 && lastVisiblePosition >= totalItemCount - 2;
     }
 
     private void autoScroll() {
-        adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-        if (isRecyclerViewAtBottom()) {
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
-        }
+        adapter.notifyDataSetChanged(); // Оновлює весь список
+
+        binding.recyclerView.postDelayed(() -> {
+            if (isRecyclerViewAtBottom()) {
+                binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
+            }
+        }, 100); // Додаємо затримку
     }
+
+
+
 
     @Override
     public void readMessage(Message message) {
