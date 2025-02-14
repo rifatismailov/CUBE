@@ -228,6 +228,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         intent.putExtra(FIELD.DATA_FROM_CHAT.getFIELD(), response);
         sendBroadcast(intent);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -237,6 +238,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         intent.putExtra("sleep", receiverId);
         sendBroadcast(intent);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -246,6 +248,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         intent.putExtra("awake", receiverId);
         sendBroadcast(intent);
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -403,9 +406,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         }, 100); // Додаємо затримку
     }
 
-
-
-
+    /**
+     * Метод додовання повідомлення яке прийшло від сервера
+     *
+     * @param message повідомлення яке прийшло
+     */
     @Override
     public void readMessage(Message message) {
         try {
@@ -437,7 +442,11 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         }
     }
 
-
+    /**
+     * Метод додовання повідомлення з файлом від сервера
+     *
+     * @param message повідомлення яке прийшло
+     */
     @Override
     public void readMessageFile(Message message) {
         try {
@@ -554,9 +563,4 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public String getKey(String positionId) {
         return receiverKey;
     }
-
-//    @Override
-//    public String getKey() {
-//        return senderKey;
-//    }
 }
