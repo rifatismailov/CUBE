@@ -437,6 +437,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 messages.add(message);
                 runOnUiThread(this::autoScroll);   // Оновлення UI
             }
+            new OperationMSG(this).returnAboutDeliver(message);
+
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
         }
@@ -473,6 +475,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 messages.add(message);       // Додаємо повідомлення до списку
                 runOnUiThread(this::autoScroll); // Оновлення UI
             }
+            new OperationMSG(this).returnAboutDeliver(message);
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);
         }
@@ -563,4 +566,5 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public String getKey(String positionId) {
         return receiverKey;
     }
+
 }

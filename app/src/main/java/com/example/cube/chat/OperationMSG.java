@@ -130,6 +130,37 @@ public class OperationMSG {
     }
 
     /**
+     * Метод сповіщення сервер о отриманні повідомлення
+     *
+     * @param message повідомлення яке прийшло
+     *                отримуємо такі данні для відправки сповіщення:
+     *                >    @envelope.getSenderId() Id відправника
+     *                >    @envelope.getReceiverId() Id отримувача тоб то нащ
+     *                >    @envelope.getMessageId() Id повідомлення з яким воно прийшло
+     *                Дане повідомлення відправляється тільки до Сервісу  далі він не відправляється
+     */
+    public void returnAboutDeliver(Message message) {
+
+
+        String messageJson = new Envelope.Builder().
+                setSenderId(message.getReceiverId()).
+                setReceiverId(message.getSenderId()).
+                setOperation("messageStatus").
+                setMessageStatus("delivered_to_user").
+                setMessageId(message.getMessageId()).
+                build().
+                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                toString();
+        Log.e("IOService", "Return About Deliver" + messageJson);
+
+        operableMSG.sendDataBackToActivity(messageJson);
+
+        //sendMessage(message);
+
+
+    }
+
+    /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
      */

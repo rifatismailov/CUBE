@@ -1,14 +1,13 @@
 package com.example.web_socket_service.socket;
 
-public class ServerURL {
+public class ConnectionInfo {
     private volatile String senderId;       // ІД відправника
     private volatile String receiverId;     // ІД отримувача
     private String ip;
     private String port;
-    public ServerURL(){
-
+    public ConnectionInfo(){
     }
-    public ServerURL(String senderId, String receiverId, String ip, String port) {
+    public ConnectionInfo(String senderId, String receiverId, String ip, String port) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.ip = ip;

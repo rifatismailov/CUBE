@@ -118,16 +118,16 @@ public class Envelope {
             this.senderId = jsonObject.getString("senderId");
             this.receiverId = jsonObject.getString("receiverId");
             this.operation = jsonObject.getString("operation");
-            this.message = jsonObject.getString("message");
-            this.fileUrl = jsonObject.optString("fileUrl", null);  // fileUrl може бути необов'язковим
-            this.fileHash = jsonObject.optString("fileHash", null);  // fileHash може бути необов'язковим
-            this.messageId = jsonObject.getString("messageId");  // fileHash може бути необов'язковим
-            this.messageStatus = jsonObject.optString("messageStatus", null);  // fileHash може бути необов'язковим
-
+            this.message = jsonObject.optString("message", null);
+            this.fileUrl = jsonObject.optString("fileUrl", null);
+            this.fileHash = jsonObject.optString("fileHash", null);
+            this.messageId = jsonObject.optString("messageId", null);
+            this.messageStatus = jsonObject.optString("messageStatus", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     /**
      * Серіалізує поточний об’єкт UserSetting у JSONObject.
      *
