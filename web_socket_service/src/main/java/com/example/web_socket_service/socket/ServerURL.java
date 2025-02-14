@@ -1,8 +1,8 @@
 package com.example.web_socket_service.socket;
 
 public class ServerURL {
-    private String senderId;       // ІД відправника
-    private String receiverId;     // ІД отримувача
+    private volatile String senderId;       // ІД відправника
+    private volatile String receiverId;     // ІД отримувача
     private String ip;
     private String port;
     public ServerURL(){
@@ -14,22 +14,22 @@ public class ServerURL {
         this.ip = ip;
         this.port = port;
     }
-    public void setReciverId(String receiverId) {
+    public synchronized void setReciverId(String receiverId) {
         this.receiverId = receiverId;
     }
-    public String getReceiverId() {
+    public synchronized String getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(String receiverId) {
+    public synchronized void setReceiverId(String receiverId) {
         this.receiverId = receiverId;
     }
 
-    public String getSenderId() {
+    public synchronized String getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(String senderId) {
+    public synchronized void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 

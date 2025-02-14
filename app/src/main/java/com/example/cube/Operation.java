@@ -117,6 +117,12 @@ public class Operation {
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             if (operation.equals(FIELD.MESSAGE.getFIELD())||operation.equals(FIELD.FILE.getFIELD())) {
+                Envelope saveEnvelope = saveMessage.get(numMessage);
+                if (saveEnvelope != null) {
+                    System.out.println("Повідомлення: " + envelope.getMessage());
+                } else {
+                    System.out.println("Об'єкт не знайдено");
+                }
                 saveMessage.put(numMessage, envelope);
                 numMessage++;
                 for (ContactData user : userList) {

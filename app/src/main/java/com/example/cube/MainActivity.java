@@ -786,13 +786,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void addHandshake(Envelope envelope) {
         try {
+
             String sender = envelope.getSenderId();
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             JSONObject jsonObject = new JSONObject(receivedMessage);
             String publicKey = jsonObject.getString(FIELD.PUBLIC_KEY.getFIELD());
+
             if (!publicKey.isEmpty() || !publicKey.equals(publicKey)) {
+                Log.e("MainActivity", sender+" Handshake RSA: " + publicKey);
+
                 updateReceiverPublicKey(sender, publicKey);
                 PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
+                Log.e("MainActivity", sender+" Handshake receiverPublicKey: " + receiverPublicKey);
+
                 String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
                 sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
             }
@@ -826,6 +832,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param publicKey ключ відправника.
      */
     private void updateReceiverPublicKey(String sender, String publicKey) {
+        Log.e("MainActivity", sender+" update Receiver Public Key: " + publicKey);
+
         for (ContactData user : contactDataList) {
             if (user.getId().equals(sender)) {
                 user.setReceiverPublicKey(publicKey);

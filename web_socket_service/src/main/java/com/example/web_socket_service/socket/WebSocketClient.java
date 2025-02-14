@@ -50,7 +50,7 @@ public class WebSocketClient {
             @Override
             public void onMessage(WebSocket webSocket, String text) {
                 if (text.equals("REGISTER_OK")) {
-                    Log.e("IOService", "REGISTER_OK:" + CLIENT_ID);
+                    // Log.e("IOService", "REGISTER_OK:" + CLIENT_ID);
                     isRegistered = true;
                     retryCount = 0; // Скидаємо лічильник невдалих спроб
                 } else {

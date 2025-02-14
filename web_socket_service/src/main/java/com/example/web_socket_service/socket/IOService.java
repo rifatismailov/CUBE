@@ -38,7 +38,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private String channelName = "Cube_WebSocket Service";
     private final int notificationId = 1;
     private WebSocketClient webSocketClient;
-    private ServerURL serverURL;
+    private final ServerURL serverURL = new ServerURL();
     private BroadcastReceiver receiver;
     private String senderId;
     private String receiverId;
@@ -61,12 +61,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     case "CUBE_ID_SENDER":
                         senderId = intent.getStringExtra("senderId");
                         Log.e("IOService", "CUBE_ID_SENDER " + senderId);
-                        serverURL.setSenderId(senderId);
+                        synchronized (serverURL) {
+                            serverURL.setSenderId(senderId);// Оновлюємо лише значення
+                        }
                         break;
                     case "CUBE_ID_RECIVER":
                         receiverId = intent.getStringExtra("receiverId");
                         Log.e("IOService", "CUBE_ID_RECIVER " + receiverId);
-                        serverURL.setReciverId(receiverId);
+                        synchronized (serverURL) {
+                            serverURL.setReciverId(receiverId); // Оновлюємо лише значення
+                        }
+                        Log.e("IOService", "Updated server URL: " + serverURL.getServerAddress());
                         break;
                     case "CUBE_SEND_TO_SERVER":
                         message = intent.getStringExtra("message");
@@ -76,12 +81,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     case "CUBE_IP_TO_SERVER":
                         ip = intent.getStringExtra("ip");
                         Log.e("IOService", "CUBE_IP_TO_SERVER " + ip);
-                        serverURL.setIp(ip);
+                        synchronized (serverURL) {
+                            serverURL.setIp(ip);// Оновлюємо лише значення
+                        }
+
                         break;
                     case "CUBE_PORT_TO_SERVER":
                         port = intent.getStringExtra("port");
                         Log.e("IOService", "CUBE_PORT_TO_SERVER " + port);
-                        serverURL.setPort(port);
+                        synchronized (serverURL) {
+                            serverURL.setPort(port);// Оновлюємо лише значення
+                        }
                         break;
                 }
             }
@@ -184,7 +194,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             senderId = intent.getStringExtra("CUBE_ID_SENDER");
             ip = intent.getStringExtra("CUBE_IP_TO_SERVER");
             port = intent.getStringExtra("CUBE_PORT_TO_SERVER");
-            serverURL = new ServerURL();
+            // serverURL = new ServerURL();
             serverURL.setSenderId(senderId);
             serverURL.setIp(ip);
             serverURL.setPort(port);
@@ -262,13 +272,19 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
                 returnMessageDeliver(envelope);
+                synchronized (serverURL) {
+                    if (serverURL.getSenderId().equals(envelope.getSenderId()) &&
+                            serverURL.getReceiverId().equals(envelope.getReceiverId())) {
+                        addMessage(message);
+                    } else if (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) {
+                        Log.e("IOService", "ID : " + (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) + " " + envelope.getSenderId());
 
-                if (serverURL.getSenderId().equals(envelope.getSenderId()) && serverURL.getReceiverId().equals(envelope.getReceiverId())) {
-                    addMessage(message);
-                } else if (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) {
-                    addMessage(message);
-                } else {
-                    saveMessage(message);
+                        addMessage(message);
+                    } else {
+                        Log.e("IOService", "ID : " + (serverURL.getReceiverId() != null && serverURL.getReceiverId().equals(envelope.getSenderId())) + " " + envelope.getSenderId());
+
+                        saveMessage(message);
+                    }
                 }
             }
         } catch (JSONException e) {
@@ -282,9 +298,9 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *
      * @param envelope повідомлення яке прийшло
      *                 отримуємо такі данні для відправки сповіщення:
-     * @envelope.getSenderId() Id відправника
-     * @envelope.getReceiverId() Id отримувача тоб то нащ
-     * @envelope.getMessageId() Id повідомлення з яким воно прийшло
+     *                 >    @envelope.getSenderId() Id відправника
+     *                 >    @envelope.getReceiverId() Id отримувача тоб то нащ
+     *                 >    @envelope.getMessageId() Id повідомлення з яким воно прийшло
      */
     private void returnMessageDeliver(Envelope envelope) {
         Log.e("IOService", "Message : " + envelope.toJson());
@@ -300,8 +316,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
                     toString();
             sendMessage(message);
-
-            Log.e("IOService", "Message deliver: " + message);
         }
 
     }
