@@ -8,6 +8,8 @@ import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Клас, що представляє повідомлення, яке містить текст, зображення та інші метадані.
@@ -386,5 +388,39 @@ public class Message implements Serializable {
 
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    // Метод для генерації хешу без часу
+    public String getHash_m() throws NoSuchAlgorithmException {
+        // Використовуємо лише відправника, отримувача і вміст повідомлення
+        String input = messageId + message + senderId + receiverId;
+
+        // Створюємо хеш за допомогою SHA-256
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(input.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashBytes) {
+            hexString.append(String.format("%02x", b));
+        }
+
+        return hexString.toString();
+    }
+
+    // Метод для генерації хешу без часу
+    public String getHash_f() throws NoSuchAlgorithmException {
+        // Використовуємо лише відправника, отримувача і вміст повідомлення
+        String input = messageId + message + senderId + receiverId + selectedUrl;
+
+        // Створюємо хеш за допомогою SHA-256
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(input.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashBytes) {
+            hexString.append(String.format("%02x", b));
+        }
+
+        return hexString.toString();
     }
 }

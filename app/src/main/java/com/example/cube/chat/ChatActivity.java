@@ -413,9 +413,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    manager.updateMessage(message); // Оновлюємо повідомлення
-                    adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
-                    messageExists = true;          // Повідомлення існує
+                    // Перевірка хешу повідомлення на дублювання
+                    if (currentMessage.getHash_m().equals(message.getHash_m())) {
+                        return; // Повідомлення дубльоване, виходимо з методу
+                    }
+                    // Оновлення існуючого повідомлення
+                    manager.updateMessage(message);
+                    adapter.notifyItemChanged(i);
+                    messageExists = true;
                     break;
                 }
             }
@@ -425,13 +430,13 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setTimestamp(getTime());
                 manager.addMessage(message);       // Додаємо нове повідомлення
                 messages.add(message);
-
-                runOnUiThread(this::autoScroll);
+                runOnUiThread(this::autoScroll);   // Оновлення UI
             }
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
         }
     }
+
 
     @Override
     public void readMessageFile(Message message) {
@@ -440,9 +445,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    manager.updateMessage(message); // Оновлюємо повідомлення
-                    adapter.notifyItemChanged(i);   // Оновлюємо елемент в адаптері
-                    messageExists = true;          // Повідомлення існує
+                    // Перевірка хешу повідомлення на дублювання
+                    if (currentMessage.getHash_f().equals(message.getHash_f())) {
+                        return; // Повідомлення дубльоване, виходимо з методу
+                    }
+                    // Оновлення існуючого повідомлення
+                    manager.updateMessage(message);
+                    adapter.notifyItemChanged(i);
+                    messageExists = true;
                     break;
                 }
             }
@@ -450,14 +460,15 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
                 message.setTimestamp(getTime());
-                manager.addMessage(message);       // Додаємо нове повідомлення
-                messages.add(message);
-                runOnUiThread(this::autoScroll);
+                manager.addMessage(message); // Додаємо нове повідомлення
+                messages.add(message);       // Додаємо повідомлення до списку
+                runOnUiThread(this::autoScroll); // Оновлення UI
             }
         } catch (Exception e) {
-            Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом :" + e);
+            Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);
         }
     }
+
 
     @Override
     public void addReceiverPublicKey(String rPublicKey) throws Exception {

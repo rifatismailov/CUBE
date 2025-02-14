@@ -56,12 +56,12 @@ public class ReceiverMessageHandler {
     private void updateMessageNotifier(ReceiverViewHolder viewHolder, Message message) {
         viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
         if ("server".equals(message.getMessageStatus())) {
-            List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
+            List<String> hashes = Arrays.asList("abcdef123456");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);
             //  viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
         } else {
-            List<String> hashes = Arrays.asList("abcdef123456", "123456abcdef");
+            List<String> hashes = Arrays.asList("abcdef123456");
 
             viewHolder.binding.messageNotifier.setHashes(hashes);
             //   viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
