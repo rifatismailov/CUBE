@@ -13,6 +13,12 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+/**
+ * MessageMainManager - клас для управління операціями над повідомленнями в базі даних SQLite.
+ * Використовується під час отримання повідомлень коли користувач не виконує чат з контактам тоб то
+ * активного месенджуваня нема з контактом від якого прийшло повідомлення
+ * Цей клас надає методи для додавання, оновлення, видалення та отримання повідомлень з бази даних.
+ */
 public class MessageMainManager {
     private SQLiteDatabase database;
 
@@ -26,21 +32,20 @@ public class MessageMainManager {
 
 
     /**
-     * Constructor to initialize MessageMainManager with an SQLiteDatabase instance.
+     * Конструктор для ініціалізації MessageMainManager екземпляром SQLiteDatabase.
      *
-     * @param database The database instance to manage contacts.
+     * База даних @param Екземпляр бази даних для керування контактами.
      */
     public MessageMainManager(SQLiteDatabase database) {
         this.database = database;
     }
 
     /**
-     * @param envelope
+     * Метод для зберігання повідомлень
+     * @param envelope саме повідомлення
      */
     public void setMessage(Envelope envelope,String time) {
         try {
-            Log.e("setMessage", "Attempting to insert message: " + envelope.toJson().toString());
-
             ContentValues values = new ContentValues();
             values.put(COLUMN_ID, envelope.getMessageId());
             values.put(COLUMN_SENDER, envelope.getSenderId());
@@ -48,20 +53,23 @@ public class MessageMainManager {
             values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
             values.put(COLUMN_TIMESTAMP, time);
             long result = database.insertWithOnConflict(TABLE_MESSAGES_MAIN, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-            Log.e("setMessage", "Insert result: " + result);
+            Log.e("MessageMainManager", "Insert result: " + result);
 
         } catch (Exception e) {
-            Log.e("setMessage", "Error inserting message: " + e.getMessage());
+            Log.e("MessageMainManager", "Error inserting message: " + e.getMessage());
         }
     }
 
-
+    /**
+     * Метод для отримання кількості повідомлень за контактом
+     * @param senderId відправник
+     * @param operation операція за яким прийшло повідомлення
+     *                  підрахунок робимо коли повідомлення має operation message або file
+     */
     public int getMessageCountBySenderAndOperation(String senderId, String operation) {
         int count = 0;
         Cursor cursor = null;
         try {
-            Log.e("getMessageCount", "Querying for senderId: " + senderId + " and operation: " + operation);
-
             String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES_MAIN +
                     " WHERE " + COLUMN_SENDER + " = ? AND " + COLUMN_OPERATION + " = ?";
             cursor = database.rawQuery(query, new String[]{senderId, operation});
@@ -69,9 +77,9 @@ public class MessageMainManager {
             if (cursor.moveToFirst()) {
                 count = cursor.getInt(0);
             }
-            Log.e("getMessageCount", "Count result: " + count);
+            Log.e("MessageMainManager", "Count result: " + count);
         } catch (Exception e) {
-            Log.e("getMessageCount", "Error counting messages: " + e.getMessage());
+            Log.e("MessageMainManager", "Error counting messages: " + e.getMessage());
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -80,31 +88,11 @@ public class MessageMainManager {
         return count;
     }
 
-
-
-    public int getMessageCountBySenderId(String senderId) {
-        int count = 0;
-        Cursor cursor = null;
-        try {
-            String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES_MAIN + " WHERE " + COLUMN_SENDER + " = ?";
-            cursor = database.rawQuery(query, new String[]{senderId});
-
-            if (cursor.moveToFirst()) {
-                count = cursor.getInt(0); // Отримуємо значення першого (і єдиного) стовпця
-            }
-            Log.e("getMessageCount", "Count result: " + count);
-
-        } catch (Exception e) {
-            Log.e("getMessageCount", "Error counting messages: " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        return count;
-    }
-
-
+    /**
+     * Метод для отримання повідомлень за контактом
+     * @param senderId відправник
+     *                 повідомлення отримується від старшого до молодшого
+     */
     public HashMap<String, Envelope> getMessagesByReceiverId(String senderId) {
         HashMap<String, Envelope> messages = new LinkedHashMap<>(); // Використовуємо LinkedHashMap для збереження порядку
         Cursor cursor = null;
@@ -123,12 +111,12 @@ public class MessageMainManager {
                         Envelope envelope = new Envelope(jsonObject);
                         messages.put(messageId, envelope);
                     } catch (Exception e) {
-                        Log.e("getMessagesByReceiverId", "Error parsing message: " + e.getMessage());
+                        Log.e("MessageMainManager", "Error parsing message: " + e.getMessage());
                     }
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            Log.e("getMessagesByReceiverId", "Error executing query: " + e.getMessage());
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -137,14 +125,17 @@ public class MessageMainManager {
         return messages;
     }
 
+    /**
+     * Метод для видалення повідомлень
+     * @param messageId ідентифікаційним номер повідомлення який буде видалений
+     *
+     */
     public void deleteMessageById(String messageId) {
         try {
-            Log.e("IOService", "Deleted message of DB: " + messageId);
-
             int deletedRows = database.delete(TABLE_MESSAGES_MAIN, COLUMN_ID + " = ?", new String[]{messageId});
-            Log.e("IOService", "Deleted rows: " + deletedRows);
+            Log.e("MessageMainManager", "Deleted rows: " + deletedRows);
         } catch (Exception e) {
-            Log.e("IOService", "Error deleting message: " + e.getMessage());
+            Log.e("MessageMainManager", "Error deleting message: " + e.getMessage());
         }
     }
 

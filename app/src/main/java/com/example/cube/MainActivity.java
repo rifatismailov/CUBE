@@ -106,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private SecretKey secretKey;  // AES-ключ
     private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
-    private int numMessage = 0;  // Лічильник повідомлень
     private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
