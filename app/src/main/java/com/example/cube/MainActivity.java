@@ -40,6 +40,7 @@ import com.example.cube.contact.ContactData;
 import com.example.cube.databinding.ActivityMainBinding;
 import com.example.cube.db.DatabaseHelper;
 import com.example.cube.db.ContactManager;
+import com.example.cube.db.MessageMainManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.log.NotificationAdapter;
@@ -97,12 +98,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ContactData contactData;           // Об'єкт користувача
     private ContactManager contactManager;
     private Manager manager;
+    private MessageMainManager messageManager;
     private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
     private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
     private List<NotificationLogger> notificationLoggers;
     private NotificationAdapter notificationAdapter;
     private SecretKey secretKey;  // AES-ключ
-    private final HashMap<Integer, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
+    private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
     private int numMessage = 0;  // Лічильник повідомлень
     private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
@@ -190,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         manager = new Manager(this, db, secretKey);
+        messageManager = new MessageMainManager(db);
         manager.readAccount();
         contactManager = new ContactManager(db);
         registerChatActivityReceiver();
@@ -224,6 +227,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactDataList.clear();
         contacts = contactManager.getContacts(secretKey);
         for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+            int messageCount = messageManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.MESSAGE.getFIELD()) +
+                    messageManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.FILE.getFIELD());
+
+            if (messageCount == 0) {
+                entry.getValue().setMessageSize("");  // Оновлюємо messageSize
+            } else {
+                entry.getValue().setMessageSize("" + messageCount);
+                Log.e("Operation", "Count Save Message: " + messageCount);
+            }
             contactDataList.add(entry.getValue());
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
@@ -277,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             switch (status) {
                 case "delivered_to_user":
                     sendMessageToService(message);
+                    messageManager.deleteMessageById(envelope.getMessageId());
                     Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus()+" ID message "+envelope.getMessageId());
                     break;
                 case "update_to_user":
@@ -578,7 +591,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         if (receiverId != null && !receiverId.isEmpty()) {
                             if (!contactData.getReceiverKey().isEmpty()) {
                                 startChat(binding.getRoot().getRootView(), contactData);
-                                new Operation(this).openSaveMessage(receiverId, saveMessage);
+                                new Operation(this,messageManager).openSaveMessage(receiverId);
                                 contactData.setMessageSize("");
                                 contactAdapter.notifyDataSetChanged();
                                 notifyIdReciverChanged(receiverId);
@@ -634,7 +647,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param message Текст повідомлення.
      */
     public void onReceived(String message) {
-        new Operation(this).onReceived(message);
+        new Operation(this,messageManager).onReceived(message);
     }
 
     /**
@@ -659,7 +672,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
             runOnUiThread(() -> {
-                numMessage = new Operation(this).saveMessage(envelope, saveMessage, numMessage, contactDataList);
+                new Operation(this,messageManager).saveMessage(envelope, saveMessage, contactDataList);
             });
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);

@@ -8,9 +8,11 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "cube.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public static final String TABLE_MESSAGES = "messages";
+    public static final String TABLE_MESSAGES_MAIN = "messages_main";
+    public static final String TABLE_MESSAGES_SERVICE = "messages_service";
     public static final String TABLE_CONTACTS = "contacts";
     public static final String TABLE_ACCOUNT = "account";
 
@@ -34,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TYPE_FILE = "type_file";
     private static final String COLUMN_FILE_HASH = "hash";
     private static final String COLUMN_DATE_CREATE = "data_create";
+    public static final String COLUMN_OPERATION = "operation";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -74,6 +77,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_ENCRYPTED_DATA + " TEXT)";
             db.execSQL(CREATE_CONTACTS_TABLE);
             Log.e("DatabaseHelper", "Table contacts created.");
+
+            String CREATE_MESSAGES_MAIN_TABLE = "CREATE TABLE " + TABLE_MESSAGES_MAIN + " (" +
+                    COLUMN_ID + " TEXT PRIMARY KEY, " +
+                    COLUMN_SENDER + " TEXT, " +
+                    COLUMN_OPERATION + " TEXT, " +
+                    COLUMN_ENCRYPTED_DATA + " TEXT," +
+                    COLUMN_TIMESTAMP + " TEXT)";
+            db.execSQL(CREATE_MESSAGES_MAIN_TABLE);
+            Log.e("DatabaseHelper", "Table Message main created.");
+
+            String CREATE_MESSAGES_SERVICE_TABLE = "CREATE TABLE " + TABLE_MESSAGES_SERVICE + " (" +
+                    COLUMN_ID + " TEXT PRIMARY KEY, " +
+                    COLUMN_SENDER + " TEXT, " +
+                    COLUMN_OPERATION + " TEXT, " +
+                    COLUMN_ENCRYPTED_DATA + " TEXT," +
+                    COLUMN_TIMESTAMP + " TEXT)";
+            db.execSQL(CREATE_MESSAGES_SERVICE_TABLE);
+            Log.e("DatabaseHelper", "Table Message service created.");
         } catch (Exception e) {
             Log.e("DatabaseHelper", "Error creating tables", e);
         }
@@ -84,6 +105,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACCOUNT);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES_MAIN);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES_SERVICE);
         onCreate(db);
     }
 }
