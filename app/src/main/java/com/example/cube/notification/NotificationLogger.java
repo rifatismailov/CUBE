@@ -1,4 +1,4 @@
-package com.example.cube.log;
+package com.example.cube.notification;
 
 public class NotificationLogger {
     private String clas;

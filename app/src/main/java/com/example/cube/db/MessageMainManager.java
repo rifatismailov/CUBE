@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 public class MessageMainManager {
     private SQLiteDatabase database;
 
-    // Table and column definitions
     public static final String TABLE_MESSAGES_MAIN = "messages_main";
     private static final String COLUMN_ID = "id";
     public static final String COLUMN_SENDER = "sender";

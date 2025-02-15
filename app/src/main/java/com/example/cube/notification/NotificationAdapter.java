@@ -1,4 +1,4 @@
-package com.example.cube.log;
+package com.example.cube.notification;
 
 import android.content.Context;
 import android.view.LayoutInflater;
