@@ -81,7 +81,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             // Встановлюємо видимість полів
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
-            //viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
+            viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
 
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
@@ -93,7 +93,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             // Встановлюємо видимість полів
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
-            //viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
+            viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
         }
     }
 
