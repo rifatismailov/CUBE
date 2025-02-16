@@ -116,9 +116,9 @@ public class WebSocketClient {
                         }
                     }
                 }
-                handler.postDelayed(this, 3000); // Повторюємо через 3 секунди
+                handler.postDelayed(this, 5000); // Повторюємо через 3 секунди
             }
-        }, 3000);
+        }, 5000);
     }
 
     // ✅ Зупиняє таймер перед перепідключенням

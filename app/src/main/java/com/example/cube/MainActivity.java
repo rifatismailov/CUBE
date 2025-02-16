@@ -73,7 +73,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             if (awake != null) {
                 Log.e("MainActivity", "awake " + awake);
-
+               // notifyIdReciverChanged(awake);
             }
         }
     };
@@ -872,7 +874,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
         String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
-        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "").toJson().toString());
+        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "",getTime()).toJson().toString());
     }
 
     /**
@@ -1105,7 +1107,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR_ORG.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(),getTime()).toJson().toString());
                     } else {
                         String rMessage = Encryption.AES.encrypt("avatar", user.getSenderKey());
                         String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
@@ -1113,7 +1115,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(),getTime()).toJson().toString());
                     }
                     break;
                 }
@@ -1127,7 +1129,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void addFile(String messageId, String url, String encFile, String has) {
 
     }
-
+    private String getTime() {
+        Date currentDate = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+        return formatter.format(currentDate);
+    }
     /**
      * Метод за допомогою якого ми оновлюємо зображення аватару контактів
      *

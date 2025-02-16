@@ -14,6 +14,7 @@ public class Envelope {
     private String fileUrl;        // Посилання на файл (може бути null)
     private String fileHash;       // Хеш-сума файла (може бути null)
     private String messageStatus;
+    private String timestamp;       // Час відправлення повідомлення
 
     // Конструктор для текстового повідомлення
     public Envelope(String senderId, String receiverId, String operation, String message, String messageId) {
@@ -24,6 +25,17 @@ public class Envelope {
         this.fileUrl = null;
         this.fileHash = null;
         this.messageId = messageId;
+    }
+
+    public Envelope(String senderId, String receiverId, String operation, String message, String messageId, String timestamp) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.operation = operation;
+        this.message = message;
+        this.fileUrl = null;
+        this.fileHash = null;
+        this.messageId = messageId;
+        this.timestamp = timestamp;
     }
 
     // Конструктор для повідомлення з файлом
@@ -37,15 +49,26 @@ public class Envelope {
         this.messageId = messageId;
     }
 
-    // Конструктор для відправки лише файлу
-    public Envelope(String senderId, String receiverId, String operation, String fileUrl, String fileHash, String messageId) {
+    public Envelope(String senderId, String receiverId, String operation, String message, String fileUrl, String fileHash, String messageId, String timestamp) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.operation = operation;
-        this.message = null;
+        this.message = message;
         this.fileUrl = fileUrl;
         this.fileHash = fileHash;
+        this.messageId = messageId;
+        this.timestamp = timestamp;
     }
+
+    // Конструктор для відправки лише файлу
+//    public Envelope(String senderId, String receiverId, String operation, String fileUrl, String fileHash, String messageId) {
+//        this.senderId = senderId;
+//        this.receiverId = receiverId;
+//        this.operation = operation;
+//        this.message = null;
+//        this.fileUrl = fileUrl;
+//        this.fileHash = fileHash;
+//    }
 
     // Приватний конструктор для білдера
     private Envelope(Builder builder) {
@@ -57,6 +80,7 @@ public class Envelope {
         this.fileHash = builder.fileHash;
         this.messageId = builder.messageId;
         this.messageStatus = builder.messageStatus;
+        this.timestamp = builder.timestamp;
     }
 
     // Builder клас для Envelope
@@ -69,6 +93,7 @@ public class Envelope {
         private String fileUrl;
         private String fileHash;
         private String messageStatus;
+        public String timestamp;
 
         public Builder setSenderId(String senderId) {
             this.senderId = senderId;
@@ -110,6 +135,11 @@ public class Envelope {
             return this;
         }
 
+        public Builder setTime(String timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
         public Envelope build() {
             return new Envelope(this);
         }
@@ -126,6 +156,8 @@ public class Envelope {
             this.fileHash = jsonObject.optString("fileHash", null);
             this.messageId = jsonObject.optString("messageId", null);
             this.messageStatus = jsonObject.optString("messageStatus", null);
+            this.timestamp = jsonObject.optString("timestamp", null);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,6 +198,9 @@ public class Envelope {
                     case "messageStatus":
                         jsonObject.put("messageStatus", messageStatus);
                         break;
+                    case "timestamp":
+                        jsonObject.put("messageStatus", timestamp);
+                        break;
                     default:
                         break;
                 }
@@ -188,6 +223,7 @@ public class Envelope {
             jsonObject.put("fileHash", fileHash);
             jsonObject.put("messageId", messageId);
             jsonObject.put("messageStatus", messageStatus);
+            jsonObject.put("timestamp", timestamp);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,6 +267,14 @@ public class Envelope {
 
     public String getMessageStatus() {
         return messageStatus;
+    }
+
+    public String getTime() {
+        return timestamp;
+    }
+
+    public void setTime(String timestamp) {
+        this.timestamp = timestamp;
     }
 
     public void setMessageStatus(String messageStatus) {

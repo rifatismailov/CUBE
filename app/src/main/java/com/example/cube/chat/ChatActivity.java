@@ -448,6 +448,40 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
      *
      * @param message повідомлення яке прийшло
      */
+
+//    @Override
+//    public void readMessage(Message message) {
+//        try {
+//            boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
+//            for (int i = 0; i < messages.size(); i++) {
+//                Message currentMessage = messages.get(i);
+//                if (message.getMessageId().equals(currentMessage.getMessageId())) {
+//                    // Перевірка хешу повідомлення на дублювання
+//                    if (currentMessage.getHash_m().equals(message.getHash_m())) {
+//                        return; // Повідомлення дубльоване, виходимо з методу
+//                    }
+//                    // Оновлення існуючого повідомлення
+//                    manager.updateMessage(message);
+//                    adapter.notifyItemChanged(i);
+//                    messageExists = true;
+//                    break;
+//                }
+//            }
+//            if (!messageExists) { // Якщо повідомлення не знайдено
+//                message.setSenderId(senderId);
+//                message.setReceiverId(receiverId);
+//                message.setTimestamp(getTime());
+//                manager.addMessage(message);       // Додаємо нове повідомлення
+//                messages.add(message);
+//                runOnUiThread(this::autoScroll);   // Оновлення UI
+//            }
+//            new OperationMSG(this).returnAboutDeliver(message);
+//
+//        } catch (Exception e) {
+//            Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
+//        }
+//    }
+
     @Override
     public void readMessage(Message message) {
         try {
@@ -463,7 +497,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     }
                     // Оновлення існуючого повідомлення
                     manager.updateMessage(message);
-                    newList.set(i, message); // Оновлюємо список
+                    adapter.notifyItemChanged(i);
                     messageExists = true;
                     break;
                 }
@@ -475,16 +509,17 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setTimestamp(getTime());
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
+                // Оновлення списку за допомогою DiffUtil
+                DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+                messages.clear();
+                messages.addAll(newList);
+                runOnUiThread(() -> {
+                    diffResult.dispatchUpdatesTo(adapter);
+                    autoScroll(); // Автоскрол після оновлення
+                });
             }
 
-            // Оновлення списку за допомогою DiffUtil
-            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
-            messages.clear();
-            messages.addAll(newList);
-            runOnUiThread(() -> {
-                diffResult.dispatchUpdatesTo(adapter);
-                autoScroll(); // Автоскрол після оновлення
-            });
+
 
             new OperationMSG(this).returnAboutDeliver(message);
 
@@ -514,7 +549,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     }
                     // Оновлення існуючого повідомлення
                     manager.updateMessage(message);
-                    newList.set(i, message); // Оновлюємо список
+                    adapter.notifyItemChanged(i); // Оновлюємо список
                     messageExists = true;
                     break;
                 }
@@ -526,16 +561,17 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setTimestamp(getTime());
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
+                // Оновлення списку за допомогою DiffUtil
+                DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+                messages.clear();
+                messages.addAll(newList);
+                runOnUiThread(() -> {
+                    diffResult.dispatchUpdatesTo(adapter);
+                    autoScroll(); // Автоскрол після оновлення
+                });
             }
 
-            // Оновлення списку за допомогою DiffUtil
-            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
-            messages.clear();
-            messages.addAll(newList);
-            runOnUiThread(() -> {
-                diffResult.dispatchUpdatesTo(adapter);
-                autoScroll(); // Автоскрол після оновлення
-            });
+
 
             new OperationMSG(this).returnAboutDeliver(message);
 

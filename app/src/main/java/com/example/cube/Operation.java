@@ -151,7 +151,7 @@ public class Operation {
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             if (operation.equals(FIELD.MESSAGE.getFIELD()) || operation.equals(FIELD.FILE.getFIELD())) {
                 saveMessage.put(envelope.getMessageId(), envelope);
-                messageManager.setMessage(envelope,getTime());
+                messageManager.setMessage(envelope,envelope.getTime());
                 for (ContactData user : userList) {
                     // Оновлюємо кількість повідомлень для користувача
                     if (user.getId().equals(envelope.getSenderId())) {
@@ -182,7 +182,7 @@ public class Operation {
 //                String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
 //                String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
                 saveMessage.put(envelope.getMessageId(), envelope);
-                messageManager.setMessage(envelope,getTime());
+                messageManager.setMessage(envelope,envelope.getTime());
 
             } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
                 // Обробка статусних повідомлень
@@ -261,11 +261,6 @@ public class Operation {
         return numMessage;
     }
 
-    private String getTime() {
-        Date currentDate = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
-        return formatter.format(currentDate);
-    }
     /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.

@@ -14,6 +14,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class OperationMSG {
     OperableMSG operableMSG;
@@ -96,7 +98,7 @@ public class OperationMSG {
     public void onSend(String senderId, String receiverId, String message, String messageId, String receiverKey) {
         try {
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
-            Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId);
+            Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId,getTime());
             //реалізація шифрування повідомлення
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
@@ -122,7 +124,7 @@ public class OperationMSG {
 //            }
             //після шифрування нам не відомо який формат файлу
             operation = FIELD.FILE.getFIELD();
-            Envelope envelope = new Envelope(senderId, receiverId, operation, rMessage, rURL, rHAS, messageId);
+            Envelope envelope = new Envelope(senderId, receiverId, operation, rMessage, rURL, rHAS, messageId,getTime());
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
 
@@ -159,7 +161,11 @@ public class OperationMSG {
 
 
     }
-
+    private String getTime() {
+        Date currentDate = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+        return formatter.format(currentDate);
+    }
     /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
      * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.

@@ -29,7 +29,7 @@ public class MessageServiceManager {
 
     /**
      * Конструктор для ініціалізації MessageMainManager екземпляром SQLiteDatabase.
-     *
+     * <p>
      * База даних @param Екземпляр бази даних для керування контактами.
      */
     public MessageServiceManager(SQLiteDatabase database) {
@@ -38,16 +38,38 @@ public class MessageServiceManager {
 
     /**
      * Метод для зберігання повідомлень
+     *
      * @param envelope саме повідомлення
      */
-    public void setMessage(Envelope envelope,String time) {
+    public void setMessage(Envelope envelope) {
         try {
             ContentValues values = new ContentValues();
             values.put(COLUMN_ID, envelope.getMessageId());
             values.put(COLUMN_SENDER, envelope.getSenderId());
             values.put(COLUMN_OPERATION, envelope.getOperation());
             values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
-            values.put(COLUMN_TIMESTAMP, time);
+            values.put(COLUMN_TIMESTAMP, envelope.getTime());
+            long result = database.insertWithOnConflict(TABLE_MESSAGES_SERVICE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            Log.e("MessageMainManager", "Insert result: " + result);
+
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error inserting message: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Метод для зберігання повідомлень
+     *
+     * @param envelope саме повідомлення
+     */
+    public void setMessage(Envelope envelope, String operation) {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_ID, envelope.getMessageId());
+            values.put(COLUMN_SENDER, envelope.getSenderId());
+            values.put(COLUMN_OPERATION, operation); //сюди буде додаватися назва операції send що значить на відправу
+            values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
+            values.put(COLUMN_TIMESTAMP, envelope.getTime());
             long result = database.insertWithOnConflict(TABLE_MESSAGES_SERVICE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
             Log.e("MessageMainManager", "Insert result: " + result);
 
@@ -58,20 +80,20 @@ public class MessageServiceManager {
 
     /**
      * Метод для отримання кількості повідомлень за контактом
-     * @param senderId відправник
+     *
      * @param operation операція за яким прийшло повідомлення
      *                  підрахунок робимо коли повідомлення має operation message або file
      */
-    public int getMessageCountBySenderAndOperation(String senderId, String operation) {
+    public int getMessageCountBySenderAndOperation(String operation) {
         int count = 0;
         Cursor cursor = null;
         try {
             String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES_SERVICE +
-                    " WHERE " + COLUMN_SENDER + " = ? AND " + COLUMN_OPERATION + " = ?";
-            cursor = database.rawQuery(query, new String[]{senderId, operation});
+                    " WHERE " + COLUMN_OPERATION + " = ?";
+            cursor = database.rawQuery(query, new String[]{operation});
 
             if (cursor.moveToFirst()) {
-                count = cursor.getInt(0);
+                count = cursor.getInt(0); // Отримуємо значення COUNT(*)
             }
             Log.e("MessageMainManager", "Count result: " + count);
         } catch (Exception e) {
@@ -84,8 +106,105 @@ public class MessageServiceManager {
         return count;
     }
 
+
     /**
      * Метод для отримання повідомлень за контактом
+     */
+    public HashMap<String, Envelope> getMessages() {
+        HashMap<String, Envelope> messages = new LinkedHashMap<>(); // Використовуємо LinkedHashMap для збереження порядку
+        Cursor cursor = null;
+        try {
+            cursor = database.query(TABLE_MESSAGES_SERVICE, null, null, null, null, null, null);
+            while (cursor.moveToNext()) {
+                String messageId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                JSONObject jsonObject = new JSONObject(jsonMessage);
+                Envelope envelope = new Envelope(jsonObject);
+                messages.put(messageId, envelope);
+            }
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return messages;
+    }
+
+
+    /**
+     * Метод для отримання повідомлень за контактом
+     *
+     * @param operation
+     */
+    public HashMap<String, Envelope> getMessagesByOperation(String operation) {
+        HashMap<String, Envelope> messages = new LinkedHashMap<>(); // Використовуємо LinkedHashMap для збереження порядку
+        Cursor cursor = null;
+        try {
+            String selectQuery = "SELECT * FROM " + TABLE_MESSAGES_SERVICE +
+                    " WHERE " + COLUMN_OPERATION + " = ?" +
+                    " ORDER BY " + COLUMN_TIMESTAMP + " ASC"; // Сортування за зростанням часу
+            cursor = database.rawQuery(selectQuery, new String[]{operation});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    try {
+                        String messageId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                        String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                        JSONObject jsonObject = new JSONObject(jsonMessage);
+                        Envelope envelope = new Envelope(jsonObject);
+                        messages.put(messageId, envelope);
+                    } catch (Exception e) {
+                        Log.e("MessageMainManager", "Error parsing message: " + e.getMessage());
+                    }
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return messages;
+    }
+    public HashMap<String, Envelope> getMessagesExceptOperation(String excludedOperation) {
+        HashMap<String, Envelope> messages = new LinkedHashMap<>(); // Використовуємо LinkedHashMap для збереження порядку
+        Cursor cursor = null;
+        try {
+            String selectQuery = "SELECT * FROM " + TABLE_MESSAGES_SERVICE +
+                    " WHERE " + COLUMN_OPERATION + " != ?" +
+                    " ORDER BY " + COLUMN_TIMESTAMP + " ASC"; // Сортування за зростанням часу
+
+            cursor = database.rawQuery(selectQuery, new String[]{excludedOperation});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    try {
+                        String messageId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                        String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                        JSONObject jsonObject = new JSONObject(jsonMessage);
+                        Envelope envelope = new Envelope(jsonObject);
+                        messages.put(messageId, envelope);
+                    } catch (Exception e) {
+                        Log.e("MessageMainManager", "Error parsing message: " + e.getMessage());
+                    }
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return messages;
+    }
+
+    /**
+     * Метод для отримання повідомлень за контактом
+     *
      * @param senderId відправник
      *                 повідомлення отримується від старшого до молодшого
      */
@@ -123,8 +242,8 @@ public class MessageServiceManager {
 
     /**
      * Метод для видалення повідомлень
-     * @param messageId ідентифікаційним номер повідомлення який буде видалений
      *
+     * @param messageId ідентифікаційним номер повідомлення який буде видалений
      */
     public void deleteMessageById(String messageId) {
         try {
@@ -134,5 +253,18 @@ public class MessageServiceManager {
             Log.e("MessageMainManager", "Error deleting message: " + e.getMessage());
         }
     }
+    /**
+     * Метод для видалення всіх повідомлень
+
+     */
+    public void deleteAllMessages() {
+        try {
+            int deletedRows = database.delete(TABLE_MESSAGES_SERVICE, null, null);
+            Log.e("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error deleting all messages: " + e.getMessage());
+        }
+    }
+
 
 }
