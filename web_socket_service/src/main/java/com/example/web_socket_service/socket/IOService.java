@@ -12,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -22,6 +23,7 @@ import androidx.core.app.NotificationCompat;
 
 import android.widget.RemoteViews;
 
+import com.example.database_cube.DatabaseHelper;
 import com.example.web_socket_service.R;
 
 import org.json.JSONException;
@@ -46,14 +48,16 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private String ip;
     private String port;
     private boolean activityLife = false;
-
+    private MessageServiceManager messageManager;
     /**
      * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
      */
     @Override
     public void onCreate() {
         super.onCreate();
-
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        messageManager = new MessageServiceManager(db);
         // Initialize the BroadcastReceiver to listen for multiple events
         receiver = new BroadcastReceiver() {
             @Override

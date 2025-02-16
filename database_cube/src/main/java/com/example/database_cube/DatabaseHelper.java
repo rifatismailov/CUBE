@@ -1,4 +1,4 @@
-package com.example.cube.db;
+package com.example.database_cube;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

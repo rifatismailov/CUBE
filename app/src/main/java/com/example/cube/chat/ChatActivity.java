@@ -16,7 +16,6 @@ import com.example.cube.chat.message.FileData;
 import com.example.cube.R;
 import com.example.cube.chat.message.MessageDiffCallback;
 import com.example.cube.control.FIELD;
-import com.example.cube.db.DatabaseHelper;
 import com.example.cube.db.MessageManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
@@ -34,6 +33,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
+import com.example.database_cube.DatabaseHelper;
 import com.example.folder.file.Folder;
 import com.example.folder.dialogwindows.FileExplorer;
 import com.example.folder.download.Downloader;
