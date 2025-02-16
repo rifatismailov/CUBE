@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         navigationManager.setAccountImage(accountImageUrl);
     }
 
+
     /**
      * Додає новий контакт, отриманий через QR-код або інші джерела.
      *

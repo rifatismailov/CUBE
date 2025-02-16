@@ -28,30 +28,30 @@ public class ClickListeners {
             viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int[] location = new int[2];
-                    viewHolder.binding.message.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    message.setFeeling(reaction[0]);
-                    int emoji = message.getFeeling();
-                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    //  viewHolder.binding.feeling.setImageResource(emoji);
-                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                    int[] location = new int[2];
+//                    viewHolder.binding.message.getLocationOnScreen(location);
+//                    int x = location[0];
+//                    int y = location[1];
+//                    message.setFeeling(reaction[0]);
+//                    int emoji = message.getFeeling();
+//                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//                    //  viewHolder.binding.feeling.setImageResource(emoji);
+//                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
 
             viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int[] location = new int[2];
-                    viewHolder.binding.image.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    message.setFeeling(reaction[0]);
-                    int emoji = message.getFeeling();
-                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    //  viewHolder.binding.feeling.setImageResource(emoji);
-                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                    int[] location = new int[2];
+//                    viewHolder.binding.image.getLocationOnScreen(location);
+//                    int x = location[0];
+//                    int y = location[1];
+//                     message.setFeeling(reaction[0]);
+//                    int emoji = message.getFeeling();
+//                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//                    //  viewHolder.binding.feeling.setImageResource(emoji);
+//                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
         } else {
@@ -59,15 +59,15 @@ public class ClickListeners {
             viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int[] location = new int[2];
-                    viewHolder.binding.message.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    message.setFeeling(reaction[0]);
-                    int emoji = message.getFeeling();
-                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    // viewHolder.binding.feeling.setImageResource(emoji);
-                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                    int[] location = new int[2];
+//                    viewHolder.binding.message.getLocationOnScreen(location);
+//                    int x = location[0];
+//                    int y = location[1];
+//                    message.setFeeling(reaction[0]);
+//                    int emoji = message.getFeeling();
+//                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//                    // viewHolder.binding.feeling.setImageResource(emoji);
+//                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
 
                 }
             });
@@ -75,15 +75,15 @@ public class ClickListeners {
             viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int[] location = new int[2];
-                    viewHolder.binding.image.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    message.setFeeling(reaction[0]);
-                    int emoji = message.getFeeling();
-                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-                    // viewHolder.binding.feeling.setImageResource(emoji);
-                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                    int[] location = new int[2];
+//                    viewHolder.binding.image.getLocationOnScreen(location);
+//                    int x = location[0];
+//                    int y = location[1];
+//                    message.setFeeling(reaction[0]);
+//                    int emoji = message.getFeeling();
+//                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//                    // viewHolder.binding.feeling.setImageResource(emoji);
+//                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
                 }
             });
             viewHolder.binding.file.setOnClickListener(v -> {

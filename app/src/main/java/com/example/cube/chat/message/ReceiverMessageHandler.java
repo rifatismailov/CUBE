@@ -29,6 +29,8 @@ public class ReceiverMessageHandler {
     @SuppressLint("SetTextI18n")
     public void setMessage(ReceiverViewHolder viewHolder, Message message) {
         viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
+        viewHolder.binding.message.setVisibility(View.VISIBLE);
+        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
 
         switch (message.getCheck()) {
             case Image:
@@ -42,19 +44,17 @@ public class ReceiverMessageHandler {
                 break;
         }
 
-
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
 
     private void aLLtoDoMessage(ReceiverViewHolder viewHolder, Message message) {
         updateTimestamp(viewHolder, message);
         updateMessageNotifier(viewHolder, message);
-        viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
         updateFeeling(viewHolder, message);
     }
 
     private void updateMessageNotifier(ReceiverViewHolder viewHolder, Message message) {
-        viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
+//        viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
         if ("server".equals(message.getMessageStatus())) {
             List<String> hashes = Arrays.asList("abcdef123456");
 
@@ -102,7 +102,7 @@ public class ReceiverMessageHandler {
         viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false));
 
         if (message.getMessage() != null && !message.getMessage().isEmpty()) {
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
+            //viewHolder.binding.message.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
             viewHolder.binding.file.setVisibility(View.GONE);
             viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 58f, 10f, 10f));
@@ -120,11 +120,11 @@ public class ReceiverMessageHandler {
         viewHolder.binding.image.setVisibility(View.VISIBLE);
         viewHolder.binding.aboutFile.setVisibility(View.VISIBLE);
         viewHolder.binding.image.setShapeAppearanceModel(createShapeModel(0f, 10f, 10f, 10f));
-        if (message.getMessage().isEmpty()) {
-            viewHolder.binding.message.setVisibility(View.GONE);
-        } else {
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-        }
+//        if (message.getMessage().isEmpty()) {
+//            viewHolder.binding.message.setVisibility(View.GONE);
+//        } else {
+//            viewHolder.binding.message.setVisibility(View.VISIBLE);
+//        }
 
         if (message.getImage() != null) {
             Bitmap bmp = BitmapFactory.decodeByteArray(message.getImage(), 0, message.getImage().length);
@@ -160,8 +160,8 @@ public class ReceiverMessageHandler {
         viewHolder.binding.aboutFile.setVisibility(View.GONE);
 
         if (!viewHolder.binding.message.getText().toString().equals(message.getMessage())) {
-            viewHolder.binding.message.setVisibility(View.VISIBLE);
-            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+//            viewHolder.binding.message.setVisibility(View.VISIBLE);
+//            viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
             viewHolder.binding.message.setText(message.getMessage());
         }
         aLLtoDoMessage(viewHolder, message);

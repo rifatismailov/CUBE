@@ -14,6 +14,7 @@ import android.os.Bundle;
 import com.example.cube.chat.message.BundleProcessor;
 import com.example.cube.chat.message.FileData;
 import com.example.cube.R;
+import com.example.cube.chat.message.MessageDiffCallback;
 import com.example.cube.control.FIELD;
 import com.example.cube.db.DatabaseHelper;
 import com.example.cube.db.MessageManager;
@@ -29,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
@@ -270,10 +272,23 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setReceiverId(receiverId);
             message.setTimestamp(getTime());
             manager.addMessage(message);
-            messages.add(message);
+
+            // Створюємо копію списку перед оновленням
+            List<Message> newList = new ArrayList<>(messages);
+            newList.add(message);
+
+            // Відправляємо повідомлення
             new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey);
-            adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+
+            // Використовуємо DiffUtil для оновлення списку
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+
+            messages.clear();
+            messages.addAll(newList);
+            diffResult.dispatchUpdatesTo(adapter);
+
+            // Плавна прокрутка до останнього повідомлення
+            binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
         });
     }
 
@@ -283,20 +298,37 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setSenderId(senderId);
             message.setReceiverId(receiverId);
             manager.addMessage(message);
-            messages.add(message);
+
+            // Створюємо копію списку для DiffUtil
+            List<Message> newList = new ArrayList<>(messages);
+            newList.add(message);
+
+            // Будуємо URL
+            String fileName = new File(encFile).getName();
             String url = new UrlBuilder.Builder()
                     .setProtocol("http")
                     .setIp(fileServerIP)
                     .setPort(fileServerPort)
                     .setDirectory("/api/files/download/")
-                    .setFileName(new File(encFile).getName())
+                    .setFileName(fileName)
                     .build()
                     .buildUrl();
+
+            // Відправляємо файл
             new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId());
-            adapter.notifyItemInserted(messages.size() - 1); // Повідомити, що новий елемент було вставлено
-            binding.recyclerView.smoothScrollToPosition(messages.size() - 1); // Прокрутити до нового елемента
+
+            // Використовуємо DiffUtil для оптимального оновлення
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+
+            messages.clear();
+            messages.addAll(newList);
+            diffResult.dispatchUpdatesTo(adapter);
+
+            // Плавна прокрутка до нового повідомлення
+            binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
         });
     }
+
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
@@ -345,44 +377,49 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private final ExecutorService update_execService = Executors.newSingleThreadExecutor();
 
     public void updateItemAsync(int position, String positionId, @NonNull String url, String has) {
-        Message message = messages.get(position);
         update_execService.execute(() -> {
             try {
-                String fileName = new File(url).getName();
+                File file = new File(url);
+                String fileName = file.getName();
                 FileData fileData;
-                if (url.endsWith(".jpg") ||
-                        url.endsWith(".jpeg") ||
-                        url.endsWith(".png") ||
-                        url.endsWith(".webp") ||
-                        url.endsWith(".bmp") ||
-                        url.endsWith(".gif") ||
-                        url.endsWith(".heic") ||
-                        url.endsWith(".heif") ||
-                        url.endsWith(".tiff") ||
-                        url.endsWith(".tif")) {
+
+                // Визначаємо, чи є файл зображенням
+                if (url.matches(".*\\.(jpg|jpeg|png|webp|bmp|gif|heic|heif|tiff|tif)$")) {
                     fileData = new FileData().convertImage(url);
                 } else {
                     fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 }
-                message.setUrl(Uri.parse(url));
-                message.setImage(fileData.getImageBytes());
-                message.setImageWidth(fileData.getWidth());
-                message.setImageHeight(fileData.getHeight());
-                message.setFileName(fileName);
-                message.setFileSize(fileData.getFileSize(new File(url)));
-                message.setTypeFile(fileData.getFileType(new File(url)));
-                message.setHas(has);
-                message.setDataCreate(fileData.getFileDate(new File(url)));
+
+                // Оновлюємо повідомлення в основному списку
+                Message updatedMessage = messages.get(position);
+
+                // Оновлюємо дані в повідомленні
+                updatedMessage.setUrl(Uri.parse(url));
+                updatedMessage.setImage(fileData.getImageBytes());
+                updatedMessage.setImageWidth(fileData.getWidth());
+                updatedMessage.setImageHeight(fileData.getHeight());
+                updatedMessage.setFileName(fileName);
+                updatedMessage.setFileSize(fileData.getFileSize(file));
+                updatedMessage.setTypeFile(fileData.getFileType(file));
+                updatedMessage.setHas(has);
+                updatedMessage.setDataCreate(fileData.getFileDate(file));
+
+                // Оновлюємо в адаптері без використання DiffUtil
                 runOnUiThread(() -> {
-                    manager.updateMessage(message);
-                    adapter.updateItem(position, message);
-                    adapter.notifyItemChanged(position); // Повідомити, що елемент було змінено
+                    // Оновлення даних у базі
+                    manager.updateMessage(updatedMessage);
+
+                    // Оновлення елемента в адаптері
+                    adapter.notifyItemChanged(position);
                 });
+
             } catch (Exception e) {
-                Log.e("ChatActivity", "Помилка під час відкриття файлу :" + e);
+                Log.e("ChatActivity", "Помилка під час відкриття файлу: " + e);
             }
         });
     }
+
+
 
 
     // Перевірка, чи знаходиться RecyclerView на останній позиції
@@ -397,8 +434,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
     private void autoScroll() {
-        adapter.notifyDataSetChanged(); // Оновлює весь список
-
+        //adapter.notifyDataSetChanged(); // Оновлює весь список
+        adapter.notifyItemInserted(messages.size() - 1);
         binding.recyclerView.postDelayed(() -> {
             if (isRecyclerViewAtBottom()) {
                 binding.recyclerView.smoothScrollToPosition(messages.size() - 1);
@@ -415,6 +452,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessage(Message message) {
         try {
             boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
+            List<Message> newList = new ArrayList<>(messages); // Копія старого списку для DiffUtil
+
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
@@ -424,25 +463,36 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     }
                     // Оновлення існуючого повідомлення
                     manager.updateMessage(message);
-                    adapter.notifyItemChanged(i);
+                    newList.set(i, message); // Оновлюємо список
                     messageExists = true;
                     break;
                 }
             }
+
             if (!messageExists) { // Якщо повідомлення не знайдено
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
                 message.setTimestamp(getTime());
-                manager.addMessage(message);       // Додаємо нове повідомлення
-                messages.add(message);
-                runOnUiThread(this::autoScroll);   // Оновлення UI
+                manager.addMessage(message);  // Додаємо нове повідомлення
+                newList.add(message);
             }
+
+            // Оновлення списку за допомогою DiffUtil
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+            messages.clear();
+            messages.addAll(newList);
+            runOnUiThread(() -> {
+                diffResult.dispatchUpdatesTo(adapter);
+                autoScroll(); // Автоскрол після оновлення
+            });
+
             new OperationMSG(this).returnAboutDeliver(message);
 
         } catch (Exception e) {
-            Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
+            Log.e("ChatActivity", "Помилка під час отримання повідомлення: " + e);
         }
     }
+
 
     /**
      * Метод додовання повідомлення з файлом від сервера
@@ -453,33 +503,47 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     public void readMessageFile(Message message) {
         try {
             boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
+            List<Message> newList = new ArrayList<>(messages); // Копія старого списку для DiffUtil
+
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
-                    // Перевірка хешу повідомлення на дублювання
+                    // Перевірка хешу файлу на дублювання
                     if (currentMessage.getHash_f().equals(message.getHash_f())) {
                         return; // Повідомлення дубльоване, виходимо з методу
                     }
                     // Оновлення існуючого повідомлення
                     manager.updateMessage(message);
-                    adapter.notifyItemChanged(i);
+                    newList.set(i, message); // Оновлюємо список
                     messageExists = true;
                     break;
                 }
             }
+
             if (!messageExists) { // Якщо повідомлення не знайдено
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
                 message.setTimestamp(getTime());
-                manager.addMessage(message); // Додаємо нове повідомлення
-                messages.add(message);       // Додаємо повідомлення до списку
-                runOnUiThread(this::autoScroll); // Оновлення UI
+                manager.addMessage(message);  // Додаємо нове повідомлення
+                newList.add(message);
             }
+
+            // Оновлення списку за допомогою DiffUtil
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
+            messages.clear();
+            messages.addAll(newList);
+            runOnUiThread(() -> {
+                diffResult.dispatchUpdatesTo(adapter);
+                autoScroll(); // Автоскрол після оновлення
+            });
+
             new OperationMSG(this).returnAboutDeliver(message);
+
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);
         }
     }
+
 
 
     @Override

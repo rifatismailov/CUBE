@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cube.chat.ChatActivity;
@@ -17,20 +18,28 @@ import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
 
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.List;
 
 public class MessagesAdapter extends RecyclerView.Adapter {
 
     Context context;
     ArrayList<Message> messages;
+    private HashMap<String, Boolean> expandedStates = new HashMap<>(); // Сховище стану розкриття
+
     final int ITEM_SENT = 1;
     final int ITEM_RECEIVE = 2;
-
-    RecyclerView.ViewHolder holder;
 
     public MessagesAdapter(ChatActivity context, ArrayList<Message> messages) {
         this.context = context;
         this.messages = messages;
+    }
+
+    public void updateMessages(List<Message> newMessages) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newMessages));
+        messages.clear();
+        messages.addAll(newMessages);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -59,17 +68,51 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
-        this.holder = holder;
-        if (holder.getClass().equals(SentViewHolder.class)) {
+        String messageId = message.getMessageId(); // Отримуємо унікальний ідентифікатор повідомлення
+
+        if (holder instanceof SentViewHolder) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
-            new SendMessageHandler(context).setMessage((SentViewHolder) viewHolder, message);
+            new SendMessageHandler(context).setMessage(viewHolder, message);
+
+            // Отримуємо стан розкриття
+            boolean isExpanded = expandedStates.getOrDefault(messageId, false);
+            viewHolder.binding.linearLayout.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+
+//            viewHolder.itemView.setOnClickListener(v -> {
+//                boolean newState = !expandedStates.getOrDefault(messageId, false);
+//                expandedStates.put(messageId, newState);
+//                notifyItemChanged(position); // Оновлюємо тільки цей елемент
+//            });
+
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
-            new ReceiverMessageHandler(context).setMessage((ReceiverViewHolder) viewHolder, message);
+            new ReceiverMessageHandler(context).setMessage(viewHolder, message);
+
+            // Отримуємо стан розкриття
+            boolean isExpanded = expandedStates.getOrDefault(messageId, false);
+            viewHolder.binding.linearLayout.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+
+//            viewHolder.itemView.setOnClickListener(v -> {
+//                boolean newState = !expandedStates.getOrDefault(messageId, false);
+//                expandedStates.put(messageId, newState);
+//                notifyItemChanged(position);
+//            });
         }
     }
 
-    // Метод для оновлення конкретної позиції
+    @Override
+    public int getItemCount() {
+        return messages.size();
+    }
+
+    // Додаємо нове повідомлення і одразу розгортаємо його
+    public void addMessage(Message newMessage) {
+        messages.add(newMessage);
+        expandedStates.put(newMessage.getMessageId(), true); // Нове повідомлення одразу відкрите
+        notifyItemInserted(messages.size() - 1);
+    }
+
+    // Оновлення повідомлення за позицією
     public void updateItem(int position, Message message) {
         try {
             messages.set(position, message);
@@ -77,24 +120,15 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         } catch (Exception e) {
             Log.e("Listener", e.toString());
         }
-
-        //notifyDataSetChanged();// Оновлюємо конкретну позицію
     }
 
-    // Метод для видалення елемента
+    // Видалення повідомлення
     public void removeItem(int position) {
-        // Видаляємо елемент зі списку
         if (position >= 0 && position < messages.size()) {
+            Message removedMessage = messages.get(position);
             messages.remove(position);
-            // Оновлюємо RecyclerView
+            expandedStates.remove(removedMessage.getMessageId()); // Видаляємо стан
             notifyItemRemoved(position);
-            // Опціонально можна зробити notifyItemRangeChanged(position, messages.size())
-            // Якщо видалено кілька елементів (якщо це потрібно).
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return messages.size();
     }
 }

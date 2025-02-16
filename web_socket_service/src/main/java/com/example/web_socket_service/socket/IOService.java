@@ -348,11 +348,11 @@ public class IOService extends Service implements WebSocketClient.Listener {
                             connectionInfo.getReceiverId().equals(envelope.getReceiverId())) {
                         addMessage(message);
                     } else if (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) {
-                        Log.e("IOService", "Send Message to chat Activity ID : " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " " + envelope.getSenderId());
+                        Log.e("IOService", "Send Message to chat Activity ID : ["+connectionInfo.getReceiverId()+"] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId()+"]");
 
                         addMessage(message);
                     } else {
-                        Log.e("IOService", "Save Message ID : " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " " + envelope.getSenderId());
+                        Log.e("IOService", "Save Message ID : ["+connectionInfo.getReceiverId()+"] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId()+"]");
 
                         saveMessage(message);
                     }
