@@ -64,6 +64,7 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         }
     }
 
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
@@ -74,31 +75,28 @@ public class MessagesAdapter extends RecyclerView.Adapter {
             SentViewHolder viewHolder = (SentViewHolder) holder;
             new SendMessageHandler(context).setMessage(viewHolder, message);
 
-            // Отримуємо стан розкриття
-            boolean isExpanded = expandedStates.getOrDefault(messageId, false);
-            viewHolder.binding.linearLayout.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            // Переконайтеся, що всі поля встановлені
+            viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
+            viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
 
-//            viewHolder.itemView.setOnClickListener(v -> {
-//                boolean newState = !expandedStates.getOrDefault(messageId, false);
-//                expandedStates.put(messageId, newState);
-//                notifyItemChanged(position); // Оновлюємо тільки цей елемент
-//            });
+            // Встановлюємо видимість полів
+            viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
+            //viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
 
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             new ReceiverMessageHandler(context).setMessage(viewHolder, message);
 
-            // Отримуємо стан розкриття
-            boolean isExpanded = expandedStates.getOrDefault(messageId, false);
-            viewHolder.binding.linearLayout.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            // Переконайтеся, що всі поля встановлені
+            viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
+            viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
 
-//            viewHolder.itemView.setOnClickListener(v -> {
-//                boolean newState = !expandedStates.getOrDefault(messageId, false);
-//                expandedStates.put(messageId, newState);
-//                notifyItemChanged(position);
-//            });
+            // Встановлюємо видимість полів
+            viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
+            //viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
         }
     }
+
 
     @Override
     public int getItemCount() {

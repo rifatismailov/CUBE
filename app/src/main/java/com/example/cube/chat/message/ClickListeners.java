@@ -21,82 +21,73 @@ public class ClickListeners {
     void setClickListeners(Context context, RecyclerView.ViewHolder holder, Message message) {
         int position = holder.getLayoutPosition();
         //List<EmojiMany> manyReaction = MyEmoji.getManyReaction();
-        int[] reaction = MyEmoji.emoji_blue;
 
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
-            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    int[] location = new int[2];
-//                    viewHolder.binding.message.getLocationOnScreen(location);
-//                    int x = location[0];
-//                    int y = location[1];
-//                    message.setFeeling(reaction[0]);
-//                    int emoji = message.getFeeling();
-//                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-//                    //  viewHolder.binding.feeling.setImageResource(emoji);
-//                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-                }
-            });
-
-            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    int[] location = new int[2];
-//                    viewHolder.binding.image.getLocationOnScreen(location);
-//                    int x = location[0];
-//                    int y = location[1];
-//                     message.setFeeling(reaction[0]);
-//                    int emoji = message.getFeeling();
-//                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-//                    //  viewHolder.binding.feeling.setImageResource(emoji);
-//                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-                }
-            });
+//            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+////                    int[] location = new int[2];
+////                    viewHolder.binding.message.getLocationOnScreen(location);
+////                    int x = location[0];
+////                    int y = location[1];
+////                    message.setFeeling(reaction[0]);
+////                    int emoji = message.getFeeling();
+////                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+////                    //  viewHolder.binding.feeling.setImageResource(emoji);
+////                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                }
+//            });
+//
+//            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+////                    int[] location = new int[2];
+////                    viewHolder.binding.image.getLocationOnScreen(location);
+////                    int x = location[0];
+////                    int y = location[1];
+////                     message.setFeeling(reaction[0]);
+////                    int emoji = message.getFeeling();
+////                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+////                    //  viewHolder.binding.feeling.setImageResource(emoji);
+////                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                }
+//            });
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
-            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    int[] location = new int[2];
-//                    viewHolder.binding.message.getLocationOnScreen(location);
-//                    int x = location[0];
-//                    int y = location[1];
-//                    message.setFeeling(reaction[0]);
-//                    int emoji = message.getFeeling();
-//                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-//                    // viewHolder.binding.feeling.setImageResource(emoji);
-//                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-
-                }
-            });
-
-            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    int[] location = new int[2];
-//                    viewHolder.binding.image.getLocationOnScreen(location);
-//                    int x = location[0];
-//                    int y = location[1];
-//                    message.setFeeling(reaction[0]);
-//                    int emoji = message.getFeeling();
-//                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-//                    // viewHolder.binding.feeling.setImageResource(emoji);
-//                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-                }
-            });
+//            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+////                    int[] location = new int[2];
+////                    viewHolder.binding.message.getLocationOnScreen(location);
+////                    int x = location[0];
+////                    int y = location[1];
+////                    message.setFeeling(reaction[0]);
+////                    int emoji = message.getFeeling();
+////                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+////                    // viewHolder.binding.feeling.setImageResource(emoji);
+////                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//
+//                }
+//            });
+//
+//            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+////                    int[] location = new int[2];
+////                    viewHolder.binding.image.getLocationOnScreen(location);
+////                    int x = location[0];
+////                    int y = location[1];
+////                    message.setFeeling(reaction[0]);
+////                    int emoji = message.getFeeling();
+////                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
+////                    // viewHolder.binding.feeling.setImageResource(emoji);
+////                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
+//                }
+//            });
             viewHolder.binding.file.setOnClickListener(v -> {
                 if (!message.getUrl().toString().startsWith("http")) {
                     if (new File(message.getUrl().toString()).exists() && new File(message.getUrl().toString()).isFile()) {
-//                        URL url = null; // Змініть IP на ваш
-//                        try {
-//                            url = new URL(new File(message.getUrl().toString()).getName());
-//                            Log.e("Listener",url.toString());
-//                        } catch (MalformedURLException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                        new Open(context,url,position);
                         Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
                     }
                     //відкриваємо за допомогою додатку для файлу

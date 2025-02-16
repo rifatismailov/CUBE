@@ -401,14 +401,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Реєстрація chatActivityReceiver для отримання даних з ChatActivity через broadcast.
      */
+    @SuppressLint("InlinedApi")
     private void registerChatActivityReceiver() {
         IntentFilter filter = new IntentFilter(FIELD.REPLY_FROM_CHAT.getFIELD());
-        registerReceiver(chatActivityReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        registerReceiver(chatActivityReceiver, filter, RECEIVER_NOT_EXPORTED);
     }
 
     /**
      * Реєстрація ioServiceReceiver для отримання даних з IOService через broadcast.
      */
+    @SuppressLint("InlinedApi")
     private void registerIOServiceReceiver() {
         IntentFilter filter = new IntentFilter(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD());
         registerReceiver(ioServiceReceiver, filter, RECEIVER_EXPORTED);
@@ -486,31 +488,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);
     }
 
-
-    private void notifyIdSenderChanged(String senderId) {
-        Intent intent = new Intent(FIELD.CUBE_ID_SENDER.getFIELD());
-        intent.putExtra(FIELD.SENDER_ID.getFIELD(), senderId);
-        sendBroadcast(intent);
-    }
-
     private void sendMessageToService(String message) {
         Log.e("MainActivity", "send Message To Service" + message);
-
         Intent intent = new Intent(FIELD.CUBE_SEND_TO_SERVER.getFIELD());
         intent.putExtra(FIELD.MESSAGE.getFIELD(), message);
         sendBroadcast(intent);  // Надсилає повідомлення сервісу
-    }
-
-    private void notifyIpChanged(String ip) {
-        Intent intent = new Intent(FIELD.CUBE_IP_TO_SERVER.getFIELD());
-        intent.putExtra(FIELD.IP.getFIELD(), ip);
-        sendBroadcast(intent);
-    }
-
-    private void notifyPortChanged(String port) {
-        Intent intent = new Intent(FIELD.CUBE_PORT_TO_SERVER.getFIELD());
-        intent.putExtra(FIELD.PORT.getFIELD(), port);
-        sendBroadcast(intent);
     }
 
     /**
@@ -573,7 +555,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
                     receiverId = null;
                 } catch (Exception e) {
-                    Log.e("MainActivity", "Error generating RSA keys: " + e.toString());
+                    Log.e("MainActivity", "Error generating RSA keys: " + e);
                 }
 
 
@@ -606,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     Log.e("MainActivity", "Failed to encrypt AES key");
                                 }
                             } catch (Exception e) {
-                                Log.e("MainActivity", "Error during AES key encryption: " + e.toString());
+                                Log.e("MainActivity", "Error during AES key encryption: " + e);
                             }
                         }
                     }
@@ -615,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         } catch (Exception e) {
-
+            Log.e("MainActivity", e.toString());
         }
 
     }
@@ -671,9 +653,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
-            runOnUiThread(() -> {
-                new Operation(this,messageManager).saveMessage(envelope, saveMessage, contactDataList);
-            });
+            runOnUiThread(() -> new Operation(this,messageManager).saveMessage(envelope, saveMessage, contactDataList));
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);
         }
@@ -1036,7 +1016,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 imageExplorer.setImageBitmap(selectedBitmap);
             } catch (IOException e) {
                 // Обробка помилки, якщо не вдалося отримати зображення
-                e.printStackTrace();
+                Log.e("MainActivity", e.toString());
             }
         }
     }

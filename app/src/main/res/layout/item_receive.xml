@@ -5,12 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="10dp"
-    android:minHeight="50dp"
     android:layout_marginTop="5dp"
     android:layout_marginEnd="60dp">
 
     <LinearLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/receive_drawable"
@@ -131,7 +130,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:layout_marginTop="2dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="0dp"
             android:orientation="vertical">
 
             <TextView
@@ -141,10 +140,9 @@
                 android:fontFamily="@font/ibmplexsans_bold"
                 android:gravity="top"
                 android:paddingLeft="10dp"
-                android:paddingTop="5dp"
+                android:paddingTop="1dp"
                 android:paddingRight="10dp"
-                android:paddingBottom="4dp"
-                android:minHeight="10dp"
+                android:paddingBottom="1dp"
                 android:text="file"
                 android:textColor="@color/blue"
                 android:textSize="16sp" />
@@ -156,10 +154,9 @@
                 android:fontFamily="@font/opensans_medium"
                 android:gravity="top"
                 android:paddingLeft="10dp"
-                android:minHeight="10dp"
-                android:paddingTop="5dp"
+                android:paddingTop="1dp"
                 android:paddingRight="10dp"
-                android:paddingBottom="4dp"
+                android:paddingBottom="1dp"
                 android:textColor="#000"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -205,7 +202,7 @@
                     android:id="@+id/messageNotifier"
                     android:layout_width="15sp"
                     android:layout_height="15sp"
-                    android:layout_marginEnd="5dp"
+
                     app:alignStart="true"
                     app:spacing="5dp" />
             </LinearLayout>
