@@ -136,7 +136,6 @@
                 android:paddingTop="1dp"
                 android:paddingRight="10dp"
                 android:paddingBottom="1dp"
-                android:text="file"
                 android:textColor="@color/blue"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -187,9 +186,7 @@
                     android:layout_height="15sp"
                     android:fontFamily="@font/ibmplexsans_medium"
                     android:gravity="right"
-                    android:text="Time"
                     android:textColor="#676a6b"
-
                     android:textSize="10sp" />
 
                 <ImageView
@@ -202,7 +199,6 @@
                     android:id="@+id/messageNotifier"
                     android:layout_width="15sp"
                     android:layout_height="15sp"
-
                     app:alignStart="true"
                     app:spacing="5dp" />
             </LinearLayout>

@@ -89,11 +89,13 @@ public class MessagesAdapter extends RecyclerView.Adapter {
 
             // Переконайтеся, що всі поля встановлені
             viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
-            viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
+//            viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
 
             // Встановлюємо видимість полів
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
-            viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
+//            viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
+            new ReceiverMessageHandler(context).setMessage(viewHolder, message);
+
         }
     }
 

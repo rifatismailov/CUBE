@@ -141,7 +141,6 @@
                 android:paddingTop="1dp"
                 android:paddingRight="10dp"
                 android:paddingBottom="1dp"
-                android:text="file"
                 android:textColor="@color/blue"
                 android:textSize="16sp" />
         </LinearLayout>

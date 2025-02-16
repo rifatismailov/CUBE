@@ -100,6 +100,7 @@ public class ReceiverMessageHandler {
         int scaledWidth = message.getImageWidth() > 2000 ? message.getImageWidth() / 4 : message.getImageWidth() / 2;
         int scaledHeight = message.getImageWidth() > 2000 ? message.getImageHeight() / 4 : message.getImageHeight() / 2;
         viewHolder.binding.image.setImageBitmap(Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false));
+        viewHolder.binding.file.setText(message.getFileName());
 
         if (message.getMessage() != null && !message.getMessage().isEmpty()) {
             viewHolder.binding.message.setVisibility(View.VISIBLE);
