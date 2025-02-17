@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -20,6 +22,7 @@ public class WebSocketClient {
     private final int MAX_RETRY = 3;
     private boolean isRegistered = false; // Чи отримали відповідь від сервера
     private boolean isCheckingStatus = false; // Запобігає множинним перевіркам
+    private ExecutorService executorService;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -27,6 +30,8 @@ public class WebSocketClient {
 
     public WebSocketClient(Listener listener) {
         this.listener = listener;
+        executorService = Executors.newFixedThreadPool(2); // Створюємо пул для асинхронних задач
+
     }
 
     // Метод для підключення до сервера
@@ -49,14 +54,25 @@ public class WebSocketClient {
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
-                if (text.equals("REGISTER_OK")) {
-                    // Log.e("IOService", "REGISTER_OK:" + CLIENT_ID);
-                    isRegistered = true;
-                    retryCount = 0; // Скидаємо лічильник невдалих спроб
-                } else {
-                    listener.onListener(text);
+                if (text != null) {
+                    executorService.submit(() -> { // Виконуємо в окремому потоці
+                        if ("REGISTER_OK".equals(text)) {
+                            Log.e("IOService", "REGISTER_OK:" + CLIENT_ID + " " + text);
+                            isRegistered = true;
+                            retryCount = 0; // Скидаємо лічильник невдалих спроб
+                        } else {
+                            Log.e("IOService", "Received message  " + text);
+
+                            if (listener != null) {
+                                listener.onListener(text); // Передаємо в сервіс у фоновому потоці
+                            } else {
+                                Log.e("IOService", "Listener is null");
+                            }
+                        }
+                    });
                 }
             }
+
 
             @Override
             public void onClosing(WebSocket webSocket, int code, String reason) {
@@ -66,14 +82,14 @@ public class WebSocketClient {
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
-                listener.onNotification("Connection closed: " + reason);
+                listener.onNotification("Connection closed (Closed): " + reason);
                 reconnect();
             }
 
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 t.printStackTrace();
-                listener.onNotification("Connection failed: " + t.getMessage());
+                listener.onNotification("Connection failed (Failure): " + t.getMessage());
                 reconnect();
             }
         });
@@ -116,9 +132,9 @@ public class WebSocketClient {
                         }
                     }
                 }
-                handler.postDelayed(this, 5000); // Повторюємо через 3 секунди
+                handler.postDelayed(this, 3000); // Повторюємо через 3 секунди
             }
-        }, 5000);
+        }, 3000);
     }
 
     // ✅ Зупиняє таймер перед перепідключенням
@@ -130,11 +146,17 @@ public class WebSocketClient {
     // Метод для відправки повідомлень
     public void sendMessage(String message) {
         Log.e("IOService", "Web Socket Message To Service: " + message);
-        if (webSocket != null) {
-            webSocket.send(message);
-        } else {
-            Log.e("IOService", "WebSocket is not connected.");
-        }
+
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                if (webSocket != null) {
+                    webSocket.send(message);
+                } else {
+                    Log.e("IOService", "WebSocket is not connected.");
+                }
+            }
+        });
     }
 
     // Закриття з'єднання
@@ -143,6 +165,8 @@ public class WebSocketClient {
         if (webSocket != null) {
             webSocket.close(1000, "Closing connection");
         }
+        executorService.shutdown(); // Закриваємо пул потоків
+
     }
 
     // ✅ Оновлений метод перепідключення

@@ -258,12 +258,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (data.equals("endUser")) {
             Log.e("MainActivity", "end User " + data);
             receiverId = null;
-            notifyIdReciverChanged(receiverId);
+            notifyIdReciverChanged("");
         } else {
             if (contactData != null) {
                 if (!data.isEmpty()) {
                     if (contactData.getReceiverPublicKey() != null) {
-                      setMessage(data);
+                        setMessage(data);
                     }
                 }
             }
@@ -292,11 +292,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case "delivered_to_user":
                     sendMessageToService(message);
                     messageManager.deleteMessageById(envelope.getMessageId());
-                    Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus()+" ID message "+envelope.getMessageId());
+                    Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
                     break;
                 case "update_to_user":
                     sendMessageToService(message);
-                    Log.e("IOService", "Update message MainActivity" + envelope.getMessageStatus()+" ID message "+envelope.getMessageId());
+                    Log.e("IOService", "Update message MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
                     break;
                 default:
                     sendMessageToService(message);
@@ -323,10 +323,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             if (sleep != null) {
                 Log.e("MainActivity", "sleep " + sleep);
+                receiverId =null;
+                notifyIdReciverChanged("");
             }
             if (awake != null) {
                 Log.e("MainActivity", "awake " + awake);
-               // notifyIdReciverChanged(awake);
+                notifyIdReciverChanged(awake);
+                receiverId = awake;
             }
         }
     };
@@ -341,14 +344,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
 
                 if (message != null) {
+                    openSaveMessage();
                     onReceived(message);
                     Log.e("IOService", "Send Message with Main Activity to Chat Activity: " + message);
-
                 }
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
                 if (save_message != null) {
                     saveMessage(save_message);
-                    Log.e("IOService", "Save Message on Main Activity: " + message);
+                    Log.e("IOService", "Save Message on Main Activity: " + save_message);
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
@@ -363,6 +366,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
+
+    private void openSaveMessage(){
+        if(receiverId!=null){
+            new Operation(this, messageManager).openSaveMessage(receiverId);
+        }
+    }
 
     @Override
     protected void onPause() {
@@ -575,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         if (receiverId != null && !receiverId.isEmpty()) {
                             if (!contactData.getReceiverKey().isEmpty()) {
                                 startChat(binding.getRoot().getRootView(), contactData);
-                                new Operation(this,messageManager).openSaveMessage(receiverId);
+                                openSaveMessage();
                                 contactData.setMessageSize("");
                                 contactAdapter.notifyDataSetChanged();
                                 notifyIdReciverChanged(receiverId);
@@ -631,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param message Текст повідомлення.
      */
     public void onReceived(String message) {
-        new Operation(this,messageManager).onReceived(message);
+        new Operation(this, messageManager).onReceived(message);
     }
 
     /**
@@ -655,7 +664,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
-            runOnUiThread(() -> new Operation(this,messageManager).saveMessage(envelope, saveMessage, contactDataList));
+            runOnUiThread(() -> new Operation(this, messageManager).saveMessage(envelope, saveMessage, contactDataList));
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);
         }
@@ -874,7 +883,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
         String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
-        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "",getTime()).toJson().toString());
+        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "", getTime()).toJson().toString());
     }
 
     /**
@@ -1107,7 +1116,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR_ORG.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString(),getTime()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(), getTime()).toJson().toString());
                     } else {
                         String rMessage = Encryption.AES.encrypt("avatar", user.getSenderKey());
                         String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
@@ -1115,7 +1124,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString(),getTime()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(), getTime()).toJson().toString());
                     }
                     break;
                 }
@@ -1129,11 +1138,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void addFile(String messageId, String url, String encFile, String has) {
 
     }
+
     private String getTime() {
         Date currentDate = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
         return formatter.format(currentDate);
     }
+
     /**
      * Метод за допомогою якого ми оновлюємо зображення аватару контактів
      *

@@ -29,7 +29,15 @@ import com.example.web_socket_service.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * IOService — Android service that manages communication with a WebSocket server.
@@ -49,12 +57,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private String port;
     private boolean activityLife = false;
     private MessageServiceManager messageManager;
+    private ExecutorService executorService;
+    private final Queue<Envelope> messageQueue = new ConcurrentLinkedQueue<>();
+
     /**
      * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
      */
     @Override
     public void onCreate() {
         super.onCreate();
+        executorService = Executors.newSingleThreadExecutor();
+
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
@@ -131,7 +144,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             switch (Life) {
                 case "reborn":
                     activityLife = true;
-                    Log.e("IOService", "MAIN_ACTIVITY_LIFE reborn Status :" + activityLife);
+                    Log.e("IOService", "MAIN_ACTIVITY_LIFE reborn Status Second:" + activityLife);
                     break;
                 case "died":
                     activityLife = false;
@@ -173,7 +186,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
             Log.e("IOService", "Error parsing message", e);
         }
     }
-
 
 
     /**
@@ -259,7 +271,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 switch (Objects.requireNonNull(life)) {
                     case "reborn":
                         activityLife = true;
-                        Log.e("IOService", "MAIN_ACTIVITY_LIFE reborn Status :" + activityLife);
+                        Log.e("IOService", "MAIN_ACTIVITY_LIFE reborn Status first:" + activityLife);
+                        getOfflineMessage();
                         break;
                     case "died":
                         activityLife = false;
@@ -285,6 +298,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      */
     @Override
     public void onDestroy() {
+        executorService.shutdown();
         super.onDestroy();
         if (receiver != null) {
             unregisterReceiver(receiver);
@@ -338,34 +352,87 @@ public class IOService extends Service implements WebSocketClient.Listener {
      * Listens for incoming WebSocket messages and processes them.
      *
      * @param message Incoming message from WebSocket.
+     *                по состоянію активності ми робимо такі дії:
+     *                Перше якшо активність доступна ми передаємо його до активності в залежності який там стан
+     *                -> Чи проводитися там чат чи ні.
+     *                Друге якщо в нас активність не активна то ми зберігаємо до бази даних тільки ті повідомлення які мають заголовки повідомлення або файл
      */
     @Override
     public void onListener(String message) {
-        try {
 
-            if (message != null) {
+        if (message != null) {
+            try {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
-                returnMessageDeliver(envelope);
-                synchronized (connectionInfo) {
-                    if (connectionInfo.getSenderId().equals(envelope.getSenderId()) &&
-                            connectionInfo.getReceiverId().equals(envelope.getReceiverId())) {
-                        addMessage(message);
-                    } else if (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) {
-                        Log.e("IOService", "Send Message to chat Activity ID : ["+connectionInfo.getReceiverId()+"] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId()+"]");
 
-                        addMessage(message);
-                    } else {
-                        Log.e("IOService", "Save Message ID : ["+connectionInfo.getReceiverId()+"] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId()+"]");
+                if (activityLife) {
+                    synchronized (connectionInfo) {
+                        if (connectionInfo.getSenderId() != null) {
+                            if (connectionInfo.getSenderId().equals(envelope.getSenderId()) &&
+                                    connectionInfo.getReceiverId().equals(envelope.getReceiverId())) {
+                                addMessage(message);
+                            } else if (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) {
+                                Log.e("IOService", "Send Message to chat Activity ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
+                                addMessage(message);
+                            } else {
+                                Log.e("IOService", "Save Message ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
+                                saveMessage(message);
+                            }
+                        }else{
+                            Log.e("IOService", "Receiver ID :"+connectionInfo.getReceiverId());
+                        }
+                    }
+                    returnMessageDeliver(envelope);
+                } else {
+                    Log.e("IOService", "Listener message  " + message);
 
-                        saveMessage(message);
+                    /*Імовірність того що данні запишуться у базу даних коли активність відсутня 0 %.  в моєму випадку так як
+                     * я не зміг поки подолати цю проблема щоб веб сокет міг отримувати та передавати данні на сервер в мене обривається зв'язок*/
+                    if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
+//                        messageQueue.offer(envelope);
+//
+//                        if (messageQueue.size() > 1) {  // Записуємо після накопичення 2 повідомлень (можна змінити)
+//                            executorService.submit(this::saveMessagesToDatabase);
+//                        }
+                        messageManager.setMessage(envelope);
+                        returnMessageDeliver(envelope);
+
                     }
                 }
+            } catch (JSONException e) {
+                Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
+                Log.e("IOService", "Not a JSON message: " + message);
             }
-        } catch (JSONException e) {
-            Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
-            Log.e("IOService", "Not a JSON message: " + message);
         }
+    }
+
+    private void saveMessagesToDatabase() {
+        Envelope message;
+        while ((message = messageQueue.poll()) != null) { // Витягуємо всі повідомлення з черги
+            messageManager.setMessage(message);
+        }
+    }
+
+    /**
+     * Метод виводи оффлайн повідомлень якщо в они є
+     * Витягуємо повідомлення які не відноситься до відправляємих якщо такі є
+     * потім отримуємо повідомлення які відносяться до повідомлення або файлу
+     * якщо є щось інше то ми їх видаляємо щоб не було накопичення.
+     */
+    private void getOfflineMessage() {
+        HashMap<String, Envelope> messages = messageManager.getMessagesExceptOperation("send");
+
+        for (Map.Entry<String, Envelope> entry : messages.entrySet()) {
+            String messageId = entry.getKey();
+            Envelope envelope = entry.getValue();
+            if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
+                saveMessage(envelope.toJson().toString());
+            } else {
+                messageManager.deleteMessageById(messageId);
+
+            }
+        }
+
     }
 
     /**
@@ -392,7 +459,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     toString();
             sendMessage(message);
         }
-
     }
 }
 
