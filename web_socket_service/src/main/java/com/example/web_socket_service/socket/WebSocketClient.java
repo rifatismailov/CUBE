@@ -183,7 +183,6 @@ public class WebSocketClient {
         return webSocket == null;
     }
 
-
     /**
      * Інтерфейс для обробки подій та логів.
      */

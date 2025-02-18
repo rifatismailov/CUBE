@@ -37,6 +37,7 @@ import com.example.cube.contact.ContactCreator;
 import com.example.cube.contact.ContactInterface;
 import com.example.cube.contact.ContactAdapter;
 import com.example.cube.contact.ContactData;
+import com.example.cube.contact.ContactSelector;
 import com.example.cube.databinding.ActivityMainBinding;
 import com.example.cube.db.ContactManager;
 import com.example.cube.db.MessageMainManager;
@@ -65,6 +66,7 @@ import com.example.web_socket_service.socket.IOService;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -96,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
-    private String receiverId = "";       // ID отримувача
     private ContactData contactData;           // Об'єкт користувача
     private ContactManager contactManager;
     private Manager manager;
@@ -111,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
+    private final JSONArray jsonContact = new JSONArray();
+    private final ContactSelector contactSelector = new ContactSelector();
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String avatarImageUrl, String accountImageUrl) {
@@ -199,12 +202,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactManager = new ContactManager(db);
         registerChatActivityReceiver();
         registerIOServiceReceiver();
-
+        initUserList();
         startService();
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
 
-        initUserList();
+
         new Handler().postDelayed(() -> {
             if (manager.userSetting().getId() == null)
                 scannerQrAccount();
@@ -238,6 +241,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 entry.getValue().setMessageSize("" + messageCount);
                 Log.e("Operation", "Count Save Message: " + messageCount);
             }
+            Log.e("MainActivity", "Contact ID: " + entry.getValue().getId());
+
+            jsonContact.put(entry.getValue().getId());
             contactDataList.add(entry.getValue());
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
@@ -257,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if (data.equals("endUser")) {
             Log.e("MainActivity", "end User " + data);
-            receiverId = "";
+            contactSelector.setContact("");
             notifyIdReciverChanged("");
         } else {
             if (contactData != null) {
@@ -324,13 +330,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             if (sleep != null) {
                 Log.e("MainActivity", "sleep " + sleep);
-                receiverId = "";
+                contactSelector.setContact("");
+
                 notifyIdReciverChanged("");
             }
             if (awake != null) {
                 Log.e("MainActivity", "awake " + awake);
                 notifyIdReciverChanged(awake);
-                receiverId = awake;
+                contactSelector.setContact(awake);
+
             }
         }
     };
@@ -347,14 +355,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     try {
                         JSONObject object = new JSONObject(message);
                         Envelope envelope = new Envelope(object);
-                        if (receiverId.equals(envelope.getSenderId())) {
+                        if (contactSelector.getContact().equals(envelope.getSenderId())) {
                             openSaveMessage();
                             onReceived(message);
-                            Log.e("MainActivityA","[-] "+ message);
+                            Log.e("MainActivityA", "[-] " + message);
 
-                        }else {
+                        } else {
                             saveMessage(message);
-                            Log.e("MainActivityA","[X] "+ message);
+                            Log.e("MainActivityA", "[X] " + message);
                         }
                     } catch (Exception e) {
                         Log.e("MainActivity", "Error to open message: " + e);
@@ -377,31 +385,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
-//
-//    {
-////        JSONObject object = new JSONObject(message);
-////        Envelope envelope = new Envelope(object);
-////        Log.e("MAIN_ACTIVITY_LIFE", "activity Life " + connectionInfo.getActivityLife());
-////
-////        if (connectionInfo.getSenderId() != null) {
-////            if (connectionInfo.getSenderId().equals(envelope.getSenderId()) &&
-////                    connectionInfo.getReceiverId().equals(envelope.getReceiverId())) {
-////                addMessage(message);
-////            } else if (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) {
-////                Log.e("IOService", "Send Message to chat Activity ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
-////                addMessage(message);
-////            } else {
-////                Log.e("IOService", "Save Message ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
-////                saveMessage(message);
-////            }
-////        } else {
-////            Log.e("IOService", "Receiver ID :" + connectionInfo.getReceiverId());
-////        }
-//    }
+
 
     private void openSaveMessage() {
-        if (receiverId != null) {
-            new Operation(this, messageManager).openSaveMessage(receiverId);
+        if (!contactSelector.getContact().isEmpty()) {
+            new Operation(this, messageManager).openSaveMessage(contactSelector.getContact());
         }
     }
 
@@ -516,6 +504,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
                 serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
                 serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_LIFE.getFIELD(), "reborn");
+                // Формуємо об'єкт JSONObject
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("contacts", jsonContact);
+                    Log.e("MainActivity", "Json Contact" + jsonObject);
+
+                } catch (Exception e) {
+                }
 
                 // Зупиняємо сервіс, якщо він працює
                 stopService(serviceIntent);
@@ -549,6 +545,69 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);
     }
 
+
+    private void generationStartWithSendKey() {
+        try {
+            KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA(); // Генерація та додовання RSA ключа
+            keyGenerator.key();
+            contactData.setPublicKey(keyGenerator.getPublicKey());
+            contactData.setPrivateKey(keyGenerator.getPrivateKey());
+            String key = KeyGenerator.AES.generateKey(16);    // Генерація та додовання AES ключа
+            if (!key.isEmpty()) {
+                contactData.setSenderKey(key);
+                sendHandshake(
+                        manager.userSetting().getId(),
+                        contactSelector.getContact(),
+                        FIELD.HANDSHAKE.getFIELD(),
+                        FIELD.PUBLIC_KEY.getFIELD(),
+                        contactData.getPublicKey()); // відправка публічного ключа отримувачу та чекаємо ключа від нього, після буде автоматично обмін AES ключа
+            } else {
+                Log.e("MainActivity", "Failed to generate AES key");
+                return;
+            }
+            //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
+            contactSelector.setContact("");
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error generating RSA keys: " + e);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private void getReceiverKey() {
+        try {
+            // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
+            // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
+            if (contactData.getReceiverPublicKey() == null) {
+                sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+                contactSelector.setContact("");  //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
+            } else {
+                if (contactSelector.getContact() != null && !contactSelector.getContact().isEmpty()) {
+                    if (!contactData.getReceiverKey().isEmpty()) {
+                        startChat(binding.getRoot().getRootView(), contactData);
+                        openSaveMessage();
+                        contactData.setMessageSize("");
+                        contactAdapter.notifyDataSetChanged();
+                        notifyIdReciverChanged(contactSelector.getContact());
+                    }
+                } else {
+                    try {
+                        PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
+                        String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
+                        if (AES != null && !AES.isEmpty()) {
+                            sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                        } else {
+                            Log.e("MainActivity", "Failed to encrypt AES key");
+                        }
+                    } catch (Exception e) {
+                        Log.e("MainActivity", "Error during AES key encryption: " + e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", e.toString());
+        }
+    }
+
     /**
      * Обробка натискання на елемент списку контактів.
      *
@@ -578,74 +637,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         contactData = contactDataList.get(i);
         contactData.setSize(0);
-        receiverId = contactData.getId();
+        contactSelector.setContact(contactData.getId());
         try {
             if (contactData.getPublicKey().isEmpty() || contactData.getPublicKey() == null) {
-                //generate PublicKey
-                try {
-                    KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
-                    keyGenerator.key();
-                    contactData.setPublicKey(keyGenerator.getPublicKey());
-                    contactData.setPrivateKey(keyGenerator.getPrivateKey());
-                    // Треба додати генерацію ключа AES
-                    String key = KeyGenerator.AES.generateKey(16);
-                    if (key.isEmpty()) {
-                        Log.e("MainActivity", "Failed to generate AES key");
-                        return;
-                    }
-                    contactData.setSenderKey(key);
-
-                    // відправка публічного ключа отримувачу
-                    sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-                    //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-                    receiverId = "";
-                } catch (Exception e) {
-                    Log.e("MainActivity", "Error generating RSA keys: " + e);
-                }
-
-
-                //serverConnection.setReceiverId(receiverId);
+                generationStartWithSendKey();
             } else {
-                try {
-                    if (contactData.getReceiverPublicKey() == null) {
-                        // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
-                        // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
-                        sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-                        //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-                        receiverId = "";
-                        //serverConnection.setReceiverId(receiverId);
-                    } else {
-//                        if (receiverId != null && !receiverId.isEmpty())
-                        if (receiverId != null && !receiverId.isEmpty()) {
-                            if (!contactData.getReceiverKey().isEmpty()) {
-                                startChat(binding.getRoot().getRootView(), contactData);
-                                openSaveMessage();
-                                contactData.setMessageSize("");
-                                contactAdapter.notifyDataSetChanged();
-                                notifyIdReciverChanged(receiverId);
-                            }
-                        } else {
-                            try {
-                                PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
-                                String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
-                                if (AES != null && !AES.isEmpty()) {
-                                    sendHandshake(manager.userSetting().getId(), receiverId, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
-                                } else {
-                                    Log.e("MainActivity", "Failed to encrypt AES key");
-                                }
-                            } catch (Exception e) {
-                                Log.e("MainActivity", "Error during AES key encryption: " + e);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e("MainActivity", e.toString());
-                }
+                getReceiverKey();
             }
         } catch (Exception e) {
             Log.e("MainActivity", e.toString());
         }
-
     }
 
     /**
@@ -657,15 +658,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
         contactData = contactDataList.get(i);
         contactData.setSize(0);
-        receiverId = contactData.getId();
+        contactSelector.setContact(contactData.getId());
         KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
         keyGenerator.key();
         contactData.setPublicKey(keyGenerator.getPublicKey());
         contactData.setPrivateKey(keyGenerator.getPrivateKey());
         String key = KeyGenerator.AES.generateKey(16);
         contactData.setSenderKey(key);
-        sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-        receiverId = "";
+        sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+        contactSelector.setContact("");
         return false;
     }
 
@@ -695,7 +696,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      *
      * @param message дані повідомлення, яке зберігається.
      */
-
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
