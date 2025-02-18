@@ -84,7 +84,7 @@ public class MessageServiceManager {
      * @param operation операція за яким прийшло повідомлення
      *                  підрахунок робимо коли повідомлення має operation message або file
      */
-    public int getMessageCountBySenderAndOperation(String operation) {
+    public int getMessageCountByOperation(String operation) {
         int count = 0;
         Cursor cursor = null;
         try {

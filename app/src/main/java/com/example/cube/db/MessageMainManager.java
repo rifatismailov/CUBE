@@ -137,5 +137,15 @@ public class MessageMainManager {
             Log.e("MessageMainManager", "Error deleting message: " + e.getMessage());
         }
     }
-
+    /**
+     * Метод для видалення всіх повідомлень
+     */
+    public void deleteAllMessages() {
+        try {
+            int deletedRows = database.delete(TABLE_MESSAGES_MAIN, null, null);
+            Log.e("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error deleting all messages: " + e.getMessage());
+        }
+    }
 }

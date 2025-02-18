@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
-    private String receiverId = null;       // ID отримувача
+    private String receiverId = "";       // ID отримувача
     private ContactData contactData;           // Об'єкт користувача
     private ContactManager contactManager;
     private Manager manager;
@@ -253,11 +253,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param data Отримані дані.
      */
     private void receivingData(String data) {
-        Log.e("IOService", "receiving Data on ChatActivity" + data);
+        Log.e("MainActivity", "receiving Data on ChatActivity" + data);
 
         if (data.equals("endUser")) {
             Log.e("MainActivity", "end User " + data);
-            receiverId = null;
+            receiverId = "";
             notifyIdReciverChanged("");
         } else {
             if (contactData != null) {
@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
-            Log.e("IOService", "Message " + object);
+            Log.e("MainActivity", "Message " + object);
 
             // Отримуємо значення messageStatus, перевіряємо на null і обрізаємо пробіли
             String status = envelope.getMessageStatus();
@@ -292,7 +292,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case "delivered_to_user":
                     sendMessageToService(message);
                     messageManager.deleteMessageById(envelope.getMessageId());
-                    Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
+                    // messageManager.deleteAllMessages();
+                    // Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
                     break;
                 case "update_to_user":
                     sendMessageToService(message);
@@ -323,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             if (sleep != null) {
                 Log.e("MainActivity", "sleep " + sleep);
-                receiverId =null;
+                receiverId = "";
                 notifyIdReciverChanged("");
             }
             if (awake != null) {
@@ -342,22 +343,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
-
                 if (message != null) {
-                    openSaveMessage();
-                    onReceived(message);
-                    Log.e("IOService", "Send Message with Main Activity to Chat Activity: " + message);
+                    try {
+                        JSONObject object = new JSONObject(message);
+                        Envelope envelope = new Envelope(object);
+                        if (receiverId.equals(envelope.getSenderId())) {
+                            openSaveMessage();
+                            onReceived(message);
+                            Log.e("MainActivityA","[-] "+ message);
+
+                        }else {
+                            saveMessage(message);
+                            Log.e("MainActivityA","[X] "+ message);
+                        }
+                    } catch (Exception e) {
+                        Log.e("MainActivity", "Error to open message: " + e);
+                    }
                 }
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
                 if (save_message != null) {
                     saveMessage(save_message);
-                    Log.e("IOService", "Save Message on Main Activity: " + save_message);
+                    Log.e("MainActivity", "Save Message on Main Activity: " + save_message);
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
                     try {
                         String[] notificationAll = notification.split(":");
-                        //saveMessage(save_message);
                         setNotification(notificationAll[0], "");
                     } catch (Exception e) {
                         Log.e("MainActivity", e.toString());
@@ -366,9 +377,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
+//
+//    {
+////        JSONObject object = new JSONObject(message);
+////        Envelope envelope = new Envelope(object);
+////        Log.e("MAIN_ACTIVITY_LIFE", "activity Life " + connectionInfo.getActivityLife());
+////
+////        if (connectionInfo.getSenderId() != null) {
+////            if (connectionInfo.getSenderId().equals(envelope.getSenderId()) &&
+////                    connectionInfo.getReceiverId().equals(envelope.getReceiverId())) {
+////                addMessage(message);
+////            } else if (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) {
+////                Log.e("IOService", "Send Message to chat Activity ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
+////                addMessage(message);
+////            } else {
+////                Log.e("IOService", "Save Message ID : [" + connectionInfo.getReceiverId() + "] " + (connectionInfo.getReceiverId() != null && connectionInfo.getReceiverId().equals(envelope.getSenderId())) + " [" + envelope.getSenderId() + "]");
+////                saveMessage(message);
+////            }
+////        } else {
+////            Log.e("IOService", "Receiver ID :" + connectionInfo.getReceiverId());
+////        }
+//    }
 
-    private void openSaveMessage(){
-        if(receiverId!=null){
+    private void openSaveMessage() {
+        if (receiverId != null) {
             new Operation(this, messageManager).openSaveMessage(receiverId);
         }
     }
@@ -386,6 +418,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         Log.e("MainActivity", "MainActivity awake");
         notifyForLife("awake");
+        notifyForLife("reborn");
     }
 
     /**
@@ -489,6 +522,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 // Перезапускаємо сервіс із новими параметрами
                 startService(serviceIntent);
+
             }
         }
     }
@@ -564,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     // відправка публічного ключа отримувачу
                     sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
                     //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-                    receiverId = null;
+                    receiverId = "";
                 } catch (Exception e) {
                     Log.e("MainActivity", "Error generating RSA keys: " + e);
                 }
@@ -578,9 +612,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
                         sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
                         //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
-                        receiverId = null;
+                        receiverId = "";
                         //serverConnection.setReceiverId(receiverId);
                     } else {
+//                        if (receiverId != null && !receiverId.isEmpty())
                         if (receiverId != null && !receiverId.isEmpty()) {
                             if (!contactData.getReceiverKey().isEmpty()) {
                                 startChat(binding.getRoot().getRootView(), contactData);
@@ -630,7 +665,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String key = KeyGenerator.AES.generateKey(16);
         contactData.setSenderKey(key);
         sendHandshake(manager.userSetting().getId(), receiverId, FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-        receiverId = null;
+        receiverId = "";
         return false;
     }
 

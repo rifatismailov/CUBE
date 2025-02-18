@@ -61,8 +61,6 @@ public class WebSocketClient {
                             isRegistered = true;
                             retryCount = 0; // Скидаємо лічильник невдалих спроб
                         } else {
-                            Log.e("IOService", "Received message  " + text);
-
                             if (listener != null) {
                                 listener.onListener(text); // Передаємо в сервіс у фоновому потоці
                             } else {
@@ -145,8 +143,6 @@ public class WebSocketClient {
 
     // Метод для відправки повідомлень
     public void sendMessage(String message) {
-        Log.e("IOService", "Web Socket Message To Service: " + message);
-
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -186,6 +182,7 @@ public class WebSocketClient {
     public boolean isClosed() {
         return webSocket == null;
     }
+
 
     /**
      * Інтерфейс для обробки подій та логів.
