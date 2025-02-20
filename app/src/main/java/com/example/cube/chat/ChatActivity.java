@@ -278,7 +278,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             newList.add(message);
 
             // Відправляємо повідомлення
-            new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey);
+            new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey, message.getTimestamp());
 
             // Використовуємо DiffUtil для оновлення списку
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
@@ -315,7 +315,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     .buildUrl();
 
             // Відправляємо файл
-            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId());
+            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId(), message.getTimestamp());
 
             // Використовуємо DiffUtil для оптимального оновлення
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
@@ -362,6 +362,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             message.setTypeFile(fileData.getFileType(new File(url)));
             message.setHas(has);
             message.setDataCreate(fileData.getFileDate(new File(url)));
+            message.setTimestamp(getTime());
             addMessageFile(message, encFile);
 
         } catch (Exception e) {
@@ -418,8 +419,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
         });
     }
-
-
 
 
     // Перевірка, чи знаходиться RecyclerView на останній позиції
@@ -481,7 +480,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 //            Log.e("ChatActivity", "Помилка під час отримання повідомлення :" + e);
 //        }
 //    }
-
     @Override
     public void readMessage(Message message) {
         try {
@@ -506,7 +504,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (!messageExists) { // Якщо повідомлення не знайдено
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
-                message.setTimestamp(getTime());
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
                 // Оновлення списку за допомогою DiffUtil
@@ -518,7 +515,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     autoScroll(); // Автоскрол після оновлення
                 });
             }
-
 
 
             new OperationMSG(this).returnAboutDeliver(message);
@@ -558,7 +554,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (!messageExists) { // Якщо повідомлення не знайдено
                 message.setSenderId(senderId);
                 message.setReceiverId(receiverId);
-                message.setTimestamp(getTime());
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
                 // Оновлення списку за допомогою DiffUtil
@@ -571,15 +566,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 });
             }
 
-
-
             new OperationMSG(this).returnAboutDeliver(message);
 
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);
         }
     }
-
 
 
     @Override
@@ -601,7 +593,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 Message message = messages.get(i);
                 if (message.getMessageId().equals(messageId)) {
                     message.setMessageStatus(messageStatus);
-                    message.setTimestamp(getTime());
                     manager.updateMessage(message);
 
                     // Перевірка коректності адаптера
@@ -610,8 +601,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     } else {
                         Log.e("ChatActivity", "Адаптер дорівнює NULL. Unable to notify.");
                     }
-
-                    Log.e("ChatActivity", "Оновлене повідомлення на позиції: " + i + " з ідентифікатором: " + messageId);
                     break;
                 }
             }

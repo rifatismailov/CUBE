@@ -495,10 +495,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_LIFE.getFIELD(), "reborn");
 
                 try {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("userId", manager.userSetting().getId());
-                    jsonObject.put("contacts", jsonContact);
-                    serviceIntent.putExtra("MAIN_ACTIVITY_REGISTRATION", jsonObject.toString());
+                    serviceIntent.putExtra("MAIN_ACTIVITY_REGISTRATION", getContactToJsonArray());
                 } catch (Exception e) {
                     Log.e("MainActivity", "Json error" + e);
                 }
@@ -513,6 +510,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    private String getContactToJsonArray() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", manager.userSetting().getId());
+        jsonObject.put("contacts", jsonContact);
+        return jsonObject.toString();
+    }
 
     private void notifyIdReciverChanged(String receiverId) {
         Intent intent = new Intent(FIELD.CUBE_ID_RECIVER.getFIELD());
@@ -526,6 +529,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);  // Надсилає повідомлення сервісу
     }
 
+    private void request(String message) {
+        Intent intent = new Intent("MAIN_ACTIVITY_REGISTRATION");
+        intent.putExtra("request", message);
+        sendBroadcast(intent);  // Надсилає повідомлення сервісу
+    }
     /**
      * Оповіщення про життя активності
      */
@@ -1193,7 +1201,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
             contactAdapter.notifyDataSetChanged();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("MainActivity", "[Помилка під час отримання посилань на файл] " + e);
         }
 

@@ -14,22 +14,20 @@ import java.io.File;
 
 public class NavigationManager {
 
-    private Activity activity;
     private Navigation navigation;
-    private DrawerLayout drawerLayout;
-    private ImageView avatarImage;
-    private ImageView accountImage;
-    private Button accountButton, settingsButton, logoutButton;
+    private final ImageView avatarImage;
+    private final ImageView accountImage;
+    private final Button accountButton;
+    private final Button settingsButton;
+    private final Button logoutButton;
     private final File externalDir;
 
     public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage, ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
-        this.activity = activity;
         if (!(activity instanceof Navigation)) {
             //Перевірка типу activity у конструкторі: Якщо активність не імплементує Navigation, це може викликати ClassCastException.
             throw new IllegalArgumentException("Activity must implement Navigation interface");
         }
         this.navigation = (Navigation) activity;
-        this.drawerLayout = drawerLayout;
         this.avatarImage = avatarImage;
         this.accountImage = accountImage;
         this.accountButton = accountButton;
