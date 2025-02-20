@@ -142,4 +142,12 @@ public class ContactManager {
             e.printStackTrace();
         }
     }
+    public void deleteAll() {
+        try {
+            int deletedRows = database.delete(TABLE_CONTACTS, null, null);
+            Log.e("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error deleting all messages: " + e.getMessage());
+        }
+    }
 }

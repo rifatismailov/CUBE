@@ -295,13 +295,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case "update_to_user":
                     sendMessageToService(message);
                     messageManager.deleteMessageById(envelope.getMessageId());
+
                     break;
                 default:
                     sendMessageToService(message);
                     break;
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Method set Message with Error " + e);
+            Log.e("IOService", "Method set Message with Error " + e);
         }
     }
 
@@ -458,7 +459,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startActivity(intent);
     }
 
-
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -477,7 +477,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @Server Ip адрес серверу повідомлень
      * @Server Port порт серверу повідомлень
      */
-
     public void startService() {
         if (manager.userSetting().getId() != null &&
                 manager.userSetting().getServerIp() != null &&
@@ -506,9 +505,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 if (!isMyServiceRunning(IOService.class)) {  // Якщо сервіс ще не запущений
                     startService(serviceIntent);
-                    Log.e("MainActivity", "Сервіс запущено");
+                    Log.d("MainActivity", "Сервіс запущено");
                 } else {
-                    Log.e("MainActivity", "Сервіс вже працює, повторний запуск не потрібен");
+                    Log.d("MainActivity", "Сервіс вже працює, повторний запуск не потрібен");
                 }
             }
         }
@@ -544,6 +543,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             contactData.setPublicKey(keyGenerator.getPublicKey());
             contactData.setPrivateKey(keyGenerator.getPrivateKey());
             String key = KeyGenerator.AES.generateKey(16);    // Генерація та додовання AES ключа
+            Log.e("MainActivity", "contactSelector.getContact() " + contactSelector.getContact());
+
             if (!key.isEmpty()) {
                 contactData.setSenderKey(key);
                 sendHandshake(
@@ -648,7 +649,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
         ContactData contactData = contactDataList.get(i);
-//        contactSelector.setContact(contactData);
+        contactSelector.setContact(contactData);
         KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
         keyGenerator.key();
         contactData.setPublicKey(keyGenerator.getPublicKey());
@@ -656,7 +657,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String key = KeyGenerator.AES.generateKey(16);
         contactData.setSenderKey(key);
         sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-//        contactSelector.setContact("");
+        contactSelector.setContact("");
         return false;
     }
 
@@ -1176,21 +1177,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     @Override
     public void updateItem(int position, String positionId, String url, String has) {
-        String avatar = getAvatarInfoAndRemove(positionId);
-        String[] positionName = avatar.split(":");
-        for (ContactData user : contactDataList) {
-            if (user.getId().equals(positionName[0])) {
-                if (positionName[1].equals("avatar_org")) {
-                    user.setAvatarImageUrl(url);
+        try {
+            String avatar = getAvatarInfoAndRemove(positionId);
+            String[] positionName = avatar.split(":");
+            for (ContactData user : contactDataList) {
+                if (user.getId().equals(positionName[0])) {
+                    if (positionName[1].equals("avatar_org")) {
+                        user.setAvatarImageUrl(url);
+                    }
+                    if (positionName[1].equals("avatar")) {
+                        user.setAccountImageUrl(url);
+                    }
+                    contactManager.updateContact(user, secretKey);
+                    break;
                 }
-                if (positionName[1].equals("avatar")) {
-                    user.setAccountImageUrl(url);
-                }
-                contactManager.updateContact(user, secretKey);
-                break;
             }
+            contactAdapter.notifyDataSetChanged();
+        }catch (Exception e){
+            Log.e("MainActivity", "[Помилка під час отримання посилань на файл] " + e);
         }
-        contactAdapter.notifyDataSetChanged();
+
     }
 
     /**
@@ -1234,6 +1240,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void showAccount() {
         AccountDialog accountDialog = new AccountDialog(this, manager.getAccount());
         accountDialog.show(getSupportFragmentManager(), "AccountDialog");
+    }
+
+    @Override
+    public void logout() {
+        contactManager.deleteAll();
+        finish();
     }
 
     /**

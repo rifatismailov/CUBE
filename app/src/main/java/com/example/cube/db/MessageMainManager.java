@@ -139,6 +139,7 @@ public class MessageMainManager {
     }
     /**
      * Метод для видалення всіх повідомлень
+
      */
     public void deleteAllMessages() {
         try {

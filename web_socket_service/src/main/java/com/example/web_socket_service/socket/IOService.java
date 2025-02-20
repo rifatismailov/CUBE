@@ -353,6 +353,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      */
     @Override
     public void onListener(String message) {
+        Log.e("MainActivity", "Handshake onListener JSON: " + message);
 
         if (message != null) {
             try {

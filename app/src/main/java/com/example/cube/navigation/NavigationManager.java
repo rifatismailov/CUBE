@@ -60,7 +60,7 @@ public class NavigationManager {
                 navigation.showSetting();
                 break;
             case R.id.nav_logout:
-                navigation.scannerQrAccount();
+                navigation.logout();
                 // Логіка для "Вихід"
                 break;
             case R.id.accountImage:
@@ -100,5 +100,6 @@ public class NavigationManager {
         void showSetting();
 
         void showAccount();
+        void logout();
     }
 }

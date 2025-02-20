@@ -79,6 +79,7 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         receiverKey.setHashes(chunksReceiverKey);
         image.setOnClickListener(view1 -> {
             contactInterface.onImageClickContact(position);
+            contactInterface.onImageClickContact(position);
 
             if (contactData.getAccountImageUrl() != null && !contactData.getAccountImageUrl().isEmpty()) {
                 // вікно відображення QR коду або зображення та повної інформації
