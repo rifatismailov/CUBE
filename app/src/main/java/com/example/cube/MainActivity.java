@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -98,22 +99,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private TextView user_name;
     private TextView user_id;
-    private ContactData contactData;           // Об'єкт користувача
     private ContactManager contactManager;
     private Manager manager;
-    private MessageMainManager messageManager;
-    private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
-    private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
-    private List<NotificationLogger> notificationLoggers;
-    private NotificationAdapter notificationAdapter;
     private SecretKey secretKey;  // AES-ключ
-    private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
-    private final HashMap<String, String> avatar_map = new HashMap<>();
-    private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
-    private final JSONArray jsonContact = new JSONArray();
+    private List<NotificationLogger> notificationLoggers;
+    private NotificationAdapter notificationAdapter;
+    private MessageMainManager messageManager;
+    private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
+    private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private final ContactSelector contactSelector = new ContactSelector();
+    private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
+    private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
+    private final HashMap<String, String> avatar_map = new HashMap<>();
+    private final JSONArray jsonContact = new JSONArray();
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String avatarImageUrl, String accountImageUrl) {
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-
+        contactSelector.setContact("");//обнуляємо контакт для відображення кількості повідомлень у списку не унеможливлення передачі до чат активності так як він не запушений
         /*З початку Android 13 необхідно запитувати у користувача дозвіл на відображення нотифікацій. Це робиться так:*/
         setContentView(binding.getRoot());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -259,16 +259,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param data Отримані дані.
      */
     private void receivingData(String data) {
-        Log.e("MainActivity", "receiving Data on ChatActivity" + data);
-
         if (data.equals("endUser")) {
             Log.e("MainActivity", "end User " + data);
             contactSelector.setContact("");
             notifyIdReciverChanged("");
         } else {
-            if (contactData != null) {
+            if (contactSelector.getContactData() != null) {
                 if (!data.isEmpty()) {
-                    if (contactData.getReceiverPublicKey() != null) {
+                    if (contactSelector.getContactData().getReceiverPublicKey() != null) {
                         setMessage(data);
                     }
                 }
@@ -285,8 +283,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
-            Log.e("MainActivity", "Message " + object);
-
             // Отримуємо значення messageStatus, перевіряємо на null і обрізаємо пробіли
             String status = envelope.getMessageStatus();
             if (status == null || status.trim().isEmpty()) {
@@ -296,21 +292,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             switch (status) {
                 case "delivered_to_user":
-                    sendMessageToService(message);
-                    messageManager.deleteMessageById(envelope.getMessageId());
-                    // messageManager.deleteAllMessages();
-                    // Log.e("IOService", "Delete message on MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
-                    break;
                 case "update_to_user":
                     sendMessageToService(message);
-                    Log.e("IOService", "Update message MainActivity" + envelope.getMessageStatus() + " ID message " + envelope.getMessageId());
+                    messageManager.deleteMessageById(envelope.getMessageId());
                     break;
                 default:
                     sendMessageToService(message);
                     break;
             }
         } catch (Exception e) {
-            Log.e("IOService", "Method set Message with Error " + e);
+            Log.e("MainActivity", "Method set Message with Error " + e);
         }
     }
 
@@ -323,8 +314,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             String dataFromChat = intent.getStringExtra(FIELD.DATA_FROM_CHAT.getFIELD());
             String sleep = intent.getStringExtra("sleep");
             String awake = intent.getStringExtra("awake");
-
-
             if (dataFromChat != null) {
                 receivingData(dataFromChat);
             }
@@ -359,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             openSaveMessage();
                             onReceived(message);
                             Log.e("MainActivityA", "[-] " + message);
-
                         } else {
                             saveMessage(message);
                             Log.e("MainActivityA", "[X] " + message);
@@ -396,15 +384,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         super.onPause();
-
-        Log.e("MainActivity", "MainActivity sleep");
         notifyForLife("sleep");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e("MainActivity", "MainActivity awake");
         notifyForLife("awake");
         notifyForLife("reborn");
     }
@@ -416,17 +401,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onDestroy() {
         super.onDestroy();
         try {
+            notifyForLife("died");//Сповіщаємо сервіс про те що Головне активність знищена
             unregisterReceiver(chatActivityReceiver);
+            unregisterReceiver(ioServiceReceiver);//Знищуємо BroadcastReceiver
         } catch (IllegalArgumentException e) {
-            Log.e("MainActivity", "dataReceiver не зареєстровано або вже видалено.");
-        }
-        try {
-            //Сповіщаємо сервіс про те що Головне активність знищена
-            notifyForLife("died");
-            //Знищуємо BroadcastReceiver
-            unregisterReceiver(ioServiceReceiver);
-        } catch (IllegalArgumentException e) {
-            Log.e("MainActivity", "serverMessageReceiver не зареєстровано або вже видалено.");
+            Log.e("MainActivity", "Receiver не зареєстровано або вже видалений.");
         }
     }
 
@@ -476,10 +455,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.FILE_SERVER_PORT.getFIELD(), manager.userSetting().getFileServerPort());
         Log.e("MainActivity", manager.userSetting().getFileServerIp() + " " + manager.userSetting().getFileServerPort());
 
-
         startActivity(intent);
     }
 
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Метод який стартує сервіс для обміну повідомленнями
@@ -489,39 +477,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @Server Ip адрес серверу повідомлень
      * @Server Port порт серверу повідомлень
      */
+
     public void startService() {
-        // Запуск сервісу
         if (manager.userSetting().getId() != null &&
                 manager.userSetting().getServerIp() != null &&
                 manager.userSetting().getServerPort() != null &&
                 !manager.userSetting().getId().isEmpty() &&
                 !manager.userSetting().getServerIp().isEmpty() &&
                 !manager.userSetting().getServerPort().isEmpty()) {
+
             if (new UrlBuilder.IPValidator().validate(manager.userSetting().getServerIp()) &&
                     new UrlBuilder.PortValidator().validate(manager.userSetting().getServerPort())) {
+
                 Intent serviceIntent = new Intent(this, IOService.class);
                 serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
                 serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
                 serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
                 serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_LIFE.getFIELD(), "reborn");
-                // Формуємо об'єкт JSONObject
+
                 try {
                     JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userId", manager.userSetting().getId());
                     jsonObject.put("contacts", jsonContact);
-                    Log.e("MainActivity", "Json Contact" + jsonObject);
-
+                    serviceIntent.putExtra("MAIN_ACTIVITY_REGISTRATION", jsonObject.toString());
                 } catch (Exception e) {
+                    Log.e("MainActivity", "Json error" + e);
                 }
 
-                // Зупиняємо сервіс, якщо він працює
-                stopService(serviceIntent);
-
-                // Перезапускаємо сервіс із новими параметрами
-                startService(serviceIntent);
-
+                if (!isMyServiceRunning(IOService.class)) {  // Якщо сервіс ще не запущений
+                    startService(serviceIntent);
+                    Log.e("MainActivity", "Сервіс запущено");
+                } else {
+                    Log.e("MainActivity", "Сервіс вже працює, повторний запуск не потрібен");
+                }
             }
         }
     }
+
 
     private void notifyIdReciverChanged(String receiverId) {
         Intent intent = new Intent(FIELD.CUBE_ID_RECIVER.getFIELD());
@@ -530,7 +522,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void sendMessageToService(String message) {
-        Log.e("MainActivity", "send Message To Service" + message);
         Intent intent = new Intent(FIELD.CUBE_SEND_TO_SERVER.getFIELD());
         intent.putExtra(FIELD.MESSAGE.getFIELD(), message);
         sendBroadcast(intent);  // Надсилає повідомлення сервісу
@@ -546,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void generationStartWithSendKey() {
+    private void generationStartWithSendKey(ContactData contactData) {
         try {
             KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA(); // Генерація та додовання RSA ключа
             keyGenerator.key();
@@ -573,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    private void getReceiverKey() {
+    private void getReceiverKey(ContactData contactData) {
         try {
             // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
             // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
@@ -635,14 +626,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        contactData = contactDataList.get(i);
-        contactData.setSize(0);
-        contactSelector.setContact(contactData.getId());
+        ContactData contactData = contactDataList.get(i);
+        contactSelector.setContact(contactData);
         try {
             if (contactData.getPublicKey().isEmpty() || contactData.getPublicKey() == null) {
-                generationStartWithSendKey();
+                generationStartWithSendKey(contactData);
             } else {
-                getReceiverKey();
+                getReceiverKey(contactData);
             }
         } catch (Exception e) {
             Log.e("MainActivity", e.toString());
@@ -652,13 +642,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Обробка довгого натискання для генерації нових ключів
      * в подальшому буде змінено на більш функціональний підхід
+     * наприклад через меню
      */
 
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-        contactData = contactDataList.get(i);
-        contactData.setSize(0);
-        contactSelector.setContact(contactData.getId());
+        ContactData contactData = contactDataList.get(i);
+//        contactSelector.setContact(contactData);
         KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA();
         keyGenerator.key();
         contactData.setPublicKey(keyGenerator.getPublicKey());
@@ -666,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String key = KeyGenerator.AES.generateKey(16);
         contactData.setSenderKey(key);
         sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
-        contactSelector.setContact("");
+//        contactSelector.setContact("");
         return false;
     }
 
@@ -877,26 +867,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Отримання та відправу Handshake.
      *
-     * @param envelope дані повідомлення, яке зберігається.
+     * @param envelope повідомлення, дані якого зберігається.
      */
     @Override
     public void addHandshake(Envelope envelope) {
         try {
-
             String sender = envelope.getSenderId();
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             JSONObject jsonObject = new JSONObject(receivedMessage);
             String publicKey = jsonObject.getString(FIELD.PUBLIC_KEY.getFIELD());
 
             if (!publicKey.isEmpty() || !publicKey.equals(publicKey)) {
-                Log.e("MainActivity", sender + " Handshake RSA: " + publicKey);
-
                 updateReceiverPublicKey(sender, publicKey);
-                PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
-                Log.e("MainActivity", sender + " Handshake receiverPublicKey: " + receiverPublicKey);
-
-                String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
-                sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
             }
         } catch (JSONException e) {
             Log.e("MainActivity", "Помилка під час парсінгу JSON: " + e);
@@ -928,14 +910,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param publicKey ключ відправника.
      */
     private void updateReceiverPublicKey(String sender, String publicKey) {
-        Log.e("MainActivity", sender + " update Receiver Public Key: " + publicKey);
-
-        for (ContactData user : contactDataList) {
-            if (user.getId().equals(sender)) {
-                user.setReceiverPublicKey(publicKey);
-                contactManager.updateContact(user, secretKey);
-                break;
+        try {
+            for (ContactData user : contactDataList) {
+                if (user.getId().equals(sender)) {
+                    user.setReceiverPublicKey(publicKey);
+                    PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
+                    String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
+                    sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                    contactManager.updateContact(user, secretKey);
+                    break;
+                }
             }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error of update key " + e);
         }
         contactAdapter.notifyDataSetChanged();
     }
@@ -977,11 +964,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Викликає сканер QR-коду для додавання контакту.
      */
-
     @Override
     public void scannerQrContact() {
-//        deleteDatabase("cube.db");
-//        finish();
         new QR(qrCodeAddContact);
     }
 
@@ -1094,7 +1078,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onImageClickContact(int position) {
-        contactData = contactDataList.get(position);
+        ContactData contactData = contactDataList.get(position);
         sendHandshake(manager.userSetting().getId(), contactData.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", contactData.getPublicKey());
     }
 
@@ -1113,9 +1097,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         } catch (Exception e) {
             Log.e("MainActivity", "[ Progress ]: " + e);
-
         }
-
     }
 
     /**
@@ -1171,7 +1153,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void addFile(String messageId, String url, String encFile, String has) {
-
     }
 
     private String getTime() {
@@ -1213,7 +1194,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Метод для отримання ключа для розшифрування файлу
+     * Метод для отримання AES ключа для розшифрування файлу
      *
      * @param positionId Id-Повідомлення яке прийшло та за яким збережений Id контакту та код зображення
      *                   Звертаємося до avatar_map та отримуємо масив через який ми отримуємо ID контакту для отримання ключа
@@ -1240,16 +1221,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         inputDialog.show();
     }
 
-
+    /**
+     * Метод отримання налаштування
+     */
     @Override
     public void onSetting(JSONObject jsonObject) {
         manager.writeAccount(jsonObject);
-        startService();
+        startService(); //перезапуск сервісу
     }
 
     @Override
     public void showAccount() {
         AccountDialog accountDialog = new AccountDialog(this, manager.getAccount());
         accountDialog.show(getSupportFragmentManager(), "AccountDialog");
+    }
+
+    /**
+     * Метод який видаляє всі данні
+     */
+    private void deleteAll() {
+        deleteDatabase("cube.db");
+        finish();
     }
 }

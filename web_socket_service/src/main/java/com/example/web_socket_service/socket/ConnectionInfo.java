@@ -1,10 +1,16 @@
 package com.example.web_socket_service.socket;
 
+import android.util.Log;
+
+import org.json.JSONObject;
+
 public class ConnectionInfo {
     private volatile String senderId;       // ІД відправника
     private volatile String receiverId;     // ІД отримувача
-    private String ip;
-    private String port;
+    private volatile String contacts;
+    private volatile String ip;
+    private volatile String port;
+    private volatile String registration;
     public ConnectionInfo(){
     }
     public ConnectionInfo(String senderId, String receiverId, String ip, String port) {
@@ -48,6 +54,14 @@ public class ConnectionInfo {
         this.ip = ip;
     }
 
+    public String getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(String contacts) {
+        this.contacts = contacts;
+    }
+
     public String getServerAddress() {
         if ("443".equals(port)) {
             return String.format("wss://%s:%s", ip, port);
@@ -55,7 +69,12 @@ public class ConnectionInfo {
         return String.format("ws://%s:%s", ip, port);
     }
 
+    public void setRegistration(String registration) {
+        this.registration = registration;
+    }
+
     public String getRegistration() {
-        return "{\"userId\":\"" + senderId + "\"}";
+
+        return registration;
     }
 }

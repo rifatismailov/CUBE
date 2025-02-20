@@ -199,6 +199,7 @@
                     android:id="@+id/messageNotifier"
                     android:layout_width="15sp"
                     android:layout_height="15sp"
+                    android:layout_marginEnd="5dp"
                     app:alignStart="true"
                     app:spacing="5dp" />
             </LinearLayout>

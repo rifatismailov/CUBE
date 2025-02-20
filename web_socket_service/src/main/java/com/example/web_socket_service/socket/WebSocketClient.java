@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -22,22 +24,24 @@ public class WebSocketClient {
     private final int MAX_RETRY = 3;
     private boolean isRegistered = false; // Чи отримали відповідь від сервера
     private boolean isCheckingStatus = false; // Запобігає множинним перевіркам
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    Listener listener;
+    private final Listener listener;
+    private ConnectionInfo connectionInfo;
 
-    public WebSocketClient(Listener listener) {
+    public WebSocketClient(Listener listener,ConnectionInfo connectionInfo) {
         this.listener = listener;
+        this.connectionInfo=connectionInfo;
+        this.SERVER_URL = connectionInfo.getServerAddress();
+        this.CLIENT_ID = connectionInfo.getRegistration();
         executorService = Executors.newFixedThreadPool(2); // Створюємо пул для асинхронних задач
-
     }
 
     // Метод для підключення до сервера
-    public void connect(String SERVER_URL, String CLIENT_ID) {
-        this.SERVER_URL = SERVER_URL;
-        this.CLIENT_ID = CLIENT_ID;
+    public void connect() {
+
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
@@ -47,47 +51,46 @@ public class WebSocketClient {
         Request request = new Request.Builder().url(SERVER_URL).build();
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
-            public void onOpen(WebSocket webSocket, Response response) {
+            public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
                 listener.onNotification("Connected to server...");
                 register();
             }
 
             @Override
-            public void onMessage(WebSocket webSocket, String text) {
-                if (text != null) {
-                    executorService.submit(() -> { // Виконуємо в окремому потоці
-                        if ("REGISTER_OK".equals(text)) {
-                            Log.e("IOService", "REGISTER_OK:" + CLIENT_ID + " " + text);
-                            isRegistered = true;
-                            retryCount = 0; // Скидаємо лічильник невдалих спроб
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+                executorService.submit(() -> { // Виконуємо в окремому потоці
+                    if ("REGISTER_OK".equals(text)) {
+                        Log.e("WebSocket", "REGISTER_OK:" + CLIENT_ID + " " + text);
+                        isRegistered = true;
+                        retryCount = 0; // Скидаємо лічильник невдалих спроб
+                        listener.onNotification("Connected to server...");
+
+                    } else {
+                        if (listener != null) {
+                            listener.onListener(text); // Передаємо в сервіс у фоновому потоці
                         } else {
-                            if (listener != null) {
-                                listener.onListener(text); // Передаємо в сервіс у фоновому потоці
-                            } else {
-                                Log.e("IOService", "Listener is null");
-                            }
+                            Log.e("WebSocket", "Listener is null");
                         }
-                    });
-                }
+                    }
+                });
             }
 
 
             @Override
-            public void onClosing(WebSocket webSocket, int code, String reason) {
+            public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 listener.onNotification("Connection closing: " + reason);
                 webSocket.close(1000, null);
             }
 
             @Override
-            public void onClosed(WebSocket webSocket, int code, String reason) {
-                listener.onNotification("Connection closed (Closed): " + reason);
+            public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                listener.onNotification("Connection closed : " + reason);
                 reconnect();
             }
 
             @Override
-            public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-                t.printStackTrace();
-                listener.onNotification("Connection failed (Failure): " + t.getMessage());
+            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, Response response) {
+                listener.onNotification("Connection failed : " + t.getMessage());
                 reconnect();
             }
         });
@@ -106,7 +109,9 @@ public class WebSocketClient {
         }
     }
 
-    // ✅ Запускає перевірку статусу кожні 3 секунди (тільки один раз!)
+    /**
+     * Запускає перевірку статусу кожні 3 секунди (тільки один раз!)
+     */
     private void startStatusCheck() {
         if (isCheckingStatus) return; // Запобігає множинному виклику
         isCheckingStatus = true;
@@ -135,13 +140,17 @@ public class WebSocketClient {
         }, 3000);
     }
 
-    // ✅ Зупиняє таймер перед перепідключенням
+    /**
+     * Зупиняє таймер перед перепідключенням
+     */
     private void stopStatusCheck() {
         isCheckingStatus = false; // Скидаємо флаг
         handler.removeCallbacksAndMessages(null); // Видаляємо всі заплановані завдання
     }
 
-    // Метод для відправки повідомлень
+    /**
+     * Метод для відправки повідомлень
+     */
     public void sendMessage(String message) {
         executorService.submit(new Runnable() {
             @Override
@@ -149,13 +158,15 @@ public class WebSocketClient {
                 if (webSocket != null) {
                     webSocket.send(message);
                 } else {
-                    Log.e("IOService", "WebSocket is not connected.");
+                    Log.e("WebSocket", "WebSocket is not connected.");
                 }
             }
         });
     }
 
-    // Закриття з'єднання
+    /**
+     * Закриття з'єднання
+     */
     public void closeConnection() {
         stopStatusCheck(); // Зупиняємо перевірку перед закриттям
         if (webSocket != null) {
@@ -165,13 +176,15 @@ public class WebSocketClient {
 
     }
 
-    // ✅ Оновлений метод перепідключення
+    /**
+     * Оновлений метод перепідключення
+     */
     private void reconnect() {
         stopStatusCheck(); // Зупиняємо старий таймер перед перепідключенням
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             listener.onNotification("Reconnecting...");
-            connect(SERVER_URL, CLIENT_ID); // Спроба перепідключення
+            connect(); // Спроба перепідключення
         }, 5000); // Затримка перед перепідключенням
     }
 
@@ -183,6 +196,9 @@ public class WebSocketClient {
         return webSocket == null;
     }
 
+    public boolean getStatusRegistration(){
+        return  isRegistered;
+    }
     /**
      * Інтерфейс для обробки подій та логів.
      */

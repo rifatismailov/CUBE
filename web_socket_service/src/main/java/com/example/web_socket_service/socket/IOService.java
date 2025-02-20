@@ -57,6 +57,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private ExecutorService executorService;
     private final Queue<Envelope> messageQueue = new ConcurrentLinkedQueue<>();
     private int messageCount;
+
     /**
      * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
      */
@@ -140,6 +141,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             switch (Life) {
                 case "reborn":
                     Log.e("IOService", "Main Activity reborn");
+                    getOfflineMessage();
                     break;
                 case "died":
                     Log.e("IOService", "Main Activity died");
@@ -258,17 +260,21 @@ public class IOService extends Service implements WebSocketClient.Listener {
             ip = intent.getStringExtra("CUBE_IP_TO_SERVER");
             port = intent.getStringExtra("CUBE_PORT_TO_SERVER");
             String life = intent.getStringExtra("MAIN_ACTIVITY_LIFE");
-            connectionInfo.setSenderId(senderId);
-            connectionInfo.setIp(ip);
-            connectionInfo.setPort(port);
-            webSocketClient = new WebSocketClient(this);
-            webSocketClient.connect(connectionInfo.getServerAddress(), connectionInfo.getRegistration());
+            String registration= intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
             try {
+
+                connectionInfo.setSenderId(senderId);
+                connectionInfo.setIp(ip);
+                connectionInfo.setPort(port);
+                connectionInfo.setRegistration(registration);
+                webSocketClient = new WebSocketClient(this, connectionInfo);
+                webSocketClient.connect();
+
                 if (life != null) {
                     switch (life) {
                         case "reborn":
-                            getOfflineMessage();
-                            Log.e("IOService", "Main Activity reborn");
+
+                            Log.e("IOService", "Main Activity reborn :" + life);
                             break;
                         case "died":
                             Log.e("IOService", "Main Activity died");
@@ -276,9 +282,10 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     }
                 }
             } catch (Exception e) {
-                Log.e("IOService", "Error to get activity life status: " + e.getMessage());
+                Log.e("IOService", "Error on Start Command: " + e);
             }
             updateNotification("CUBE is running", "Server address " + ip);
+            getOfflineMessage();
         }
         return START_STICKY;
     }

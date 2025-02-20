@@ -60,19 +60,15 @@ public class Operation {
                 operable.addAESKey(sender, receivedMessage);
                 operable.addMessage(message);
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.addMessage(message);
+                operable.addMessage(message); // Обробка статусу повідомлень
             } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.giveAvatar(sender);
+                operable.giveAvatar(sender);  // Обробка запиту на отримання зображення аккаунту
             } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatar(envelope);
+                operable.getAvatar(envelope); // Обробка запрасованих зображення контакту
             } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatarORG(envelope);
+                operable.getAvatarORG(envelope); // Обробка запрасованих зображення контакту
             } else {
-                operable.addMessage(message);
+                operable.addMessage(message); // Обробка  повідомлення
             }
         } catch (JSONException e) {
             Log.e("Operation", "Помилка під час отримання JSON у методі onReceived: " + e);
@@ -83,7 +79,7 @@ public class Operation {
      * Відкриває збережені повідомлення після певної затримки, щоб дозволити активності чату ініціалізуватися.
      * Метод використовує Handler для відкладеного виконання на основному потоці.
      *
-     * @param receiverId  Ідентифікатор отримувача повідомлення.
+     * @param receiverId Ідентифікатор отримувача повідомлення.
      */
     public void openSaveMessage(String receiverId) {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -109,34 +105,6 @@ public class Operation {
     }
 
     /**
-     * Відкриває збережені повідомлення після певної затримки, щоб дозволити активності чату ініціалізуватися.
-     * Метод використовує Handler для відкладеного виконання на основному потоці.
-     *
-     * @param receiverId  Ідентифікатор отримувача повідомлення.
-     * @param saveMessage Словник збережених повідомлень.
-     */
-    public void openSaveMessage(String receiverId, HashMap<String, Envelope> saveMessage) {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Iterator<Map.Entry<String, Envelope>> iterator = saveMessage.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Envelope> entry = iterator.next();
-                Envelope envelope = entry.getValue();
-                if (envelope.getSenderId().equals(receiverId)) {
-                    try {
-                        String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-                        if (operation.equals(FIELD.MESSAGE.getFIELD()) || operation.equals(FIELD.FILE.getFIELD())) {
-                            operable.addMessage(envelope.toJson().toString());
-                        }
-                      //  iterator.remove(); // Видаляємо елемент після обробки
-                    } catch (JSONException e) {
-                        Log.e("Operation", "Помилка під час отримання JSON у методі openSaveMessage: " + e);
-                    }
-                }
-            }
-        }, 1000);  // Затримка 1 секунда
-    }
-
-    /**
      * Зберігає отримане повідомлення у словнику та оновлює кількість повідомлень для відповідного користувача.
      * Також оновлюється адаптер для відображення змін у списку користувачів.
      *
@@ -151,7 +119,7 @@ public class Operation {
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             if (operation.equals(FIELD.MESSAGE.getFIELD()) || operation.equals(FIELD.FILE.getFIELD())) {
                 saveMessage.put(envelope.getMessageId(), envelope);
-                messageManager.setMessage(envelope,envelope.getTime());
+                messageManager.setMessage(envelope, envelope.getTime());
                 for (ContactData user : userList) {
                     // Оновлюємо кількість повідомлень для користувача
                     if (user.getId().equals(envelope.getSenderId())) {
@@ -163,7 +131,6 @@ public class Operation {
                         } else {
                             user.setMessageSize("" + messageCount);
                             Log.e("Operation", "Count Save Message: " + messageCount);
-
                         }
                         break;  // Вихід після оновлення користувача
                     }
@@ -171,99 +138,27 @@ public class Operation {
                 // Оновлюємо адаптер для відображення змін у списку користувачів
                 operable.updateAdapter();
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
-                operable.addHandshake(envelope);
+                operable.addHandshake(envelope); // Обробка отримання   ключа
             } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
-                operable.addAESKey(envelope.getSenderId(), message);
+                operable.addAESKey(envelope.getSenderId(), message); // Обробка  отримання ключа у повідомленні
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
-                //розкодувати коли реалізуємо збереження повідомлень у директорії
-                // saveMessage.put(numMessage, envelope);
-                // numMessage++;
-                // Обробка статусних повідомлень
-//                String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
-//                String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
-                saveMessage.put(envelope.getMessageId(), envelope);
-                messageManager.setMessage(envelope,envelope.getTime());
-
+                saveMessage.put(envelope.getMessageId(), envelope); // Обробка  статусу повідомлення
+                messageManager.setMessage(envelope, envelope.getTime());
             } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.giveAvatar(envelope.getSenderId());
+                operable.giveAvatar(envelope.getSenderId());  // Обробка запиту на отримання зображення аккаунту
             } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatar(envelope);
-
+                operable.getAvatar(envelope); // Обробка запрасованих зображення контакту
             } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatarORG(envelope);
+                operable.getAvatarORG(envelope); // Обробка запрасованих зображення контакту
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Зберігає отримане повідомлення у словнику та оновлює кількість повідомлень для відповідного користувача.
-     * Також оновлюється адаптер для відображення змін у списку користувачів.
-     *
-     * @param envelope    Дані повідомлення, яке потрібно зберегти.
-     * @param saveMessage Словник для зберігання повідомлень.
-     * @param numMessage  Лічильник номерів повідомлень.
-     * @param userList    Список користувачів для оновлення.
-     * @return Оновлений лічильник номерів повідомлень.
-     */
-    public int saveMessage(Envelope envelope, HashMap<Integer, Envelope> saveMessage, int numMessage, List<ContactData> userList) {
-        try {
-            String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
-            String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-            if (operation.equals(FIELD.MESSAGE.getFIELD()) || operation.equals(FIELD.FILE.getFIELD())) {
-                Envelope saveEnvelope = saveMessage.get(numMessage);
-                if (saveEnvelope != null) {
-                    System.out.println("Повідомлення: " + envelope.getMessage());
-                } else {
-                    System.out.println("Об'єкт не знайдено");
-                }
-                saveMessage.put(numMessage, envelope);
-                numMessage++;
-                for (ContactData user : userList) {
-                    // Оновлюємо кількість повідомлень для користувача
-                    if (user.getId().equals(envelope.getSenderId())) {
-                        user.setSize(user.getSize() + 1);
-                        user.setMessageSize("" + user.getSize());  // Оновлюємо messageSize
-                        break;  // Вихід після оновлення користувача
-                    }
-                }
-                // Оновлюємо адаптер для відображення змін у списку користувачів
-                operable.updateAdapter();
-            } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
-                operable.addHandshake(envelope);
-            } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
-                operable.addAESKey(envelope.getSenderId(), receivedMessage);
-            } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
-                //розкодувати коли реалізуємо збереження повідомлень у директорії
-                // saveMessage.put(numMessage, envelope);
-                // numMessage++;
-                // Обробка статусних повідомлень
-                String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
-                String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
-            } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.giveAvatar(envelope.getSenderId());
-            } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatar(envelope);
-
-            } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
-                // Обробка статусних повідомлень
-                operable.getAvatarORG(envelope);
-            }
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-        return numMessage;
     }
 
     /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
-     * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
+     * Використовується для додавання повідомлень, хендшейків (RSA ключів), обміну AES-ключами та оновлення адаптерів та інше.
      */
     public interface Operable {
         void addMessage(String message);

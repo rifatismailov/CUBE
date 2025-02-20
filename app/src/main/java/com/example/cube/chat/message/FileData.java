@@ -24,6 +24,8 @@ public class FileData {
     private byte[] imageBytes;
     private int width;
     private int height;
+    private static int newWidth=320;
+    private static int newHeight=480;
 
     public FileData() {
     }
@@ -130,7 +132,7 @@ public class FileData {
     }
 
     public FileData convertFilePreview(String fileName, String hash) throws IOException {
-        Bitmap bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
+        Bitmap bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, newWidth, newHeight);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 
@@ -151,14 +153,14 @@ public class FileData {
     public FileData convertFilePreviewLocal(String fileName, String url, String hash) throws IOException {
         Bitmap bitmap = null;
         if (url.endsWith(".pdf")) {
-            bitmap = PdfPreview.getPdfPreview(new File(url), 0, 400, 600);
+            bitmap = PdfPreview.getPdfPreview(new File(url), 0, newWidth, newHeight);
         } else if (url.endsWith(".docx")) {
-            bitmap = WordPreview.renderDocxToBitmap(new File(url), 400, 600); // Ширина та висота прев'ю
+            bitmap = WordPreview.renderDocxToBitmap(new File(url), newWidth, newHeight); // Ширина та висота прев'ю
             if (bitmap == null) {
-                bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
+                bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, newWidth, newHeight);
             }
         } else {
-            bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, 400, 600);
+            bitmap = HashBitmapGenerator.generateHashBitmap(fileName, hash, newWidth, newHeight);
         }
 
         if (bitmap == null) {
@@ -187,7 +189,7 @@ public class FileData {
         Drawable drawable = ContextCompat.getDrawable(context, drawableId);
         if (drawable instanceof VectorDrawable) {
             VectorDrawable vectorDrawable = (VectorDrawable) drawable;
-            Bitmap bitmap = Bitmap.createBitmap(400, 600, Bitmap.Config.ARGB_8888);
+            Bitmap bitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
             vectorDrawable.draw(canvas);
