@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
     private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
-    private final JSONArray jsonContact = new JSONArray();
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String avatarImageUrl, String accountImageUrl) {
@@ -138,10 +137,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Додаємо новий контакт до списку користувачів
         ContactData newUser = new ContactData(id_contact, name_contact, lastName_contact, "");
         contactDataList.add(newUser);
-        // Оновлюємо мапу контактів
-        contacts.put(newUser.getId(), newUser);
-        // Зберігаємо контакти у базу даних
-        contactManager.setContacts(contacts, secretKey);
+        contacts.put(newUser.getId(), newUser);   // Оновлюємо мапу контактів
+        contactManager.setContacts(contacts, secretKey);// Зберігаємо контакти у базу даних
+        request(getContactToJsonArray());// оновлюємо ключ зєднання
     }
 
 
@@ -242,8 +240,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Log.e("Operation", "Count Save Message: " + messageCount);
             }
             Log.e("MainActivity", "Contact ID: " + entry.getValue().getId());
-
-            jsonContact.put(entry.getValue().getId());
             contactDataList.add(entry.getValue());
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
@@ -295,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case "update_to_user":
                     sendMessageToService(message);
                     messageManager.deleteMessageById(envelope.getMessageId());
-
                     break;
                 default:
                     sendMessageToService(message);
@@ -318,12 +313,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (dataFromChat != null) {
                 receivingData(dataFromChat);
             }
+
             if (sleep != null) {
                 Log.e("MainActivity", "sleep " + sleep);
                 contactSelector.setContact("");
-
                 notifyIdReciverChanged("");
             }
+
             if (awake != null) {
                 Log.e("MainActivity", "awake " + awake);
                 notifyIdReciverChanged(awake);
@@ -358,9 +354,50 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
+
                 if (save_message != null) {
-                    saveMessage(save_message);
-                    Log.e("MainActivity", "Save Message on Main Activity: " + save_message);
+                    try {
+                        Envelope envelope = new Envelope(new JSONObject(save_message));
+                        if (checkContact(envelope)) {
+                            saveMessage(save_message);
+                        } else {
+                            String messageJson = new Envelope.Builder().
+                                    setSenderId(envelope.getReceiverId()).
+                                    setReceiverId(envelope.getSenderId()).
+                                    setOperation("messageStatus").
+                                    setMessageStatus("delivered_to_user").
+                                    setMessageId(envelope.getMessageId()).
+                                    build().
+                                    toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                                    toString();
+                            setMessage(messageJson);
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                }
+                String contact_status = intent.getStringExtra(FIELD.CONTACT_STATUS.getFIELD());
+                if (contact_status != null) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(contact_status);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            String status = jsonArray.getString(i); // Отримуємо рядок із JSON-масиву
+                            String[] openStatus = status.split("=");
+                            Log.e("MainActivity", "contact_status: " + openStatus[0] + " " + openStatus[1]);
+                            for (int y = 0; y < contactDataList.size(); y++) {
+                                ContactData contactData=contactDataList.get(i);
+                                if (contactData.getId().equals(openStatus[0])) {
+                                    contactData.setStatusContact(openStatus[1]);
+                                }
+                            }
+                        }
+                        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+
+                    } catch (Exception e) {
+
+                    }
+
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
@@ -374,6 +411,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
+
+    private boolean checkContact(Envelope envelope) {
+        boolean checkContact = false;
+
+        Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
+        for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+            if (envelope.getSenderId().equals(entry.getValue().getId())) {
+                checkContact = true;
+                break;
+            }
+        }
+        return checkContact;
+    }
 
 
     private void openSaveMessage() {
@@ -493,12 +543,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
                 serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
                 serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_LIFE.getFIELD(), "reborn");
-
-                try {
-                    serviceIntent.putExtra("MAIN_ACTIVITY_REGISTRATION", getContactToJsonArray());
-                } catch (Exception e) {
-                    Log.e("MainActivity", "Json error" + e);
-                }
+                serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_REGISTRATION.getFIELD(), getContactToJsonArray());
 
                 if (!isMyServiceRunning(IOService.class)) {  // Якщо сервіс ще не запущений
                     startService(serviceIntent);
@@ -510,11 +555,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    private String getContactToJsonArray() throws Exception {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("userId", manager.userSetting().getId());
-        jsonObject.put("contacts", jsonContact);
-        return jsonObject.toString();
+    private String getContactToJsonArray() {
+        String request = "";
+        try {
+            Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
+            JSONArray jsonContact = new JSONArray();
+            for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+                jsonContact.put(entry.getValue().getId());
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", manager.userSetting().getId());
+            jsonObject.put("contacts", jsonContact);
+            request = jsonObject.toString();
+        } catch (Exception e) {
+            Log.e("MainActivity", "Json error" + e);
+        }
+
+        return request;
     }
 
     private void notifyIdReciverChanged(String receiverId) {
@@ -534,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra("request", message);
         sendBroadcast(intent);  // Надсилає повідомлення сервісу
     }
+
     /**
      * Оповіщення про життя активності
      */
@@ -1079,6 +1137,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void saveContact(String contact) {
+
         if (contact != null) {
             manager.createContact(contact);
         }
@@ -1253,6 +1312,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void logout() {
         contactManager.deleteAll();
+        Log.e("MainActivity", "REGISTARTION  : " + getContactToJsonArray());
+        request(getContactToJsonArray());
         finish();
     }
 

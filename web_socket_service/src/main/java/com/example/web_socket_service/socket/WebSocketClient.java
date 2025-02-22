@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONObject;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -24,16 +26,16 @@ public class WebSocketClient {
     private final int MAX_RETRY = 3;
     private boolean isRegistered = false; // Чи отримали відповідь від сервера
     private boolean isCheckingStatus = false; // Запобігає множинним перевіркам
-    private final ExecutorService executorService;
+    private ExecutorService executorService;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private final Listener listener;
     private ConnectionInfo connectionInfo;
 
-    public WebSocketClient(Listener listener,ConnectionInfo connectionInfo) {
+    public WebSocketClient(Listener listener, ConnectionInfo connectionInfo) {
         this.listener = listener;
-        this.connectionInfo=connectionInfo;
+        this.connectionInfo = connectionInfo;
         this.SERVER_URL = connectionInfo.getServerAddress();
         this.CLIENT_ID = connectionInfo.getRegistration();
         executorService = Executors.newFixedThreadPool(2); // Створюємо пул для асинхронних задач
@@ -41,8 +43,6 @@ public class WebSocketClient {
 
     // Метод для підключення до сервера
     public void connect() {
-
-
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS) // Підтримка постійного з'єднання
@@ -59,12 +59,14 @@ public class WebSocketClient {
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 executorService.submit(() -> { // Виконуємо в окремому потоці
-                    if ("REGISTER_OK".equals(text)) {
-                        Log.e("WebSocket", "REGISTER_OK:" + CLIENT_ID + " " + text);
-                        isRegistered = true;
-                        retryCount = 0; // Скидаємо лічильник невдалих спроб
-                        listener.onNotification("Connected to server...");
-
+                    if (text.startsWith("REGISTER_OK")) {
+                        String[] textArray = text.split(":");
+                        if ("REGISTER_OK".equals(textArray[0])) {
+                            isRegistered = true;
+                            retryCount = 0; // Скидаємо лічильник невдалих спроб
+                            listener.onNotification("Connected to server...");
+                            listener.sendStatus(textArray[1]);
+                        }
                     } else {
                         if (listener != null) {
                             listener.onListener(text); // Передаємо в сервіс у фоновому потоці
@@ -113,31 +115,48 @@ public class WebSocketClient {
      * Запускає перевірку статусу кожні 3 секунди (тільки один раз!)
      */
     private void startStatusCheck() {
+
         if (isCheckingStatus) return; // Запобігає множинному виклику
         isCheckingStatus = true;
 
         handler.postDelayed(new Runnable() {
+
+
             @Override
             public void run() {
-                if (webSocket != null) {
-                    if (isConnected()) {
-                        Log.d("WebSocket", "Checking registration status... Attempt: " + retryCount);
-                        webSocket.send("CHECK_STATUS:" + CLIENT_ID);
-                    }
-                    if (!isRegistered) {
-                        retryCount++;
-                        if (retryCount >= MAX_RETRY) {
-                            if (isConnected()) {
-                                Log.d("WebSocket", "Re-registering...");
-                                webSocket.send("REGISTER:" + CLIENT_ID);
-                                retryCount = 0;
+                try {
+                    JSONObject jsonObject = new JSONObject(connectionInfo.getRegistration());
+
+                    if (webSocket != null) {
+                        if (isConnected()) {
+                            Log.d("WebSocket", "Checking registration status... Attempt: " + retryCount);
+                            jsonObject.put("life", connectionInfo.getLife());
+                            Log.e("WebSocket", "connectionInfo..." + jsonObject);
+                            webSocket.send("CHECK_STATUS:" + jsonObject);
+                        }
+                        if (!isRegistered) {
+                            retryCount++;
+                            if (retryCount >= MAX_RETRY) {
+                                if (isConnected()) {
+                                    Log.d("WebSocket", "Re-registering...");
+                                    jsonObject.put("life", connectionInfo.getLife());
+                                    Log.e("WebSocket", "connectionInfo..." + jsonObject);
+
+                                    webSocket.send("REGISTER:" + jsonObject);
+                                    retryCount = 0;
+                                }
                             }
                         }
                     }
+                } catch (Exception e) {
+
                 }
+
                 handler.postDelayed(this, 3000); // Повторюємо через 3 секунди
             }
         }, 3000);
+
+
     }
 
     /**
@@ -188,6 +207,27 @@ public class WebSocketClient {
         }, 5000); // Затримка перед перепідключенням
     }
 
+    /**
+     * Метод для перезапуску WebSocket-з'єднання
+     */
+    public void restartConnection(ConnectionInfo newConnectionInfo) {
+        closeConnection(); // Закриваємо поточне з'єднання
+
+        // Оновлюємо connectionInfo
+        this.connectionInfo = newConnectionInfo;
+        this.SERVER_URL = newConnectionInfo.getServerAddress();
+        this.CLIENT_ID = newConnectionInfo.getRegistration();
+
+        // Створюємо новий ExecutorService після закриття старого
+        executorService = Executors.newFixedThreadPool(2);
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            listener.onNotification("Restarting WebSocket...");
+            connect(); // Перезапускаємо підключення з новими параметрами
+        }, 2000);
+    }
+
+
     public boolean isConnected() {
         return webSocket != null;
     }
@@ -196,13 +236,15 @@ public class WebSocketClient {
         return webSocket == null;
     }
 
-    public boolean getStatusRegistration(){
-        return  isRegistered;
+    public boolean getStatusRegistration() {
+        return isRegistered;
     }
+
     /**
      * Інтерфейс для обробки подій та логів.
      */
     public interface Listener {
+        void sendStatus(String status);
         void onNotification(String message);
 
         void onListener(String message);

@@ -149,14 +149,14 @@ public class ContactCircularImageView extends AppCompatImageView {
     // Метод для зміни кольору маленького кола за командою
     public void updateStatusColor(String command) {
         switch (command) {
-            case "A0010":
+            case "10":
                 setStatusColor(0xFF00FF00); // Зелений
                 break;
-            case "A0011":
+            case "01":
                 setStatusColor(0xFFFFFF00); // Жовтий
                 break;
             case "A0111":
-                setStatusColor(0xFF000000); // Чорний за замовчуванням
+                setStatusColor(0xFF888888); // Середньо сірий
                 break;
             default:
                 setStatusColor(0xFF000000); // Чорний за замовчуванням

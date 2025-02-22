@@ -56,7 +56,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private MessageServiceManager messageManager;
     private ExecutorService executorService;
     private final Queue<Envelope> messageQueue = new ConcurrentLinkedQueue<>();
-    private int messageCount;
 
     /**
      * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
@@ -76,18 +75,15 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     switch (Objects.requireNonNull(intent.getAction())) {
                         case "CUBE_ID_SENDER":
                             senderId = intent.getStringExtra("senderId");
-                            Log.e("IOService", "CUBE_ID_SENDER " + senderId);
                             synchronized (connectionInfo) {
                                 connectionInfo.setSenderId(senderId);// Оновлюємо лише значення
                             }
                             break;
                         case "CUBE_ID_RECIVER":
                             receiverId = intent.getStringExtra("receiverId");
-                            Log.e("IOService", "CUBE_ID_RECIVER " + receiverId);
                             synchronized (connectionInfo) {
                                 connectionInfo.setReciverId(receiverId); // Оновлюємо лише значення
                             }
-                            Log.e("IOService", "Updated server URL: " + connectionInfo.getServerAddress());
                             break;
                         case "CUBE_SEND_TO_SERVER":
                             setMessage(intent.getStringExtra("message"));
@@ -109,6 +105,12 @@ public class IOService extends Service implements WebSocketClient.Listener {
                         case "MAIN_ACTIVITY_LIFE":
                             setActivityLife(intent.getStringExtra("LIFE"));
                             break;
+                        case "MAIN_ACTIVITY_REGISTRATION":
+                            String request = intent.getStringExtra("request");
+                            Log.e("IOService", "request " + request);
+                            connectionInfo.setRegistration(request);
+                            startWebSocket();
+                            break;
                     }
                 } catch (Exception e) {
                     Log.e("IOService", "Під час отримання даних з активності було отримано null:" + e);
@@ -124,6 +126,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
         filter.addAction("CUBE_IP_TO_SERVER");
         filter.addAction("CUBE_PORT_TO_SERVER");
         filter.addAction("MAIN_ACTIVITY_LIFE");
+        filter.addAction("MAIN_ACTIVITY_REGISTRATION");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
         } else {
@@ -136,15 +140,18 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
-    private void setActivityLife(String Life) {
+    private void setActivityLife(String life) {
         try {
-            switch (Life) {
+            JSONObject jsonObject = new JSONObject(connectionInfo.getRegistration());
+
+            switch (life) {
                 case "reborn":
                     Log.e("IOService", "Main Activity reborn");
                     getOfflineMessage();
+                    connectionInfo.setLife(life);
                     break;
                 case "died":
-                    Log.e("IOService", "Main Activity died");
+                    connectionInfo.setLife(life);
                     break;
             }
         } catch (Exception e) {
@@ -260,27 +267,28 @@ public class IOService extends Service implements WebSocketClient.Listener {
             ip = intent.getStringExtra("CUBE_IP_TO_SERVER");
             port = intent.getStringExtra("CUBE_PORT_TO_SERVER");
             String life = intent.getStringExtra("MAIN_ACTIVITY_LIFE");
-            String registration= intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
+            String registration = intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
             try {
-
                 connectionInfo.setSenderId(senderId);
                 connectionInfo.setIp(ip);
                 connectionInfo.setPort(port);
                 connectionInfo.setRegistration(registration);
-                webSocketClient = new WebSocketClient(this, connectionInfo);
-                webSocketClient.connect();
+                JSONObject jsonObject = new JSONObject(connectionInfo.getRegistration());
 
                 if (life != null) {
                     switch (life) {
                         case "reborn":
-
                             Log.e("IOService", "Main Activity reborn :" + life);
+                            connectionInfo.setLife(life);
                             break;
                         case "died":
                             Log.e("IOService", "Main Activity died");
+                            connectionInfo.setLife(life);
                             break;
                     }
                 }
+                startWebSocket();
+
             } catch (Exception e) {
                 Log.e("IOService", "Error on Start Command: " + e);
             }
@@ -290,6 +298,14 @@ public class IOService extends Service implements WebSocketClient.Listener {
         return START_STICKY;
     }
 
+    private void startWebSocket() {
+        if (webSocketClient != null) {
+            webSocketClient.restartConnection(connectionInfo); // Перезапуск без дублювання
+        } else {
+            webSocketClient = new WebSocketClient(this, connectionInfo);
+            webSocketClient.connect();
+        }
+    }
 
     /**
      * Cleans up resources when the service is destroyed.
@@ -333,6 +349,13 @@ public class IOService extends Service implements WebSocketClient.Listener {
         sendBroadcast(intent);
     }
 
+    @Override
+    public void sendStatus(String status) {
+        Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
+        intent.putExtra("contact_status", status);
+        sendBroadcast(intent);
+    }
+
     /**
      * Handles WebSocket notifications.
      */
@@ -353,8 +376,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
      */
     @Override
     public void onListener(String message) {
-        Log.e("MainActivity", "Handshake onListener JSON: " + message);
-
         if (message != null) {
             try {
                 JSONObject object = new JSONObject(message);
@@ -390,7 +411,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
             Envelope envelope = entry.getValue();
             if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
                 saveMessage(envelope.toJson().toString());
-                Log.e("IOService", "Save Message on Main Activity: " + envelope.toJson().toString());
             } else {
                 messageManager.deleteMessageById(messageId);
             }

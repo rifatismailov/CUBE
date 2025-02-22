@@ -49,13 +49,16 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         TextView idNumber = view.findViewById(R.id.idNumber);
         ColorfulDotsView rPublicKey = view.findViewById(R.id.rPublicKey);
         ColorfulDotsView receiverKey = view.findViewById(R.id.receiverKey);
-
+        if(contactData.getStatusContact()!=null) {
+            image.updateStatusColor(contactData.getStatusContact());
+        }
         if (contactData.getProgress() > 0) {
             image.setProgress(contactData.getProgress()); // Встановлюємо прогрес в circular image
         }
         if (contactData.getProgress() == 100) {
             image.clearProgress();
         }
+
         if (contactData.getAccountImageUrl() != null && !contactData.getAccountImageUrl().isEmpty()) {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 2; // Зменшити розмір у два рази

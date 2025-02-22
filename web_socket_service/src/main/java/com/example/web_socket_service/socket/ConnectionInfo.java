@@ -11,6 +11,7 @@ public class ConnectionInfo {
     private volatile String ip;
     private volatile String port;
     private volatile String registration;
+    private volatile String life;
     public ConnectionInfo(){
     }
     public ConnectionInfo(String senderId, String receiverId, String ip, String port) {
@@ -76,5 +77,13 @@ public class ConnectionInfo {
     public String getRegistration() {
 
         return registration;
+    }
+
+    public String getLife() {
+        return life;
+    }
+
+    public void setLife(String life) {
+        this.life = life;
     }
 }
