@@ -375,7 +375,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     } catch (Exception e) {
 
                     }
-
                 }
                 String contact_status = intent.getStringExtra(FIELD.CONTACT_STATUS.getFIELD());
                 if (contact_status != null) {
@@ -386,18 +385,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             String[] openStatus = status.split("=");
                             Log.e("MainActivity", "contact_status: " + openStatus[0] + " " + openStatus[1]);
                             for (int y = 0; y < contactDataList.size(); y++) {
-                                ContactData contactData=contactDataList.get(i);
+                                ContactData contactData = contactDataList.get(i);
                                 if (contactData.getId().equals(openStatus[0])) {
                                     contactData.setStatusContact(openStatus[1]);
+                                }
+                                if (contactSelector.getContact().equals(openStatus[0])) { // Відправляємо статус у Чат Activity якщо воно запушеною
+                                    addStatus(openStatus[1]);
                                 }
                             }
                         }
                         contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
-
                     } catch (Exception e) {
-
+                        Log.e("MainActivity", "Помилка під час отримання масиву строк з JSONArray: " + e);
                     }
-
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
@@ -492,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.NAME.getFIELD(), contactData.getName());
         intent.putExtra(FIELD.LAST_NAME.getFIELD(), contactData.getLastName());
         intent.putExtra(FIELD.RECEIVER_ID.getFIELD(), contactData.getId());
-        intent.putExtra(FIELD.STATUS.getFIELD(), "online");
+        intent.putExtra(FIELD.STATUS.getFIELD(), contactData.getStatusContact());
         intent.putExtra(FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
         intent.putExtra(FIELD.PRIVATE_KEY.getFIELD(), contactData.getPrivateKey());
         intent.putExtra(FIELD.RECEIVER_PUBLIC_KEY.getFIELD(), contactData.getReceiverPublicKey());
@@ -747,7 +747,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.DATE_FROM_USERS_ACTIVITY.getFIELD(), message);
         sendBroadcast(intent);
     }
-
+    /**
+     * Додає статусу до broadcast для передачі його в ChatActivity.
+     *
+     * @param status Текст статусу.
+     */
+    public void addStatus(String status) {
+        Intent intent = new Intent(FIELD.DATA_TO_CHAT.getFIELD());
+        intent.putExtra(FIELD.STATUS.getFIELD(), status);
+        sendBroadcast(intent);
+    }
     /**
      * Зберігає отримане повідомлення.
      *

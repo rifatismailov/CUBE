@@ -31,7 +31,7 @@
                 app:tint="@color/white" />
 
             <com.example.cube.draw.ContactCircularImageView
-                android:id="@+id/profile"
+                android:id="@+id/imageAccount"
                 android:layout_width="55sp"
                 android:layout_height="55sp"
                 android:layout_marginStart="10sp" />

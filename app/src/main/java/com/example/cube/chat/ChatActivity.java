@@ -77,6 +77,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private String fileServerIP;
     private String fileServerPort;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
+        @SuppressLint("SetTextI18n")
         @Override
         public void onReceive(Context context, Intent intent) {
             // Отримання даних від Activity1
@@ -84,6 +85,23 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (dataFromActivity1 != null) {
                 // Обробка отриманих даних
                 handleReceivedData(dataFromActivity1);
+            }
+            String status = intent.getStringExtra(FIELD.STATUS.getFIELD());
+            if (status != null) {
+                // Обробка отриманих даних
+                Log.e("ChatActivity", "Status: " + status);
+                binding.imageAccount.updateStatusColor(status);
+                // Встановлюємо початкові значення
+                if (status.equals("00")) {
+                    binding.status.setText("Disconnect");
+                }
+                if (status.equals("01")) {
+                    binding.status.setText("offline");
+                }
+                if (status.equals("10")) {
+                    binding.status.setText("online");
+                }
+
             }
         }
     };
@@ -109,6 +127,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,7 +145,15 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         bundleProcessor();
 
         // Встановлюємо початкові значення
-        binding.status.setText(receiverStatus);
+        if (receiverStatus.equals("00")) {
+            binding.status.setText("Disconnect");
+        }
+        if (receiverStatus.equals("01")) {
+            binding.status.setText("offline");
+        }
+        if (receiverStatus.equals("10")) {
+            binding.status.setText("online");
+        }
         binding.name.setText(receiverName);
 
         if (accountImageUrl != null && !accountImageUrl.isEmpty()) {
@@ -134,7 +161,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 2; // Зменшити розмір у два рази
             Bitmap bitmap = BitmapFactory.decodeFile(accountImageUrl, options);
-            binding.profile.setImageBitmap(bitmap);
+            binding.imageAccount.setImageBitmap(bitmap);
         } else {
 
             String jsonData = new UserSetting.Builder()
@@ -142,7 +169,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     .setName(receiverName)
                     .setLastName(receiverLastName)
                     .build().toJson("userId", "name", "lastName").toString();
-            binding.profile.setImageBitmap(QRCode.getQRCode(jsonData, receiverName.substring(0, 2)));
+            binding.imageAccount.setImageBitmap(QRCode.getQRCode(jsonData, receiverName.substring(0, 2)));
         }
         // Ініціалізація RecyclerView
         setupRecyclerView();
@@ -199,7 +226,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         binding.attachmentBtn.setOnClickListener(v -> {
             new FileExplorer(this, serverUrl, senderKey);
         });
-        binding.profile.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
+        binding.imageAccount.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
         binding.camera.setOnClickListener(view -> clearMessage());
     }
 
