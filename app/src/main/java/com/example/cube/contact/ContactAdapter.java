@@ -9,14 +9,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.example.cube.R;
+import com.example.cube.control.FIELD;
 import com.example.cube.draw.ContactCircularImageView;
 import com.example.cube.draw.ColorfulDotsView;
 import com.example.cube.encryption.Encryption;
+import com.example.folder.GetFileIcon;
 import com.example.qrcode.QRCode;
 import com.example.setting.UserSetting;
 
@@ -47,10 +50,19 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         TextView messageSize = view.findViewById(R.id.messageSize);
         TextView userName = view.findViewById(R.id.userName);
         TextView idNumber = view.findViewById(R.id.idNumber);
+        TextView message = view.findViewById(R.id.textMessage);
+        ImageView messageType = view.findViewById(R.id.messageType);
+
         ColorfulDotsView rPublicKey = view.findViewById(R.id.rPublicKey);
         ColorfulDotsView receiverKey = view.findViewById(R.id.receiverKey);
-        if(contactData.getStatusContact()!=null) {
+        if (contactData.getStatusContact() != null) {
             image.updateStatusColor(contactData.getStatusContact());
+        }
+        if (contactData.getMessageType() != null) {
+            messageType.setImageResource(GetFileIcon.getIcon(contactData.getMessageType()));
+            message.setText(contactData.getMessage());
+
+            Log.e("MainActivity", "Adapter check file 1: " + contactData.getMessageType());
         }
         if (contactData.getProgress() > 0) {
             image.setProgress(contactData.getProgress()); // Встановлюємо прогрес в circular image

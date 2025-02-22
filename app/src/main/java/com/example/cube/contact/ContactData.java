@@ -20,6 +20,8 @@ public class ContactData implements Serializable {
     private String avatarImageUrl;
     private String accountImageUrl;
     private String statusContact;
+    private String message;
+    private String messageType;
     private int size;
     private int progress;
 
@@ -161,6 +163,22 @@ public class ContactData implements Serializable {
 
     public void setStatusContact(String statusContact) {
         this.statusContact = statusContact;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     /**

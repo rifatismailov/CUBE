@@ -34,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.example.cube.chat.ChatActivity;
+import com.example.cube.chat.message.Message;
 import com.example.cube.contact.ContactCreator;
 import com.example.cube.contact.ContactInterface;
 import com.example.cube.contact.ContactAdapter;
@@ -42,6 +43,7 @@ import com.example.cube.contact.ContactSelector;
 import com.example.cube.databinding.ActivityMainBinding;
 import com.example.cube.db.ContactManager;
 import com.example.cube.db.MessageMainManager;
+import com.example.cube.db.MessageManager;
 import com.example.cube.encryption.Encryption;
 import com.example.cube.encryption.KeyGenerator;
 import com.example.cube.notification.NotificationAdapter;
@@ -101,12 +103,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private TextView user_id;
     private ContactManager contactManager;
     private Manager manager;
+    private MessageManager messageManager;
     private SecretKey secretKey;  // AES-ключ
     private DrawerLayout drawerLayout;
     private NavigationManager navigationManager;
     private List<NotificationLogger> notificationLoggers;
     private NotificationAdapter notificationAdapter;
-    private MessageMainManager messageManager;
+    private MessageMainManager messageMainManager;
     private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
     private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
     private final ContactSelector contactSelector = new ContactSelector();
@@ -195,7 +198,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         manager = new Manager(this, db, secretKey);
-        messageManager = new MessageMainManager(db);
+        messageManager = new MessageManager(db);
+        messageMainManager = new MessageMainManager(db);
         manager.readAccount();
         contactManager = new ContactManager(db);
         registerChatActivityReceiver();
@@ -205,7 +209,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
 
-
+        for (int i = 0; i < contactDataList.size(); i++) {
+            ContactData contactData = contactDataList.get(i);
+            Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
+            if(lastMessage.getTypeFile()!=null) {
+                contactData.setMessageType(lastMessage.getTypeFile());
+                contactData.setMessage(lastMessage.getFileName());
+            }else{
+                contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                contactData.setMessage(lastMessage.getMessage());
+            }
+        }
+        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         new Handler().postDelayed(() -> {
             if (manager.userSetting().getId() == null)
                 scannerQrAccount();
@@ -230,14 +245,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactDataList.clear();
         contacts = contactManager.getContacts(secretKey);
         for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
-            int messageCount = messageManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.MESSAGE.getFIELD()) +
-                    messageManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.FILE.getFIELD());
+            int messageCount = messageMainManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.MESSAGE.getFIELD()) +
+                    messageMainManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.FILE.getFIELD());
 
             if (messageCount == 0) {
                 entry.getValue().setMessageSize("");  // Оновлюємо messageSize
             } else {
                 entry.getValue().setMessageSize("" + messageCount);
-                Log.e("Operation", "Count Save Message: " + messageCount);
+                Log.e("MainActivity", "Count Save Message: " + messageCount);
             }
             Log.e("MainActivity", "Contact ID: " + entry.getValue().getId());
             contactDataList.add(entry.getValue());
@@ -256,9 +271,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void receivingData(String data) {
         if (data.equals("endUser")) {
-            Log.e("MainActivity", "end User " + data);
+            Log.e("MainActivity", "end User " + data+" "+contactSelector.getContact());
             contactSelector.setContact("");
-            notifyIdReciverChanged("");
         } else {
             if (contactSelector.getContactData() != null) {
                 if (!data.isEmpty()) {
@@ -290,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case "delivered_to_user":
                 case "update_to_user":
                     sendMessageToService(message);
-                    messageManager.deleteMessageById(envelope.getMessageId());
+                    messageMainManager.deleteMessageById(envelope.getMessageId());
                     break;
                 default:
                     sendMessageToService(message);
@@ -316,6 +330,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             if (sleep != null) {
                 Log.e("MainActivity", "sleep " + sleep);
+                for (int i = 0; i < contactDataList.size(); i++) {
+                    ContactData contactData = contactDataList.get(i);
+                    if(contactSelector.getContact().equals(contactData.getId())) {
+                        Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
+                        if(lastMessage.getTypeFile()!=null) {
+                            contactData.setMessageType(lastMessage.getTypeFile());
+                            contactData.setMessage(lastMessage.getFileName());
+                        }else{
+                            contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                            contactData.setMessage(lastMessage.getMessage());
+                        }
+                    }
+                }
+                contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
                 contactSelector.setContact("");
                 notifyIdReciverChanged("");
             }
@@ -348,6 +376,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         } else {
                             saveMessage(message);
                             Log.e("MainActivityA", "[X] " + message);
+                            for (int i = 0; i < contactDataList.size(); i++) {
+                                ContactData contactData = contactDataList.get(i);
+                                if (contactData.getId().equals(envelope.getSenderId())) {
+                                    if(envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
+                                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
+                                        String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
+                                        contactData.setMessage(filename);
+                                    }else{
+                                        String rMessage = Encryption.AES.decrypt(envelope.getMessage(), contactData.getSenderKey());
+                                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                                        contactData.setMessage(rMessage);
+                                    }
+                                }
+                            }
+                            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
                         }
                     } catch (Exception e) {
                         Log.e("MainActivity", "Error to open message: " + e);
@@ -360,6 +403,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         Envelope envelope = new Envelope(new JSONObject(save_message));
                         if (checkContact(envelope)) {
                             saveMessage(save_message);
+                            for (int i = 0; i < contactDataList.size(); i++) {
+                                ContactData contactData = contactDataList.get(i);
+                                if (contactData.getId().equals(envelope.getSenderId())) {
+                                    if(envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
+                                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
+                                        String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
+                                        contactData.setMessage(filename);
+                                    }else{
+                                        String rMessage = Encryption.AES.decrypt(envelope.getMessage(), contactData.getSenderKey());
+                                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                                        contactData.setMessage(rMessage);
+                                    }
+                                }
+                            }
+                            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+
                         } else {
                             String messageJson = new Envelope.Builder().
                                     setSenderId(envelope.getReceiverId()).
@@ -385,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             String[] openStatus = status.split("=");
                             Log.e("MainActivity", "contact_status: " + openStatus[0] + " " + openStatus[1]);
                             for (int y = 0; y < contactDataList.size(); y++) {
-                                ContactData contactData = contactDataList.get(i);
+                                ContactData contactData = contactDataList.get(y);
                                 if (contactData.getId().equals(openStatus[0])) {
                                     contactData.setStatusContact(openStatus[1]);
                                 }
@@ -428,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void openSaveMessage() {
         if (!contactSelector.getContact().isEmpty()) {
-            new Operation(this, messageManager).openSaveMessage(contactSelector.getContact());
+            new Operation(this, messageMainManager).openSaveMessage(contactSelector.getContact());
         }
     }
 
@@ -733,7 +792,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param message Текст повідомлення.
      */
     public void onReceived(String message) {
-        new Operation(this, messageManager).onReceived(message);
+        new Operation(this, messageMainManager).onReceived(message);
     }
 
     /**
@@ -765,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
-            runOnUiThread(() -> new Operation(this, messageManager).saveMessage(envelope, saveMessage, contactDataList));
+            runOnUiThread(() -> new Operation(this, messageMainManager).saveMessage(envelope, saveMessage, contactDataList));
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);
         }
@@ -1224,7 +1283,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "[Помилка після шифрування файлу для відправки аватар до контактів] " + e);
+            Log.e("MainActivity", "Помилка після шифрування файлу для відправки аватар до контактів " + e);
         }
     }
 
@@ -1321,7 +1380,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void logout() {
         contactManager.deleteAll();
-        Log.e("MainActivity", "REGISTARTION  : " + getContactToJsonArray());
         request(getContactToJsonArray());
         finish();
     }

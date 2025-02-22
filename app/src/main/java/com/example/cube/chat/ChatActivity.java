@@ -144,14 +144,16 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         bundleProcessor();
 
         // Встановлюємо початкові значення
-        if (receiverStatus.equals("00")) {
-            binding.status.setText("disconnect");
-        }
-        if (receiverStatus.equals("01")) {
-            binding.status.setText("offline");
-        }
-        if (receiverStatus.equals("10")) {
-            binding.status.setText("online");
+        if(receiverStatus!=null) {
+            if (receiverStatus.equals("00")) {
+                binding.status.setText("disconnect");
+            }
+            if (receiverStatus.equals("01")) {
+                binding.status.setText("offline");
+            }
+            if (receiverStatus.equals("10")) {
+                binding.status.setText("online");
+            }
         }
         binding.name.setText(receiverName);
 

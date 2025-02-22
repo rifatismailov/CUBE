@@ -248,5 +248,53 @@ public class MessageManager {
         //database.close();
         return messages;
     }
+    /**
+     * Отримує останнє повідомлення за ID отримувача.
+     *
+     * @param receiverId ID отримувача.
+     * @return Останнє повідомлення або null, якщо немає повідомлень.
+     */
+    public Message getLastMessageByReceiverId(String receiverId) {
+        Message message = null;
+        String selectQuery = "SELECT * FROM " + TABLE_MESSAGES + " WHERE " + COLUMN_RECEIVER + " = ? ORDER BY " + COLUMN_TIMESTAMP + " DESC LIMIT 1";
+
+        Cursor cursor = database.rawQuery(selectQuery, new String[]{receiverId});
+        if (cursor != null && cursor.moveToFirst()) {
+            message = new Message();
+            message.setMessageId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)));
+            message.setSenderId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SENDER)));
+            message.setReceiverId(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER)));
+            message.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE)));
+            String urlString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SELECTED_URL));
+            String filename = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_NAME));
+            String fileSize = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_SIZE));
+            String fileType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE_FILE));
+            String fileHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_HASH));
+            String fileDateCreate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_CREATE));
+
+            if (urlString != null && !urlString.isEmpty()) {
+                message.setUrl(Uri.parse(urlString));
+                message.setFileName(filename);
+                message.setFileSize(fileSize);
+                message.setTypeFile(fileType);
+                message.setHas(fileHash);
+                message.setDataCreate(fileDateCreate);
+            }
+
+            message.setImage(cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)));
+            message.setImageWidth(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_WIDTH)));
+            message.setImageHeight(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_HEIGHT)));
+            message.setSide(Side.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SIDE))));
+            message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
+            message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+            message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+
+            Log.e("Listener", "Last message time: " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return message;
+    }
 
 }
