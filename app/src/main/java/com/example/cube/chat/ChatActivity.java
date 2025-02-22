@@ -89,11 +89,10 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             String status = intent.getStringExtra(FIELD.STATUS.getFIELD());
             if (status != null) {
                 // Обробка отриманих даних
-                Log.e("ChatActivity", "Status: " + status);
                 binding.imageAccount.updateStatusColor(status);
                 // Встановлюємо початкові значення
                 if (status.equals("00")) {
-                    binding.status.setText("Disconnect");
+                    binding.status.setText("disconnect");
                 }
                 if (status.equals("01")) {
                     binding.status.setText("offline");
@@ -146,7 +145,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
         // Встановлюємо початкові значення
         if (receiverStatus.equals("00")) {
-            binding.status.setText("Disconnect");
+            binding.status.setText("disconnect");
         }
         if (receiverStatus.equals("01")) {
             binding.status.setText("offline");
