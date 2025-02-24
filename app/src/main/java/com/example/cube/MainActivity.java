@@ -174,10 +174,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.log.setLayoutManager(layoutManager);
         binding.log.setAdapter(notificationAdapter);
-
         // Ініціалізація DrawerLayout і NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
-
         // Створення ActionBarDrawerToggle для відкриття/закриття меню
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, null,
@@ -212,12 +210,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for (int i = 0; i < contactDataList.size(); i++) {
             ContactData contactData = contactDataList.get(i);
             Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
-            if(lastMessage.getTypeFile()!=null) {
-                contactData.setMessageType(lastMessage.getTypeFile());
-                contactData.setMessage(lastMessage.getFileName());
-            }else{
-                contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                contactData.setMessage(lastMessage.getMessage());
+            if (lastMessage != null) {
+                Log.e("MainActivity", "lastMessage.getTypeFile() " + lastMessage.getTypeFile());
+
+                if (lastMessage.getTypeFile() != null) {
+                    contactData.setMessageType(lastMessage.getTypeFile());
+                    contactData.setMessage(lastMessage.getFileName());
+                } else {
+                    contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                    contactData.setMessage(lastMessage.getMessage());
+                }
             }
         }
         contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
@@ -249,12 +251,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     messageMainManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.FILE.getFIELD());
 
             if (messageCount == 0) {
-                entry.getValue().setMessageSize("");  // Оновлюємо messageSize
+                entry.getValue().setMessageSize("");  // обнуляємо messageSize
             } else {
                 entry.getValue().setMessageSize("" + messageCount);
-                Log.e("MainActivity", "Count Save Message: " + messageCount);
             }
-            Log.e("MainActivity", "Contact ID: " + entry.getValue().getId());
             contactDataList.add(entry.getValue());
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
@@ -271,7 +271,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void receivingData(String data) {
         if (data.equals("endUser")) {
-            Log.e("MainActivity", "end User " + data+" "+contactSelector.getContact());
             contactSelector.setContact("");
         } else {
             if (contactSelector.getContactData() != null) {
@@ -287,7 +286,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * Метод setMessage передає повідомлення у
      * метод sendMessageToService та обробляє повідомлення для
-     * видалення з бази даних тимчасово зберігання або інших дій
+     * видалення з бази даних тимчасово зберігання
+     *
+     * @param message повідомлення яке передається
      */
     private void setMessage(String message) {
         try {
@@ -311,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     break;
             }
         } catch (Exception e) {
-            Log.e("IOService", "Method set Message with Error " + e);
+            Log.e("MainActivity", "Method set Message with Error " + e);
         }
     }
 
@@ -332,14 +333,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Log.e("MainActivity", "sleep " + sleep);
                 for (int i = 0; i < contactDataList.size(); i++) {
                     ContactData contactData = contactDataList.get(i);
-                    if(contactSelector.getContact().equals(contactData.getId())) {
+                    if (sleep.equals(contactData.getId())) {
                         Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
-                        if(lastMessage.getTypeFile()!=null) {
-                            contactData.setMessageType(lastMessage.getTypeFile());
-                            contactData.setMessage(lastMessage.getFileName());
-                        }else{
-                            contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                            contactData.setMessage(lastMessage.getMessage());
+                        if (lastMessage != null) {
+                            if (lastMessage.getTypeFile() != null) {
+                                contactData.setMessageType(lastMessage.getTypeFile());
+                                contactData.setMessage(lastMessage.getFileName());
+                            } else {
+                                contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                                contactData.setMessage(lastMessage.getMessage());
+                            }
                         }
                     }
                 }
@@ -376,21 +379,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         } else {
                             saveMessage(message);
                             Log.e("MainActivityA", "[X] " + message);
-                            for (int i = 0; i < contactDataList.size(); i++) {
-                                ContactData contactData = contactDataList.get(i);
-                                if (contactData.getId().equals(envelope.getSenderId())) {
-                                    if(envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
-                                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
-                                        String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
-                                        contactData.setMessage(filename);
-                                    }else{
-                                        String rMessage = Encryption.AES.decrypt(envelope.getMessage(), contactData.getSenderKey());
-                                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                                        contactData.setMessage(rMessage);
-                                    }
-                                }
-                            }
-                            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+                            notificationMessage(envelope);
                         }
                     } catch (Exception e) {
                         Log.e("MainActivity", "Error to open message: " + e);
@@ -403,33 +392,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         Envelope envelope = new Envelope(new JSONObject(save_message));
                         if (checkContact(envelope)) {
                             saveMessage(save_message);
-                            for (int i = 0; i < contactDataList.size(); i++) {
-                                ContactData contactData = contactDataList.get(i);
-                                if (contactData.getId().equals(envelope.getSenderId())) {
-                                    if(envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
-                                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
-                                        String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
-                                        contactData.setMessage(filename);
-                                    }else{
-                                        String rMessage = Encryption.AES.decrypt(envelope.getMessage(), contactData.getSenderKey());
-                                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                                        contactData.setMessage(rMessage);
-                                    }
-                                }
-                            }
-                            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
-
+                            notificationMessage(envelope);
                         } else {
-                            String messageJson = new Envelope.Builder().
-                                    setSenderId(envelope.getReceiverId()).
-                                    setReceiverId(envelope.getSenderId()).
-                                    setOperation("messageStatus").
-                                    setMessageStatus("delivered_to_user").
-                                    setMessageId(envelope.getMessageId()).
-                                    build().
-                                    toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
-                                    toString();
-                            setMessage(messageJson);
+                            setMessageStatus(envelope);
                         }
                     } catch (Exception e) {
 
@@ -437,26 +402,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 String contact_status = intent.getStringExtra(FIELD.CONTACT_STATUS.getFIELD());
                 if (contact_status != null) {
-                    try {
-                        JSONArray jsonArray = new JSONArray(contact_status);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            String status = jsonArray.getString(i); // Отримуємо рядок із JSON-масиву
-                            String[] openStatus = status.split("=");
-                            Log.e("MainActivity", "contact_status: " + openStatus[0] + " " + openStatus[1]);
-                            for (int y = 0; y < contactDataList.size(); y++) {
-                                ContactData contactData = contactDataList.get(y);
-                                if (contactData.getId().equals(openStatus[0])) {
-                                    contactData.setStatusContact(openStatus[1]);
-                                }
-                                if (contactSelector.getContact().equals(openStatus[0])) { // Відправляємо статус у Чат Activity якщо воно запушеною
-                                    addStatus(openStatus[1]);
-                                }
-                            }
-                        }
-                        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
-                    } catch (Exception e) {
-                        Log.e("MainActivity", "Помилка під час отримання масиву строк з JSONArray: " + e);
-                    }
+                    getStatus(contact_status);
                 }
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
@@ -464,12 +410,48 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         String[] notificationAll = notification.split(":");
                         setNotification(notificationAll[0], "");
                     } catch (Exception e) {
-                        Log.e("MainActivity", e.toString());
+                        Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
                     }
                 }
             }
         }
     };
+
+    private void setMessageStatus(Envelope envelope) {
+        String messageJson = new Envelope.Builder().
+                setSenderId(envelope.getReceiverId()).
+                setReceiverId(envelope.getSenderId()).
+                setOperation("messageStatus").
+                setMessageStatus("delivered_to_user").
+                setMessageId(envelope.getMessageId()).
+                build().
+                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                toString();
+        setMessage(messageJson);
+    }
+
+    private void notificationMessage(Envelope envelope) {
+        try {
+            for (int i = 0; i < contactDataList.size(); i++) {
+                ContactData contactData = contactDataList.get(i);
+                if (contactData.getId().equals(envelope.getSenderId())) {
+                    if (envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
+                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
+                        String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
+                        contactData.setMessage(filename);
+                    } else {
+                        String rMessage = Encryption.AES.decrypt(envelope.getMessage(), contactData.getSenderKey());
+                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                        contactData.setMessage(rMessage);
+                    }
+                }
+            }
+            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+        } catch (Exception e) {
+            Log.e("MainActivity", "Помилка під час отримання повідомлення");
+
+        }
+    }
 
     private boolean checkContact(Envelope envelope) {
         boolean checkContact = false;
@@ -484,6 +466,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return checkContact;
     }
 
+    private void getStatus(String contact_status) {
+        try {
+            JSONArray jsonArray = new JSONArray(contact_status);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                String status = jsonArray.getString(i); // Отримуємо рядок із JSON-масиву
+                String[] openStatus = status.split("=");
+                for (int contact = 0; contact < contactDataList.size(); contact++) {
+                    ContactData contactData = contactDataList.get(contact);
+                    if (contactData.getId().equals(openStatus[0])) {
+                        contactData.setStatusContact(openStatus[1]);
+                    }
+                    if (contactSelector.getContact().equals(openStatus[0])) {
+                        // Відправляємо статус у Чат Activity якщо воно запушеною
+                        addStatus(openStatus[1]);
+                    }
+                }
+            }
+            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+        } catch (Exception e) {
+            Log.e("MainActivity", "Помилка під час отримання масиву строк з JSONArray: " + e);
+        }
+    }
 
     private void openSaveMessage() {
         if (!contactSelector.getContact().isEmpty()) {
@@ -806,6 +810,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.DATE_FROM_USERS_ACTIVITY.getFIELD(), message);
         sendBroadcast(intent);
     }
+
     /**
      * Додає статусу до broadcast для передачі його в ChatActivity.
      *
@@ -816,6 +821,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra(FIELD.STATUS.getFIELD(), status);
         sendBroadcast(intent);
     }
+
     /**
      * Зберігає отримане повідомлення.
      *

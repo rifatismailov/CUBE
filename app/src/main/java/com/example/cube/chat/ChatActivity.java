@@ -644,11 +644,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     Message message = messages.get(i);
                     if (message.getMessageId().equals(messageId)) {
                         if (progress == 100) {
-
-                            message.setTimestamp(getTime());
                             manager.updateMessage(message);
                             adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
-
                         }
                         if (info.startsWith("ERROR")) {
                             String[] error = info.split(":");
@@ -675,7 +672,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     private String getTime() {
         Date currentDate = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
         return formatter.format(currentDate);
     }
 

@@ -61,8 +61,6 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         if (contactData.getMessageType() != null) {
             messageType.setImageResource(GetFileIcon.getIcon(contactData.getMessageType()));
             message.setText(contactData.getMessage());
-
-            Log.e("MainActivity", "Adapter check file 1: " + contactData.getMessageType());
         }
         if (contactData.getProgress() > 0) {
             image.setProgress(contactData.getProgress()); // Встановлюємо прогрес в circular image
@@ -119,7 +117,6 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         if (position >= 0 && position < contactList.size()) {
             ContactData contactData = contactList.get(position);
             contactData.setProgress(progress);  // Оновлюємо прогрес для конкретного користувача
-
             // Оновлюємо тільки цю позицію
             notifyDataSetChanged();  // або notifyItemChanged(position);
         }
@@ -128,7 +125,6 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
     public List<String> splitHash(String hash, int chunkSize) {
         List<String> chunks = new ArrayList<>();
         int length = hash.length();
-
         for (int i = 0; i < length; i += chunkSize) {
             // Беремо підрядок розміром chunkSize або до кінця
             chunks.add(hash.substring(i, Math.min(length, i + chunkSize)));
