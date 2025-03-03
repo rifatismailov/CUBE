@@ -50,6 +50,7 @@ public class OperationMSG {
                     Message message=new Message(rMessage, Side.Receiver, messageID);
                     message.setTimestamp(envelope.getTime());
                     operableMSG.readMessage(message);
+                    returnAboutDeliver(message);
                 }
             }else if (operation.equals(FIELD.FILE.getFIELD())) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
@@ -66,6 +67,7 @@ public class OperationMSG {
                 message.setTypeFile(FIELD.FILE.getFIELD());
                 message.setDataCreate("11.11.11 12.12.12");
                 operableMSG.readMessageFile(message);
+                returnAboutDeliver(message);
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
                 // чому getString("publicKey"); тому що відправник вказує в повідомлення метрику як publicKey

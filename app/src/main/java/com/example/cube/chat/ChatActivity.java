@@ -510,6 +510,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 //    }
     @Override
     public void readMessage(Message message) {
+//        new OperationMSG(this).returnAboutDeliver(message);
+
         try {
             boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
             List<Message> newList = new ArrayList<>(messages); // Копія старого списку для DiffUtil
@@ -543,10 +545,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     autoScroll(); // Автоскрол після оновлення
                 });
             }
-
-
-            new OperationMSG(this).returnAboutDeliver(message);
-
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення: " + e);
         }
@@ -560,6 +558,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
      */
     @Override
     public void readMessageFile(Message message) {
+//        new OperationMSG(this).returnAboutDeliver(message);
         try {
             boolean messageExists = false; // Позначка для перевірки, чи знайдено повідомлення
             List<Message> newList = new ArrayList<>(messages); // Копія старого списку для DiffUtil
@@ -593,8 +592,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     autoScroll(); // Автоскрол після оновлення
                 });
             }
-
-            new OperationMSG(this).returnAboutDeliver(message);
 
         } catch (Exception e) {
             Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);

@@ -206,21 +206,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startService();
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
-        /*Отримуємо збережені повідомлення для відображення у list view останні повідомлення*/
-//        for (int i = 0; i < contactDataList.size(); i++) {
-//            ContactData contactData = contactDataList.get(i);
-//            Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());// отримуємо останнє за Id
-//            if (lastMessage != null) {
-//                if (lastMessage.getTypeFile() != null) {
-//                    contactData.setMessageType(lastMessage.getTypeFile());
-//                    contactData.setMessage(lastMessage.getFileName());
-//                } else {
-//                    contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-//                    contactData.setMessage(lastMessage.getMessage());
-//                }
-//            }
-//        }
-//        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         new Handler().postDelayed(() -> {
             if (manager.userSetting().getId() == null)
                 scannerQrAccount();
@@ -242,18 +227,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Ініціалізація списку контактів.
      */
     private void initUserList() {
-            contactDataList.clear();
-            contacts = contactManager.getContacts(secretKey);
-            for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
-                ContactData contactData = entry.getValue();
-                int messageCount = messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.MESSAGE.getFIELD()) +
-                        messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.FILE.getFIELD());
-                if (messageCount == 0) {
-                    contactData.setMessageSize("");  // обнуляємо messageSize
-                } else {
-                    contactData.setMessageSize("" + messageCount);
-                }
-                Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());// отримуємо останнє за Id
+        contactDataList.clear();
+        contacts = contactManager.getContacts(secretKey);
+        for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+            ContactData contactData = entry.getValue();
+
+            int messageCount = messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.MESSAGE.getFIELD()) +
+                    messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.FILE.getFIELD());
+
+            if (messageCount == 0) {
+                contactData.setMessageSize("");  // обнуляємо messageSize
+                Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
                 if (lastMessage != null) {
                     if (lastMessage.getTypeFile() != null) {
                         contactData.setMessageType(lastMessage.getTypeFile());
@@ -263,7 +247,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         contactData.setMessage(lastMessage.getMessage());
                     }
                 }
-                contactDataList.add(contactData);
+            } else {
+                contactData.setMessageSize("" + messageCount);
+            }
+
+            contactDataList.add(contactData);
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
         binding.contentMain.userList.setAdapter(contactAdapter);
@@ -368,56 +356,92 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     };
 
     /**
+     * Метод обробки отриманих повідомлень
+     */
+    private void byMessage(String message) {
+        try {
+            JSONObject object = new JSONObject(message);
+            Envelope envelope = new Envelope(object);
+            if (contactSelector.getContact().equals(envelope.getSenderId())) {
+                openSaveMessage();
+                onReceived(message);
+                Log.e("MainActivityA", "[-] " + message);
+            } else {
+                saveMessage(message);
+                Log.e("MainActivityA", "[X] " + message);
+                notificationMessage(envelope);
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Помилка отримання повідомлення: " + e);
+        }
+    }
+
+    /**
+     * Метод перевірки існування контакту
+     */
+    private boolean checkContact(Envelope envelope) {
+        boolean checkContact = false;
+
+        Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
+        for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+            if (envelope.getSenderId().equals(entry.getValue().getId())) {
+                checkContact = true;
+                break;
+            }
+        }
+        return checkContact;
+    }
+
+    /**
+     * Метод збереження повідомлення
+     */
+    private void bySaveMessage(String save_message) {
+        try {
+            Envelope envelope = new Envelope(new JSONObject(save_message));
+            if (checkContact(envelope)) {
+                saveMessage(save_message);
+                notificationMessage(envelope);
+            } else {
+                setMessageStatus(envelope);
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Помилка збереження повідомлення: " + e);
+        }
+    }
+    private void byNotification(String notification){
+        try {
+            String[] notificationAll = notification.split(":");
+            setNotification(notificationAll[0], "");
+        } catch (Exception e) {
+            Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
+        }
+    }
+    /**
      * BroadcastReceiver для отримання даних з IOService через broadcast.
      */
     private final BroadcastReceiver ioServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction().equals(FIELD.CUBE_RECEIVED_MESSAGE.getFIELD())) {
+                // Отримання повідомлень
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
                 if (message != null) {
-                    try {
-                        Envelope envelope = new Envelope(new JSONObject(message));
-                        if (contactSelector.getContact().equals(envelope.getSenderId())) {
-                            openSaveMessage();
-                            onReceived(message);
-                            Log.e("MainActivityA", "[-] " + message);
-                        } else {
-                            saveMessage(message);
-                            Log.e("MainActivityA", "[X] " + message);
-                            notificationMessage(envelope);
-                        }
-                    } catch (Exception e) {
-                        Log.e("MainActivity", "Error to open message: " + e);
-                    }
+                    byMessage(message);
                 }
+                // отримання та збереження повідомлень
                 String save_message = intent.getStringExtra(FIELD.SAVE_MESSAGE.getFIELD());
-
                 if (save_message != null) {
-                    try {
-                        Envelope envelope = new Envelope(new JSONObject(save_message));
-                        if (checkContact(envelope)) {
-                            saveMessage(save_message);
-                            notificationMessage(envelope);
-                        } else {
-                            setMessageStatus(envelope);
-                        }
-                    } catch (Exception e) {
-
-                    }
+                    bySaveMessage(save_message);
                 }
+                // отримання статусу контактів онлайн оффлайн нема на зв'язку
                 String contact_status = intent.getStringExtra(FIELD.CONTACT_STATUS.getFIELD());
                 if (contact_status != null) {
                     getStatus(contact_status);
                 }
+                // отримання інформації стосовно підключення
                 String notification = intent.getStringExtra(FIELD.NOTIFICATION.getFIELD());
                 if (notification != null) {
-                    try {
-                        String[] notificationAll = notification.split(":");
-                        setNotification(notificationAll[0], "");
-                    } catch (Exception e) {
-                        Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
-                    }
+                    byNotification(notification);
                 }
             }
         }
@@ -463,25 +487,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
             contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+
+            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка під час отримання повідомлення");
 
         }
     }
 
-
-    private boolean checkContact(Envelope envelope) {
-        boolean checkContact = false;
-
-        Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
-        for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
-            if (envelope.getSenderId().equals(entry.getValue().getId())) {
-                checkContact = true;
-                break;
-            }
-        }
-        return checkContact;
-    }
 
     private void getStatus(String contact_status) {
         try {

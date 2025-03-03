@@ -10,8 +10,6 @@ import com.example.cube.chat.message.Message;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -193,6 +191,7 @@ public class MessageManager {
         values.put(COLUMN_SIDE, message.getSide().toString());
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
+
         values.put(COLUMN_TIMESTAMP, message.getTimestamp());
         Log.e("Listener", "Time  " + message.getTimestamp());
 
@@ -240,7 +239,7 @@ public class MessageManager {
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
                 message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-                Log.e("Listener", Side.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SIDE)))+" Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                Log.e("Listener", "Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
 
                 messages.add(message);
             } while (cursor.moveToNext());
@@ -249,14 +248,12 @@ public class MessageManager {
         //database.close();
         return messages;
     }
-
     /**
-     * Отримує останнє повідомлення за ID отримувача, незалежно від того, чи це відправник чи отримувач.
+     * Отримує останнє повідомлення за ID отримувача.
      *
      * @param receiverId ID отримувача.
      * @return Останнє повідомлення або null, якщо немає повідомлень.
      */
-
     public Message getLastMessageByReceiverId(String receiverId) {
         List<Message> messages = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_MESSAGES + " WHERE " + COLUMN_RECEIVER + " = ?";
@@ -283,8 +280,8 @@ public class MessageManager {
                     message.setTypeFile(fileType);
                     message.setHas(fileHash);
                     message.setDataCreate(fileDateCreate);
-                }
 
+                }
                 message.setImage(cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)));
                 message.setImageWidth(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_WIDTH)));
                 message.setImageHeight(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_HEIGHT)));
@@ -292,21 +289,13 @@ public class MessageManager {
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
                 message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-
-                Log.e("Listener", Side.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SIDE))) + " Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                Log.e("Listener", "Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
 
                 messages.add(message);
             } while (cursor.moveToNext());
         }
         cursor.close();
-
-        // Перевірка, чи є повідомлення
-        if (!messages.isEmpty()) {
-            return messages.get(messages.size() - 1);
-        } else {
-            return null; // Якщо повідомлення не знайдено
-        }
+        return messages.get(messages.size()-1);
     }
-
 
 }
