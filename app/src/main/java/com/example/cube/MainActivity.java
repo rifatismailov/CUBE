@@ -206,23 +206,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startService();
         binding.setting.setOnClickListener(this);
         binding.fab.setOnClickListener(this);
-
-        for (int i = 0; i < contactDataList.size(); i++) {
-            ContactData contactData = contactDataList.get(i);
-            Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
-            if (lastMessage != null) {
-                Log.e("MainActivity", "lastMessage.getTypeFile() " + lastMessage.getTypeFile());
-
-                if (lastMessage.getTypeFile() != null) {
-                    contactData.setMessageType(lastMessage.getTypeFile());
-                    contactData.setMessage(lastMessage.getFileName());
-                } else {
-                    contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                    contactData.setMessage(lastMessage.getMessage());
-                }
-            }
-        }
-        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
+        /*Отримуємо збережені повідомлення для відображення у list view останні повідомлення*/
+//        for (int i = 0; i < contactDataList.size(); i++) {
+//            ContactData contactData = contactDataList.get(i);
+//            Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());// отримуємо останнє за Id
+//            if (lastMessage != null) {
+//                if (lastMessage.getTypeFile() != null) {
+//                    contactData.setMessageType(lastMessage.getTypeFile());
+//                    contactData.setMessage(lastMessage.getFileName());
+//                } else {
+//                    contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+//                    contactData.setMessage(lastMessage.getMessage());
+//                }
+//            }
+//        }
+//        contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         new Handler().postDelayed(() -> {
             if (manager.userSetting().getId() == null)
                 scannerQrAccount();
@@ -244,18 +242,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * Ініціалізація списку контактів.
      */
     private void initUserList() {
-        contactDataList.clear();
-        contacts = contactManager.getContacts(secretKey);
-        for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
-            int messageCount = messageMainManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.MESSAGE.getFIELD()) +
-                    messageMainManager.getMessageCountBySenderAndOperation(entry.getValue().getId(), FIELD.FILE.getFIELD());
-
-            if (messageCount == 0) {
-                entry.getValue().setMessageSize("");  // обнуляємо messageSize
-            } else {
-                entry.getValue().setMessageSize("" + messageCount);
-            }
-            contactDataList.add(entry.getValue());
+            contactDataList.clear();
+            contacts = contactManager.getContacts(secretKey);
+            for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
+                ContactData contactData = entry.getValue();
+                int messageCount = messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.MESSAGE.getFIELD()) +
+                        messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.FILE.getFIELD());
+                if (messageCount == 0) {
+                    contactData.setMessageSize("");  // обнуляємо messageSize
+                } else {
+                    contactData.setMessageSize("" + messageCount);
+                }
+                Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());// отримуємо останнє за Id
+                if (lastMessage != null) {
+                    if (lastMessage.getTypeFile() != null) {
+                        contactData.setMessageType(lastMessage.getTypeFile());
+                        contactData.setMessage(lastMessage.getFileName());
+                    } else {
+                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                        contactData.setMessage(lastMessage.getMessage());
+                    }
+                }
+                contactDataList.add(contactData);
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
         binding.contentMain.userList.setAdapter(contactAdapter);
@@ -330,7 +338,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
 
             if (sleep != null) {
-                Log.e("MainActivity", "sleep " + sleep);
                 for (int i = 0; i < contactDataList.size(); i++) {
                     ContactData contactData = contactDataList.get(i);
                     if (sleep.equals(contactData.getId())) {
@@ -370,8 +377,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 String message = intent.getStringExtra(FIELD.MESSAGE.getFIELD());
                 if (message != null) {
                     try {
-                        JSONObject object = new JSONObject(message);
-                        Envelope envelope = new Envelope(object);
+                        Envelope envelope = new Envelope(new JSONObject(message));
                         if (contactSelector.getContact().equals(envelope.getSenderId())) {
                             openSaveMessage();
                             onReceived(message);
@@ -417,6 +423,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
+    public void processObject(Object obj) {
+        if (obj instanceof Envelope) {
+
+        } else if (obj instanceof Message) {
+
+        } else {
+
+        }
+    }
+
     private void setMessageStatus(Envelope envelope) {
         String messageJson = new Envelope.Builder().
                 setSenderId(envelope.getReceiverId()).
@@ -452,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         }
     }
+
 
     private boolean checkContact(Envelope envelope) {
         boolean checkContact = false;
