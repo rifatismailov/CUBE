@@ -390,27 +390,29 @@ public class Message implements Serializable {
         this.progress = progress;
     }
 
-    // Метод для генерації хешу
+    /**
+     * Метод для генерації хешу
+     * отримуємо тільки хеш з повідомлення
+     */
     public String getHash_m() throws NoSuchAlgorithmException {
-        // Використовуємо лише відправника, отримувача і вміст повідомлення
-        String input = messageId + message + senderId + receiverId;
-
         // Створюємо хеш за допомогою SHA-256
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(input.getBytes());
+        byte[] hashBytes = digest.digest(message.getBytes());
 
         StringBuilder hexString = new StringBuilder();
         for (byte b : hashBytes) {
             hexString.append(String.format("%02x", b));
         }
-
         return hexString.toString();
     }
 
-    // Метод для генерації хешу з файлом
+    /**
+     * Метод для генерації хешу з файлом
+     * отримуємо хеш з повідомлення, посилання на файл та хешу файлу
+     */
     public String getHash_f() throws NoSuchAlgorithmException {
         // Використовуємо лише відправника, отримувача і вміст повідомлення
-        String input = messageId + message + senderId + receiverId + selectedUrl + has;
+        String input = message + selectedUrl + has;
 
         // Створюємо хеш за допомогою SHA-256
         MessageDigest digest = MessageDigest.getInstance("SHA-256");

@@ -14,13 +14,13 @@
             android:id="@+id/messageType"
             android:layout_width="20sp"
             android:layout_height="20sp"
-            android:background="@drawable/ic_file_hex"/>
+           />
         <TextView
             android:id="@+id/textMessage"
             android:layout_width="match_parent"
             android:layout_height="20sp"
-            android:text="You have a message. Choose the contact to see."
-            android:textColor="#7e8a98"
+            android:fontFamily="@font/poppins_extralight"
+            android:textColor="#B0C4DE"
             android:textSize="15sp"
             android:gravity="center|left"
             android:textStyle="bold"

@@ -79,37 +79,37 @@ public class IOService extends Service implements WebSocketClient.Listener {
                                 connectionInfo.setSenderId(senderId);// Оновлюємо лише значення
                             }
                             break;
-                        case "CUBE_ID_RECIVER":
-                            receiverId = intent.getStringExtra("receiverId");
-                            synchronized (connectionInfo) {
-                                connectionInfo.setReciverId(receiverId); // Оновлюємо лише значення
-                            }
-                            break;
                         case "CUBE_SEND_TO_SERVER":
                             setMessage(intent.getStringExtra("message"));
                             break;
-                        case "CUBE_IP_TO_SERVER":
-                            ip = intent.getStringExtra("ip");
-                            Log.e("IOService", "CUBE_IP_TO_SERVER " + ip);
+                        case "CUBE_SEND_TO_SETTING":
+                            String setting = intent.getStringExtra("setting");
+                            Log.e("IOService", "CUBE_SEND_TO_SETTING " + setting);
+                            // Створення JSONObject з рядка
+                            JSONObject jsonObject = new JSONObject(setting);
+
+                            // Отримання значень
+                            String userId = jsonObject.getString("userId");
+                            ip = jsonObject.getString("serverIp");
+                            port = jsonObject.getString("serverPort");
                             synchronized (connectionInfo) {
-                                connectionInfo.setIp(ip);// Оновлюємо лише значення
+                                connectionInfo.setSenderId(userId);
+                                connectionInfo.setIp(ip);
+                                connectionInfo.setPort(port);
+                                startWebSocket();
                             }
                             break;
-                        case "CUBE_PORT_TO_SERVER":
-                            port = intent.getStringExtra("port");
-                            Log.e("IOService", "CUBE_PORT_TO_SERVER " + port);
-                            synchronized (connectionInfo) {
-                                connectionInfo.setPort(port);// Оновлюємо лише значення
-                            }
-                            break;
-                        case "MAIN_ACTIVITY_LIFE":
-                            setActivityLife(intent.getStringExtra("LIFE"));
-                            break;
+
                         case "MAIN_ACTIVITY_REGISTRATION":
                             String request = intent.getStringExtra("request");
                             Log.e("IOService", "request " + request);
-                            connectionInfo.setRegistration(request);
+                            synchronized (connectionInfo) {
+                                connectionInfo.setRegistration(request);
+                            }
                             startWebSocket();
+                            break;
+                        case "MAIN_ACTIVITY_COMMAND":
+                            handleActivityCommand(intent.getStringExtra("COMMAND"));
                             break;
                     }
                 } catch (Exception e) {
@@ -125,8 +125,10 @@ public class IOService extends Service implements WebSocketClient.Listener {
         filter.addAction("CUBE_SEND_TO_SERVER");
         filter.addAction("CUBE_IP_TO_SERVER");
         filter.addAction("CUBE_PORT_TO_SERVER");
-        filter.addAction("MAIN_ACTIVITY_LIFE");
+        filter.addAction("MAIN_ACTIVITY_COMMAND");
         filter.addAction("MAIN_ACTIVITY_REGISTRATION");
+        filter.addAction("CUBE_SEND_TO_SETTING");
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
@@ -140,18 +142,24 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
-    private void setActivityLife(String life) {
+    /**
+     * Метод який обробляє отримані команди з основної активності
+     */
+    private void handleActivityCommand(String command) {
         try {
             JSONObject jsonObject = new JSONObject(connectionInfo.getRegistration());
 
-            switch (life) {
+            switch (command) {
                 case "reborn":
                     Log.e("IOService", "Main Activity reborn");
                     getOfflineMessage();
-                    connectionInfo.setLife(life);
+                    connectionInfo.setLife(command);
                     break;
                 case "died":
-                    connectionInfo.setLife(life);
+                    connectionInfo.setLife(command);
+                    break;
+                case "reconnect":
+
                     break;
             }
         } catch (Exception e) {
@@ -180,7 +188,9 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     Log.e("IOService", "Update message " + status + " ID message " + envelope.getMessageId());
                     break;
                 default:
-                    Log.e("IOService", "Default case triggered with status: " + status);
+                    Log.e("WebSocket", "Default case triggered with status: " + status+" "+envelope.toJson());
+                    messageManager.setMessage(envelope, "send");
+                   // messageManager.deleteAllMessages();
                     sendMessage(message);
                     break;
             }
@@ -263,27 +273,32 @@ public class IOService extends Service implements WebSocketClient.Listener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            senderId = intent.getStringExtra("CUBE_ID_SENDER");
-            ip = intent.getStringExtra("CUBE_IP_TO_SERVER");
-            port = intent.getStringExtra("CUBE_PORT_TO_SERVER");
-            String life = intent.getStringExtra("MAIN_ACTIVITY_LIFE");
-            String registration = intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
             try {
+                String setting = intent.getStringExtra("CUBE_SEND_TO_SETTING");
+                String command = intent.getStringExtra("MAIN_ACTIVITY_COMMAND");
+                String registration = intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
+                Log.e("IOService", "CUBE_SEND_TO_SETTING " + setting);
+                // Створення JSONObject з рядка
+                JSONObject jsonObject = new JSONObject(setting);
+
+                // Отримання значень
+                senderId = jsonObject.getString("userId");
+                ip = jsonObject.getString("serverIp");
+                port = jsonObject.getString("serverPort");
+
                 connectionInfo.setSenderId(senderId);
                 connectionInfo.setIp(ip);
                 connectionInfo.setPort(port);
                 connectionInfo.setRegistration(registration);
-                JSONObject jsonObject = new JSONObject(connectionInfo.getRegistration());
-
-                if (life != null) {
-                    switch (life) {
+                if (command != null) {
+                    switch (command) {
                         case "reborn":
-                            Log.e("IOService", "Main Activity reborn :" + life);
-                            connectionInfo.setLife(life);
+                            Log.e("IOService", "Main Activity reborn :" + command);
+                            connectionInfo.setLife(command);
                             break;
                         case "died":
                             Log.e("IOService", "Main Activity died");
-                            connectionInfo.setLife(life);
+                            connectionInfo.setLife(command);
                             break;
                     }
                 }
@@ -302,7 +317,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         if (webSocketClient != null) {
             webSocketClient.restartConnection(connectionInfo); // Перезапуск без дублювання
         } else {
-            webSocketClient = new WebSocketClient(this, connectionInfo);
+            webSocketClient = new WebSocketClient(this, connectionInfo, messageManager);
             webSocketClient.connect();
         }
     }
@@ -382,7 +397,12 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 Envelope envelope = new Envelope(object);
                 addMessage(message);
                 returnMessageDeliver(envelope);
-                messageManager.setMessage(envelope);
+                if (envelope.getMessageStatus().equals("server")) {
+                    Log.e("WebSocket", "messages delete "+envelope.getMessageId());
+                    messageManager.deleteMessageById(envelope.getMessageId());
+                } else {
+                    messageManager.setMessage(envelope);
+                }
             } catch (JSONException e) {
                 Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
                 Log.e("IOService", "Not a JSON message: " + message);

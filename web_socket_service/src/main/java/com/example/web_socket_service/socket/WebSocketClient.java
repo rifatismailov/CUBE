@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,10 +34,12 @@ public class WebSocketClient {
 
     private final Listener listener;
     private ConnectionInfo connectionInfo;
+    private MessageServiceManager messageManager;
 
-    public WebSocketClient(Listener listener, ConnectionInfo connectionInfo) {
+    public WebSocketClient(Listener listener, ConnectionInfo connectionInfo, MessageServiceManager messageManager) {
         this.listener = listener;
         this.connectionInfo = connectionInfo;
+        this.messageManager = messageManager;
         this.SERVER_URL = connectionInfo.getServerAddress();
         this.CLIENT_ID = connectionInfo.getRegistration();
         executorService = Executors.newFixedThreadPool(2); // Створюємо пул для асинхронних задач
@@ -66,6 +70,21 @@ public class WebSocketClient {
                             retryCount = 0; // Скидаємо лічильник невдалих спроб
                             listener.onNotification("Connected to server...");
                             listener.sendStatus(textArray[1]);
+                        }
+                        /*перевіряємо кількість повідомлень для відправки*/
+                        HashMap<String, Envelope> messages = messageManager.getMessagesByOperation("send");
+                        Log.e("WebSocket", "messages send size " + messages.size());
+
+                        for (Map.Entry<String, Envelope> entry : messages.entrySet()) {
+                            String messageId = entry.getKey();
+                            Envelope envelope = entry.getValue();
+                            if (envelope.toJson().toString().equals("{}")) {
+                                //Буває з'являється мусор у вигляді {} ми його видаляємо тому що це не повідомлення
+                                messageManager.deleteMessageById(messageId);
+                                Log.e("WebSocket", "messages operation 1 " + envelope.toJson().toString());
+
+                            }
+                            sendMessage(envelope.toJson().toString());
                         }
                     } else {
                         if (listener != null) {
@@ -245,6 +264,7 @@ public class WebSocketClient {
      */
     public interface Listener {
         void sendStatus(String status);
+
         void onNotification(String message);
 
         void onListener(String message);

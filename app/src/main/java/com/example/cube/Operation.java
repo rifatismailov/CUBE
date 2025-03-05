@@ -27,6 +27,7 @@ public class Operation {
     private final Operable operable;
     private final MessageMainManager messageManager;
 
+
     /**
      * Конструктор класу, що приймає об'єкт, який реалізує інтерфейс {@link Operable}.
      * Цей об'єкт використовується для додавання повідомлень та оновлення адаптера UI.
@@ -155,12 +156,29 @@ public class Operation {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Метод який формує звіт отримання повідомлення
+     *
+     * @param envelope отримане повідомлення
+     */
+    public void setMessageStatus(Envelope envelope) {
+        String messageJson = new Envelope.Builder().
+                setSenderId(envelope.getReceiverId()).
+                setReceiverId(envelope.getSenderId()).
+                setOperation("messageStatus").
+                setMessageStatus("delivered_to_user").
+                setMessageId(envelope.getMessageId()).
+                build().
+                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                toString();
+        operable.setMessage(messageJson);
+    }
     /**
      * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
      * Використовується для додавання повідомлень, хендшейків (RSA ключів), обміну AES-ключами та оновлення адаптерів та інше.
      */
     public interface Operable {
+        void setMessage(String message);
         void addMessage(String message);
 
         void giveAvatar(String sender);

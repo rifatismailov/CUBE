@@ -128,7 +128,7 @@ public class GetFileIcon {
                 icon = R.drawable.imagexgeneric_92742;
                 break;
             case "message":
-                icon = R.drawable.textxpo_92780;
+                icon = R.drawable.message_icon_228461;
                 break;
             default:
                 icon = R.drawable.ic_file_hex;

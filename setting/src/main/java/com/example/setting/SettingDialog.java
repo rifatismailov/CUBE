@@ -5,11 +5,14 @@
  */
 package com.example.setting;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -97,9 +100,43 @@ public class SettingDialog extends Dialog {
         inputFileServerIp = findViewById(R.id.input_file_server_ip);
         inputFileServerPort = findViewById(R.id.input_file_server_port);
         switchNotifications = findViewById(R.id.switch_notifications);
-        MaterialButton buttonSave = findViewById(R.id.button_save);
+       MaterialButton buttonSave = findViewById(R.id.button_save);
         avatarImage = findViewById(R.id.avatarImage);
         accountImage = findViewById(R.id.accountImage);
+        input_userPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                input_userPassword.removeTextChangedListener(this);
+                String input = s.toString().replace(".", "");
+
+                if (input.length() > 0) {
+                    StringBuilder formatted = new StringBuilder();
+                    for (int i = 0; i < input.length(); i++) {
+                        formatted.append(input.charAt(i));
+                        if (i != input.length() - 1) {
+                            formatted.append('.');
+                        }
+                    }
+
+                    input_userPassword.setText(formatted.toString());
+                    int selectionPosition = formatted.length();
+                    if (selectionPosition > input_userPassword.length()) {
+                        selectionPosition = input_userPassword.length();
+                    }
+                    input_userPassword.setSelection(selectionPosition);
+                }
+
+                input_userPassword.addTextChangedListener(this);
+            }
+        });
 
         // Set initial values from user settings
         inputUserId.setText(userSetting.getId());

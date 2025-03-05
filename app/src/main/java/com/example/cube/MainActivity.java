@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MessageMainManager messageMainManager;
     private Map<String, ContactData> contacts = new HashMap<>();  // Контакти користувачів
     private ContactAdapter contactAdapter;                // Адаптер для відображення користувачів
+    private Operation operation;
     private final ContactSelector contactSelector = new ContactSelector();
     private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
     private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
@@ -198,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         manager = new Manager(this, db, secretKey);
         messageManager = new MessageManager(db);
         messageMainManager = new MessageMainManager(db);
+        operation = new Operation(this, messageMainManager);
         manager.readAccount();
         contactManager = new ContactManager(db);
         registerChatActivityReceiver();
@@ -222,6 +224,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    /**
+     * Метод відображення останнього повідомлення у списку контактів
+     *
+     * @param contactData контакт в якому буде відображення останнього повідомлення
+     */
+    private void openLastMessage(ContactData contactData) {
+        try {
+            Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
+            if (lastMessage != null) {
+                if (lastMessage.getTypeFile() != null) {
+                    contactData.setMessageType(lastMessage.getTypeFile());
+                    contactData.setMessage(lastMessage.getFileName());
+                } else {
+                    contactData.setMessageType(FIELD.MESSAGE.getFIELD());
+                    contactData.setMessage(lastMessage.getMessage());
+                }
+            }
+        }catch (Exception e){
+            Log.e("MainActivity", "помилка під час обробки повідомлення " + e);
+        }
+
+    }
 
     /**
      * Ініціалізація списку контактів.
@@ -234,23 +258,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             int messageCount = messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.MESSAGE.getFIELD()) +
                     messageMainManager.getMessageCountBySenderAndOperation(contactData.getId(), FIELD.FILE.getFIELD());
-
             if (messageCount == 0) {
                 contactData.setMessageSize("");  // обнуляємо messageSize
-                Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
-                if (lastMessage != null) {
-                    if (lastMessage.getTypeFile() != null) {
-                        contactData.setMessageType(lastMessage.getTypeFile());
-                        contactData.setMessage(lastMessage.getFileName());
-                    } else {
-                        contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                        contactData.setMessage(lastMessage.getMessage());
-                    }
-                }
+                openLastMessage(contactData);
             } else {
                 contactData.setMessageSize("" + messageCount);
             }
-
             contactDataList.add(contactData);
         }
         contactAdapter = new ContactAdapter(this, R.layout.iteam_user, contactDataList);
@@ -258,7 +271,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding.contentMain.userList.setOnItemClickListener(this);
         binding.contentMain.userList.setOnItemLongClickListener(this);
     }
-
 
     /**
      * Отримує дані з активності чату та передає їх на сервер.
@@ -280,16 +292,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Метод setMessage передає повідомлення у
+     * Метод передає повідомлення у
      * метод sendMessageToService та обробляє повідомлення для
      * видалення з бази даних тимчасово зберігання
      *
      * @param message повідомлення яке передається
      */
-    private void setMessage(String message) {
+    @Override
+    public void setMessage(String message) {
         try {
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
+            Log.e("MainActivity", "set Message [Envelope] " + envelope.toJson()+"\n[Message] "+message);
+
             // Отримуємо значення messageStatus, перевіряємо на null і обрізаємо пробіли
             String status = envelope.getMessageStatus();
             if (status == null || status.trim().isEmpty()) {
@@ -308,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     break;
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Method set Message with Error " + e);
+            Log.e("MainActivity", "помилка під час обробки повідомлення " + e);
         }
     }
 
@@ -329,16 +344,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for (int i = 0; i < contactDataList.size(); i++) {
                     ContactData contactData = contactDataList.get(i);
                     if (sleep.equals(contactData.getId())) {
-                        Message lastMessage = messageManager.getLastMessageByReceiverId(contactData.getId());
-                        if (lastMessage != null) {
-                            if (lastMessage.getTypeFile() != null) {
-                                contactData.setMessageType(lastMessage.getTypeFile());
-                                contactData.setMessage(lastMessage.getFileName());
-                            } else {
-                                contactData.setMessageType(FIELD.MESSAGE.getFIELD());
-                                contactData.setMessage(lastMessage.getMessage());
-                            }
-                        }
+                        openLastMessage(contactData);
                     }
                 }
                 contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
@@ -347,10 +353,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
 
             if (awake != null) {
-                Log.e("MainActivity", "awake " + awake);
                 notifyIdReciverChanged(awake);
                 contactSelector.setContact(awake);
-
+                openSaveMessage();
             }
         }
     };
@@ -392,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return checkContact;
     }
 
+
     /**
      * Метод збереження повідомлення
      */
@@ -402,13 +408,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 saveMessage(save_message);
                 notificationMessage(envelope);
             } else {
-                setMessageStatus(envelope);
+                operation.setMessageStatus(envelope);
             }
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка збереження повідомлення: " + e);
         }
     }
-    private void byNotification(String notification){
+
+    private void byNotification(String notification) {
         try {
             String[] notificationAll = notification.split(":");
             setNotification(notificationAll[0], "");
@@ -416,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
         }
     }
+
     /**
      * BroadcastReceiver для отримання даних з IOService через broadcast.
      */
@@ -457,26 +465,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    private void setMessageStatus(Envelope envelope) {
-        String messageJson = new Envelope.Builder().
-                setSenderId(envelope.getReceiverId()).
-                setReceiverId(envelope.getSenderId()).
-                setOperation("messageStatus").
-                setMessageStatus("delivered_to_user").
-                setMessageId(envelope.getMessageId()).
-                build().
-                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
-                toString();
-        setMessage(messageJson);
-    }
-
     private void notificationMessage(Envelope envelope) {
         try {
             for (int i = 0; i < contactDataList.size(); i++) {
                 ContactData contactData = contactDataList.get(i);
                 if (contactData.getId().equals(envelope.getSenderId())) {
                     if (envelope.getOperation().equals(FIELD.FILE.getFIELD())) {
-                        contactData.setMessageType(FIELD.FILE.getFIELD());//тут передаємо тип File так як ми ще не знаємо oо саме передали
+                        contactData.setMessageType(FIELD.FILE.getFIELD());
                         String filename = Encryption.AES.decrypt(envelope.getFileUrl(), contactData.getSenderKey());
                         contactData.setMessage(filename);
                     } else {
@@ -486,7 +481,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
             }
-            contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
 
             contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         } catch (Exception e) {
@@ -521,21 +515,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void openSaveMessage() {
         if (!contactSelector.getContact().isEmpty()) {
-            new Operation(this, messageMainManager).openSaveMessage(contactSelector.getContact());
+            operation.openSaveMessage(contactSelector.getContact());
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        notifyForLife("sleep");
+        handleActivityCommand("sleep");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        notifyForLife("awake");
-        notifyForLife("reborn");
+        handleActivityCommand("awake");
+        handleActivityCommand("reborn");
     }
 
     /**
@@ -545,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onDestroy() {
         super.onDestroy();
         try {
-            notifyForLife("died");//Сповіщаємо сервіс про те що Головне активність знищена
+            handleActivityCommand("died");//Сповіщаємо сервіс про те що Головне активність знищена
             unregisterReceiver(chatActivityReceiver);
             unregisterReceiver(ioServiceReceiver);//Знищуємо BroadcastReceiver
         } catch (IllegalArgumentException e) {
@@ -632,10 +626,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     new UrlBuilder.PortValidator().validate(manager.userSetting().getServerPort())) {
 
                 Intent serviceIntent = new Intent(this, IOService.class);
-                serviceIntent.putExtra(FIELD.CUBE_ID_SENDER.getFIELD(), manager.userSetting().getId());
-                serviceIntent.putExtra(FIELD.CUBE_IP_TO_SERVER.getFIELD(), manager.userSetting().getServerIp());
-                serviceIntent.putExtra(FIELD.CUBE_PORT_TO_SERVER.getFIELD(), manager.userSetting().getServerPort());
-                serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_LIFE.getFIELD(), "reborn");
+                String setting = new UserSetting.Builder()
+                        .setId(manager.userSetting().getId())
+                        .setServerIp(manager.userSetting().getServerIp())
+                        .setServerPort(manager.userSetting().getServerPort())
+                        .build().toJson("userId", "serverIp", "serverPort").toString();
+                serviceIntent.putExtra(FIELD.CUBE_SEND_TO_SETTING.getFIELD(), setting);
+                serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_COMMAND.getFIELD(), "reborn");
                 serviceIntent.putExtra(FIELD.MAIN_ACTIVITY_REGISTRATION.getFIELD(), getContactToJsonArray());
 
                 if (!isMyServiceRunning(IOService.class)) {  // Якщо сервіс ще не запущений
@@ -679,6 +676,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);  // Надсилає повідомлення сервісу
     }
 
+    private void setSettingService(String message) {
+        Intent intent = new Intent(FIELD.CUBE_SEND_TO_SETTING.getFIELD());
+        intent.putExtra(FIELD.SETTING.getFIELD(), message);
+        sendBroadcast(intent);  // Надсилає повідомлення сервісу
+    }
+
     private void request(String message) {
         Intent intent = new Intent("MAIN_ACTIVITY_REGISTRATION");
         intent.putExtra("request", message);
@@ -686,11 +689,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Оповіщення про життя активності
+     * Відправляє команди до сервісу про стан активності або зміни
      */
-    private void notifyForLife(String life) {
-        Intent intent = new Intent(FIELD.MAIN_ACTIVITY_LIFE.getFIELD());
-        intent.putExtra(FIELD.LIFE.getFIELD(), life);
+    private void handleActivityCommand(String life) {
+        Intent intent = new Intent(FIELD.MAIN_ACTIVITY_COMMAND.getFIELD());
+        intent.putExtra(FIELD.COMMAND.getFIELD(), life);
         sendBroadcast(intent);
     }
 
@@ -826,7 +829,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param message Текст повідомлення.
      */
     public void onReceived(String message) {
-        new Operation(this, messageMainManager).onReceived(message);
+        operation.onReceived(message);
     }
 
     /**
@@ -860,7 +863,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void saveMessage(String message) {
         try {
             Envelope envelope = new Envelope(new JSONObject(message));
-            runOnUiThread(() -> new Operation(this, messageMainManager).saveMessage(envelope, saveMessage, contactDataList));
+            runOnUiThread(() -> operation.saveMessage(envelope, saveMessage, contactDataList));
         } catch (Exception e) {
             Log.e("MainActivity", "Save Message Error: " + e);
         }
@@ -1404,7 +1407,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onSetting(JSONObject jsonObject) {
         manager.writeAccount(jsonObject);
-        startService(); //перезапуск сервісу
+        String setting = new UserSetting.Builder()
+                .setId(manager.userSetting().getId())
+                .setServerIp(manager.userSetting().getServerIp())
+                .setServerPort(manager.userSetting().getServerPort())
+                .build().toJson("userId", "serverIp", "serverPort").toString();
+        setSettingService(setting);
     }
 
     @Override

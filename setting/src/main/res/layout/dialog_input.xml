@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp"
                 android:text="Загальні налаштування"
-                android:textColor="@color/green"
+                android:textColor="@color/blue_f"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -42,22 +42,19 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть Ім'я користувача"
-
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="ID користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_username"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
+
             </LinearLayout>
 
             <!-- Поле Прізвище користувача -->
@@ -70,21 +67,18 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть Прізвище користувача"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="ID користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_userLastName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле ID користувача -->
@@ -97,21 +91,19 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть ID користувача"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="Введіть ID користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_userId"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
+
             </LinearLayout>
             <!-- Поле ID користувача -->
             <LinearLayout
@@ -123,21 +115,20 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Пароль користувача"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="Пароль користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_userPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
-                        android:inputType="text" />
+                        android:autofillHints="password"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
+                        android:maxLength="32" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
+
             </LinearLayout>
             <!-- Перемикач Сповіщення -->
             <LinearLayout
@@ -153,6 +144,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Сповіщення"
+
+                    android:textColor="@color/blue"
                     android:textSize="16sp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -171,7 +164,7 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"
                 android:text="Налаштування серверу"
-                android:textColor="@color/green"
+                android:textColor="@color/blue_f"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -185,21 +178,19 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_extralight"
                     android:hint="Введіть IP сервера обміну повідомленнями"
-                    app:boxBackgroundMode="none">
+
+                    >
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_messaging_server_ip"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле Port сервера обміну повідомленнями -->
@@ -212,21 +203,17 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть порт сервера обміну повідомленнями"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="Введіть порт сервера обміну повідомленнями">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_messaging_server_port"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
-                        android:inputType="number" />
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
+                        android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле IP сервера обміну файлами -->
@@ -239,21 +226,17 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть IP сервера обміну файлами"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="Введіть IP сервера обміну файлами">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_file_server_ip"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
             </LinearLayout>
 
             <!-- Поле Port сервера обміну файлами -->
@@ -266,22 +249,18 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Введіть порт сервера обміну файлами"
-                    app:boxBackgroundMode="none">
+                    android:fontFamily="@font/poppins_extralight"
+                    android:hint="Введіть порт сервера обміну файлами">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_file_server_port"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null"
-
-                        android:inputType="number" />
+                        android:background="@color/white"
+                        android:fontFamily="@font/roboto_regular"
+                        android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@android:color/black" />
             </LinearLayout>
 
             <LinearLayout
@@ -300,19 +279,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <TextView
-                        style="@style/Base.CardView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:icon="@android:drawable/ic_menu_save"
-                        android:text="Зберегти налаштування" />
-
-                    <TextView
-                        android:layout_width="150dp"
-                        android:layout_height="wrap_content"
-                        android:icon="@android:drawable/ic_menu_save"
-                        android:text="Збереження нових налаштувань"
-                        android:title="Зберегти налаштування" />
                 </LinearLayout>
 
 
