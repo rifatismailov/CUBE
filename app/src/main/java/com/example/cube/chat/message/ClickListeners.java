@@ -2,14 +2,12 @@ package com.example.cube.chat.message;
 
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cube.holder.ReceiverViewHolder;
 import com.example.cube.holder.SentViewHolder;
-import com.example.emoji.emoji.MyEmoji;
 import com.example.folder.download.Downloader;
 
 import java.io.File;

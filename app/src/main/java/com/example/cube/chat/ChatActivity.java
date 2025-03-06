@@ -34,12 +34,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.database_cube.DatabaseHelper;
+import com.example.folder.dialogwindows.FileExplorerDialog;
 import com.example.folder.file.Folder;
 import com.example.folder.dialogwindows.FileExplorer;
 import com.example.folder.download.Downloader;
 import com.example.folder.file.FileOMG;
 import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
+import com.example.setting.SettingDialog;
 import com.example.setting.UrlBuilder;
 import com.example.setting.UserSetting;
 
@@ -100,7 +102,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 if (status.equals("10")) {
                     binding.status.setText("online");
                 }
-
             }
         }
     };
@@ -225,7 +226,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 .build()
                 .buildUrl();
         binding.attachmentBtn.setOnClickListener(v -> {
-            new FileExplorer(this, serverUrl, senderKey);
+            FileExplorerDialog inputDialog = new FileExplorerDialog(this, serverUrl, senderKey);
+            inputDialog.show();
         });
         binding.imageAccount.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
         binding.camera.setOnClickListener(view -> clearMessage());

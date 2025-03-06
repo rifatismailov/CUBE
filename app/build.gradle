@@ -46,7 +46,6 @@ dependencies {
     implementation project(path: ':database_cube')
     implementation project(path: ':folder')
     implementation project(path: ':textvisualization')
-    implementation project(path: ':myemoji')
     implementation project(path: ':qrcode')
     implementation project(path: ':web_socket_service')
     implementation project(path: ':image_account')

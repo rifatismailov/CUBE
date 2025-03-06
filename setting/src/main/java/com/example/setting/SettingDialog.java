@@ -31,33 +31,47 @@ import org.json.JSONObject;
 import java.io.File;
 
 public class SettingDialog extends Dialog {
-    /** JSON object containing user settings data. */
+    /**
+     * JSON object containing user settings data.
+     */
     private JSONObject jsonObject;
 
-    /** Input fields for user data and server configuration. */
+    /**
+     * Input fields for user data and server configuration.
+     */
     private TextInputEditText inputUsername, inputUserLastName, inputUserId, input_userPassword;
     private TextInputEditText inputMessagingServerIp, inputMessagingServerPort;
     private TextInputEditText inputFileServerIp, inputFileServerPort;
 
-    /** Switch to enable or disable notifications. */
+    /**
+     * Switch to enable or disable notifications.
+     */
     private SwitchMaterial switchNotifications;
 
-    /** Directory for storing user profile images. */
+    /**
+     * Directory for storing user profile images.
+     */
     private final File externalDir;
 
-    /** Image views for displaying user avatar and account images. */
+    /**
+     * Image views for displaying user avatar and account images.
+     */
     private ImageView avatarImage, accountImage;
 
-    /** Callback interface for saving user settings. */
+    /**
+     * Callback interface for saving user settings.
+     */
     private IClassSetting iClassSetting;
 
-    /** User settings object. */
+    /**
+     * User settings object.
+     */
     private UserSetting userSetting;
 
     /**
      * Constructor for creating the dialog.
      *
-     * @param context   Context for accessing resources and UI elements.
+     * @param context    Context for accessing resources and UI elements.
      * @param jsonObject JSON object containing initial user settings.
      */
     public SettingDialog(@NonNull Context context, JSONObject jsonObject) {
@@ -100,7 +114,7 @@ public class SettingDialog extends Dialog {
         inputFileServerIp = findViewById(R.id.input_file_server_ip);
         inputFileServerPort = findViewById(R.id.input_file_server_port);
         switchNotifications = findViewById(R.id.switch_notifications);
-       MaterialButton buttonSave = findViewById(R.id.button_save);
+        @SuppressLint("WrongViewCast") MaterialButton buttonSave = findViewById(R.id.button_save);
         avatarImage = findViewById(R.id.avatarImage);
         accountImage = findViewById(R.id.accountImage);
         input_userPassword.addTextChangedListener(new TextWatcher() {

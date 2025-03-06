@@ -56,7 +56,7 @@ public class WebSocketClient {
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
-                listener.onNotification("Connected to server...");
+                listener.onNotification("connected");
                 register();
             }
 
@@ -68,22 +68,14 @@ public class WebSocketClient {
                         if ("REGISTER_OK".equals(textArray[0])) {
                             isRegistered = true;
                             retryCount = 0; // Скидаємо лічильник невдалих спроб
-                            listener.onNotification("Connected to server...");
+                            listener.onNotification("connected");
                             listener.sendStatus(textArray[1]);
                         }
                         /*перевіряємо кількість повідомлень для відправки*/
                         HashMap<String, Envelope> messages = messageManager.getMessagesByOperation("send");
-                        Log.e("WebSocket", "messages send size " + messages.size());
-
                         for (Map.Entry<String, Envelope> entry : messages.entrySet()) {
                             String messageId = entry.getKey();
                             Envelope envelope = entry.getValue();
-                            if (envelope.toJson().toString().equals("{}")) {
-                                //Буває з'являється мусор у вигляді {} ми його видаляємо тому що це не повідомлення
-                                messageManager.deleteMessageById(messageId);
-                                Log.e("WebSocket", "messages operation 1 " + envelope.toJson().toString());
-
-                            }
                             sendMessage(envelope.toJson().toString());
                         }
                     } else {
@@ -99,19 +91,19 @@ public class WebSocketClient {
 
             @Override
             public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                listener.onNotification("Connection closing: " + reason);
+                listener.onNotification("closing: " + reason);
                 webSocket.close(1000, null);
             }
 
             @Override
             public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                listener.onNotification("Connection closed : " + reason);
+                listener.onNotification("closed: " + reason);
                 reconnect();
             }
 
             @Override
             public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, Response response) {
-                listener.onNotification("Connection failed : " + t.getMessage());
+                listener.onNotification("failed: " + t.getMessage());
                 reconnect();
             }
         });
@@ -221,7 +213,7 @@ public class WebSocketClient {
         stopStatusCheck(); // Зупиняємо старий таймер перед перепідключенням
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            listener.onNotification("Reconnecting...");
+            listener.onNotification("reconnecting");
             connect(); // Спроба перепідключення
         }, 5000); // Затримка перед перепідключенням
     }
@@ -241,7 +233,7 @@ public class WebSocketClient {
         executorService = Executors.newFixedThreadPool(2);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            listener.onNotification("Restarting WebSocket...");
+            listener.onNotification("restarting");
             connect(); // Перезапускаємо підключення з новими параметрами
         }, 2000);
     }

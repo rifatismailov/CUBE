@@ -33,7 +33,6 @@ public class MessageManager {
     private static final String COLUMN_CHECK = "check_";
     private static final String COLUMN_SELECTED_URL = "selected_url";
     public static final String COLUMN_FILE_NAME = "file_name";
-
     private static final String COLUMN_IMAGE = "image";
     private static final String COLUMN_IMAGE_WIDTH = "image_width";
     private static final String COLUMN_IMAGE_HEIGHT = "image_height";

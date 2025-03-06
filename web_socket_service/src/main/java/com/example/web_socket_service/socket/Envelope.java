@@ -1,5 +1,7 @@
 package com.example.web_socket_service.socket;
 
+import android.util.Log;
+
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -148,20 +150,20 @@ public class Envelope {
     // Конструктор для десеріалізації з JSONObject
     public Envelope(JSONObject jsonObject) {
         try {
-            this.senderId = jsonObject.getString("senderId");
-            this.receiverId = jsonObject.getString("receiverId");
-            this.operation = jsonObject.getString("operation");
+            this.senderId = jsonObject.optString("senderId", null);
+            this.receiverId = jsonObject.optString("receiverId", null);
+            this.operation = jsonObject.optString("operation", null);
             this.message = jsonObject.optString("message", null);
             this.fileUrl = jsonObject.optString("fileUrl", null);
             this.fileHash = jsonObject.optString("fileHash", null);
             this.messageId = jsonObject.optString("messageId", null);
             this.messageStatus = jsonObject.optString("messageStatus", null);
             this.timestamp = jsonObject.optString("timestamp", null);
-
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Envelope", "помилка під час отримання JSON: " + e);
         }
     }
+
 
     /**
      * Серіалізує поточний об’єкт UserSetting у JSONObject.

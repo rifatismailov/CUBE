@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.cube.R;
+import com.example.cube.draw.ContactCircularImageView;
 
 import java.io.File;
 
@@ -16,13 +17,13 @@ public class NavigationManager {
 
     private Navigation navigation;
     private final ImageView avatarImage;
-    private final ImageView accountImage;
+    private final ContactCircularImageView accountImage;
     private final Button accountButton;
     private final Button settingsButton;
     private final Button logoutButton;
     private final File externalDir;
 
-    public NavigationManager(Activity activity, DrawerLayout drawerLayout, ImageView avatarImage, ImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
+    public NavigationManager(Activity activity,  ImageView avatarImage, ContactCircularImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
         if (!(activity instanceof Navigation)) {
             //Перевірка типу activity у конструкторі: Якщо активність не імплементує Navigation, це може викликати ClassCastException.
             throw new IllegalArgumentException("Activity must implement Navigation interface");
@@ -77,6 +78,21 @@ public class NavigationManager {
             avatarImage.setImageBitmap(bitmap);
         } else {
             avatarImage.setImageResource(R.color.blue); // Резервне зображення
+        }
+    }
+    public void setNotification(String status){
+        if (status != null) {
+            switch (status){
+                case "closed":
+                    accountImage.updateStatusColor("00");
+                    break;
+                case "failed":
+                    accountImage.updateStatusColor("01");
+                    break;
+                case "connected":
+                    accountImage.updateStatusColor("10");
+                    break;
+            }
         }
     }
 

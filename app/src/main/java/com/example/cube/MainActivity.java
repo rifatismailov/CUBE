@@ -175,19 +175,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.log.setLayoutManager(layoutManager);
         binding.log.setAdapter(notificationAdapter);
-        // Ініціалізація DrawerLayout і NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
-        // Створення ActionBarDrawerToggle для відкриття/закриття меню
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, null,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
         user_name = findViewById(R.id.user_name);
         user_id = findViewById(R.id.user_id);
 
         // Використання NavigationManager для обробки меню
-        navigationManager = new NavigationManager(this, drawerLayout, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
+        navigationManager = new NavigationManager(this, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
                 findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
 
 
@@ -241,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     contactData.setMessage(lastMessage.getMessage());
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("MainActivity", "помилка під час обробки повідомлення " + e);
         }
 
@@ -303,8 +296,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
-            Log.e("MainActivity", "set Message [Envelope] " + envelope.toJson()+"\n[Message] "+message);
-
             // Отримуємо значення messageStatus, перевіряємо на null і обрізаємо пробіли
             String status = envelope.getMessageStatus();
             if (status == null || status.trim().isEmpty()) {
@@ -370,10 +361,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (contactSelector.getContact().equals(envelope.getSenderId())) {
                 openSaveMessage();
                 onReceived(message);
-                Log.e("MainActivityA", "[-] " + message);
             } else {
                 saveMessage(message);
-                Log.e("MainActivityA", "[X] " + message);
                 notificationMessage(envelope);
             }
         } catch (Exception e) {
@@ -419,6 +408,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             String[] notificationAll = notification.split(":");
             setNotification(notificationAll[0], "");
+            navigationManager.setNotification(notificationAll[0]);
+
         } catch (Exception e) {
             Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
         }
@@ -455,16 +446,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
-    public void processObject(Object obj) {
-        if (obj instanceof Envelope) {
-
-        } else if (obj instanceof Message) {
-
-        } else {
-
-        }
-    }
-
     private void notificationMessage(Envelope envelope) {
         try {
             for (int i = 0; i < contactDataList.size(); i++) {
@@ -481,7 +462,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
             }
-
             contactAdapter.notifyDataSetChanged(); // Оновлюємо лише один елемент
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка під час отримання повідомлення");
@@ -660,7 +640,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } catch (Exception e) {
             Log.e("MainActivity", "Json error" + e);
         }
-
         return request;
     }
 
@@ -697,7 +676,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sendBroadcast(intent);
     }
 
-
     private void generationStartWithSendKey(ContactData contactData) {
         try {
             KeyGenerator.RSA keyGenerator = new KeyGenerator.RSA(); // Генерація та додовання RSA ключа
@@ -705,8 +683,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             contactData.setPublicKey(keyGenerator.getPublicKey());
             contactData.setPrivateKey(keyGenerator.getPrivateKey());
             String key = KeyGenerator.AES.generateKey(16);    // Генерація та додовання AES ключа
-            Log.e("MainActivity", "contactSelector.getContact() " + contactSelector.getContact());
-
             if (!key.isEmpty()) {
                 contactData.setSenderKey(key);
                 sendHandshake(
@@ -714,7 +690,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         contactSelector.getContact(),
                         FIELD.HANDSHAKE.getFIELD(),
                         FIELD.PUBLIC_KEY.getFIELD(),
-                        contactData.getPublicKey()); // відправка публічного ключа отримувачу та чекаємо ключа від нього, після буде автоматично обмін AES ключа
+                        // відправка публічного ключа отримувачу та чекаємо ключа від нього, після буде автоматично обмін AES ключа
+                        contactData.getPublicKey());
             } else {
                 Log.e("MainActivity", "Failed to generate AES key");
                 return;
