@@ -1,18 +1,12 @@
-package com.example.cube.chat.message;
+package com.example.folder;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
-import android.util.Log;
 
-import androidx.core.content.ContextCompat;
+import com.example.folder.preview.PdfPreview;
+import com.example.folder.preview.WordPreview;
+import com.example.folder.view.HashBitmapGenerator;
 
-import com.example.cube.draw.HashBitmapGenerator;
-import com.example.cube.chat.preview.PdfPreview;
-import com.example.cube.chat.preview.WordPreview;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,8 +18,8 @@ public class FileData {
     private byte[] imageBytes;
     private int width;
     private int height;
-    private static int newWidth=320;
-    private static int newHeight=480;
+    private final int newWidth = 320;
+    private final int newHeight = 480;
 
     public FileData() {
     }
@@ -182,22 +176,6 @@ public class FileData {
             e.printStackTrace();
         }
         return new FileData(stream.toByteArray(), width, height);
-    }
-
-
-    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
-        if (drawable instanceof VectorDrawable) {
-            VectorDrawable vectorDrawable = (VectorDrawable) drawable;
-            Bitmap bitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-            vectorDrawable.draw(canvas);
-            return bitmap;
-        } else {
-            Log.e("VectorToBitmap", "Drawable is not a vector drawable");
-            return null;
-        }
     }
 
 }

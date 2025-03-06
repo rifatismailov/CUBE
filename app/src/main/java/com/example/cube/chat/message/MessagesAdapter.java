@@ -14,27 +14,42 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.control.Side;
 import com.example.cube.R;
-import com.example.cube.holder.ReceiverViewHolder;
-import com.example.cube.holder.SentViewHolder;
+import com.example.cube.chat.holder.ReceiverViewHolder;
+import com.example.cube.chat.holder.SentViewHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Адаптер для відображення списку повідомлень у RecyclerView.
+ * Відповідає за створення та оновлення елементів списку, а також за їхній вигляд.
+ */
 public class MessagesAdapter extends RecyclerView.Adapter {
 
-    Context context;
-    ArrayList<Message> messages;
-    private HashMap<String, Boolean> expandedStates = new HashMap<>(); // Сховище стану розкриття
+    private Context context;
+    private ArrayList<Message> messages;
+    private HashMap<String, Boolean> expandedStates = new HashMap<>(); // Сховище стану розкриття повідомлень
 
-    final int ITEM_SENT = 1;
-    final int ITEM_RECEIVE = 2;
+    private static final int ITEM_SENT = 1;
+    private static final int ITEM_RECEIVE = 2;
 
+    /**
+     * Конструктор адаптера.
+     *
+     * @param context  Контекст активності чату.
+     * @param messages Список повідомлень.
+     */
     public MessagesAdapter(ChatActivity context, ArrayList<Message> messages) {
         this.context = context;
         this.messages = messages;
     }
 
+    /**
+     * Оновлює список повідомлень з використанням DiffUtil для оптимізації оновлень.
+     *
+     * @param newMessages Новий список повідомлень.
+     */
     public void updateMessages(List<Message> newMessages) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newMessages));
         messages.clear();
@@ -57,13 +72,8 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        if (message.getSide().equals(Side.Sender)) {
-            return ITEM_SENT;
-        } else {
-            return ITEM_RECEIVE;
-        }
+        return message.getSide().equals(Side.Sender) ? ITEM_SENT : ITEM_RECEIVE;
     }
-
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -86,14 +96,10 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             new ReceiverMessageHandler(context).setMessage(viewHolder, message);
-
             // Переконайтеся, що всі поля встановлені
             viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
-//            viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
-
             // Встановлюємо видимість полів
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
-//            viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
             new ReceiverMessageHandler(context).setMessage(viewHolder, message);
 
         }
@@ -105,14 +111,24 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         return messages.size();
     }
 
-    // Додаємо нове повідомлення і одразу розгортаємо його
+
+    /**
+     * Додає нове повідомлення та автоматично розгортає його.
+     *
+     * @param newMessage Нове повідомлення.
+     */
     public void addMessage(Message newMessage) {
         messages.add(newMessage);
-        expandedStates.put(newMessage.getMessageId(), true); // Нове повідомлення одразу відкрите
+        expandedStates.put(newMessage.getMessageId(), true);
         notifyItemInserted(messages.size() - 1);
     }
 
-    // Оновлення повідомлення за позицією
+    /**
+     * Оновлює повідомлення на певній позиції.
+     *
+     * @param position Позиція в списку.
+     * @param message  Оновлене повідомлення.
+     */
     public void updateItem(int position, Message message) {
         try {
             messages.set(position, message);
@@ -122,12 +138,16 @@ public class MessagesAdapter extends RecyclerView.Adapter {
         }
     }
 
-    // Видалення повідомлення
+    /**
+     * Видаляє повідомлення на заданій позиції.
+     *
+     * @param position Позиція повідомлення у списку.
+     */
     public void removeItem(int position) {
         if (position >= 0 && position < messages.size()) {
             Message removedMessage = messages.get(position);
             messages.remove(position);
-            expandedStates.remove(removedMessage.getMessageId()); // Видаляємо стан
+            expandedStates.remove(removedMessage.getMessageId());
             notifyItemRemoved(position);
         }
     }

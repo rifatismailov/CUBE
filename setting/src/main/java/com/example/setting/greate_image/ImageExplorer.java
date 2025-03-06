@@ -1,4 +1,4 @@
-package com.example.image_account;
+package com.example.setting.greate_image;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
+
+import com.example.setting.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

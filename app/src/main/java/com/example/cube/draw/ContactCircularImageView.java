@@ -9,6 +9,10 @@ import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
+/**
+ * ContactCircularImageView - спеціальний ImageView для відображення зображення у формі кола
+ * з можливістю малювання обвідної лінії, індикатора прогресу та статусного кола.
+ */
 public class ContactCircularImageView extends AppCompatImageView {
     private Path path;
     private Paint imagePaint;
@@ -23,45 +27,43 @@ public class ContactCircularImageView extends AppCompatImageView {
     private float currentProgress = 0f; // Прогрес від 0 до 100
     private int progressColor = 0xFF049FD9; // Помаранчевий колір прогресу
     private int backgroundColor = 0xFF049fd9; // Синій колір заднього фону
-    private int statusColor = 0xFF000000; // Чорний колір за замовчуванням для маленького кола
+    private int statusColor = 0xFF000000; // Чорний колір статусного кола
 
+    /**
+     * Конструктор класу.
+     * @param context Контекст застосунку.
+     * @param attrs Атрибути XML.
+     */
     public ContactCircularImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
+    /**
+     * Ініціалізація об'єктів малювання.
+     */
     private void init() {
         path = new Path();
 
-        // Налаштування для зображення
-        imagePaint = new Paint();
-        imagePaint.setAntiAlias(true);
+        imagePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         imagePaint.setFilterBitmap(true);
         imagePaint.setDither(true);
 
-        // Налаштування для обвідної лінії
-        borderPaint = new Paint();
-        borderPaint.setAntiAlias(true);
+        borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setColor(borderColor);
         borderPaint.setStrokeWidth(borderWidth);
 
-        // Налаштування для прогрес-індикатора
-        progressPaint = new Paint();
-        progressPaint.setAntiAlias(true);
+        progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint.setStyle(Paint.Style.STROKE);
         progressPaint.setColor(progressColor);
         progressPaint.setStrokeWidth(10f);
 
-        // Налаштування для заднього фону
-        backgroundPaint = new Paint();
-        backgroundPaint.setAntiAlias(true);
+        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setStyle(Paint.Style.FILL);
         backgroundPaint.setColor(backgroundColor);
 
-        // Налаштування для маленького кола
-        statusPaint = new Paint();
-        statusPaint.setAntiAlias(true);
+        statusPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         statusPaint.setStyle(Paint.Style.FILL);
         statusPaint.setColor(statusColor);
     }
@@ -76,62 +78,50 @@ public class ContactCircularImageView extends AppCompatImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        // Малювання заднього фону
         canvas.drawOval(rect, backgroundPaint);
-
-        // Малювання зображення
         canvas.save();
         canvas.clipPath(path);
         super.onDraw(canvas);
         canvas.restore();
-
-        // Малювання обвідної лінії
         canvas.drawOval(rect, borderPaint);
 
-        // Малювання прогрес-кільця
         if (currentProgress > 0 && currentProgress <= 100) {
             float centerX = getWidth() / 2f;
             float centerY = getHeight() / 2f;
             float radius = Math.min(centerX, centerY) - borderWidth;
-
             float sweepAngle = (currentProgress / 100f) * 360f;
-            canvas.drawArc(
-                    centerX - radius,
-                    centerY - radius,
-                    centerX + radius,
-                    centerY + radius,
-                    -90,
-                    sweepAngle,
-                    false,
-                    progressPaint
-            );
+            canvas.drawArc(centerX - radius, centerY - radius, centerX + radius, centerY + radius, -90, sweepAngle, false, progressPaint);
         }
 
-        // Малювання маленького кола
         float smallCircleRadius = getWidth() / 10f;
         float smallCircleX = getWidth() - smallCircleRadius - borderWidth;
         float smallCircleY = getHeight() - smallCircleRadius - borderWidth;
-
         canvas.drawCircle(smallCircleX, smallCircleY, smallCircleRadius, statusPaint);
     }
 
-    // Метод для оновлення прогресу
+    /**
+     * Встановлює поточний прогрес у відсотках.
+     * @param progress значення від 0 до 100.
+     */
     public void setProgress(float progress) {
-        if (progress < 0) progress = 0;
-        if (progress > 100) progress = 100;
-
-        this.currentProgress = progress;
+        this.currentProgress = Math.max(0, Math.min(progress, 100));
         invalidate();
     }
 
-    // Метод для зміни кольору прогресу
+    /**
+     * Змінює колір прогрес-індикатора.
+     * @param color новий колір прогресу.
+     */
     public void setProgressColor(int color) {
         this.progressColor = color;
         progressPaint.setColor(color);
         invalidate();
     }
 
-    // Метод для зміни кольору заднього фону
+    /**
+     * Змінює колір заднього фону.
+     * @param color новий колір фону.
+     */
     @Override
     public void setBackgroundColor(int color) {
         this.backgroundColor = color;
@@ -139,14 +129,20 @@ public class ContactCircularImageView extends AppCompatImageView {
         invalidate();
     }
 
-    // Метод для зміни кольору маленького кола
+    /**
+     * Змінює колір маленького статусного кола.
+     * @param color новий колір статусу.
+     */
     public void setStatusColor(int color) {
         this.statusColor = color;
         statusPaint.setColor(color);
         invalidate();
     }
 
-    // Метод для зміни кольору маленького кола за командою
+    /**
+     * Оновлює колір статусного кола відповідно до команди.
+     * @param command рядок команди ("10", "01", "A0111" або інше).
+     */
     public void updateStatusColor(String command) {
         switch (command) {
             case "10":
@@ -164,7 +160,9 @@ public class ContactCircularImageView extends AppCompatImageView {
         }
     }
 
-    // Метод для очищення прогресу
+    /**
+     * Очищає прогрес (встановлює його на 0).
+     */
     public void clearProgress() {
         this.currentProgress = 0;
         invalidate();

@@ -1,4 +1,4 @@
-package com.example.cube.draw;
+package com.example.folder.view;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

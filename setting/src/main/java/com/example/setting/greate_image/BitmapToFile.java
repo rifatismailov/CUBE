@@ -1,7 +1,6 @@
-package com.example.image_account;
+package com.example.setting.greate_image;
 
 import android.graphics.Bitmap;
-import android.os.Environment;
 
 import java.io.File;
 import java.io.FileOutputStream;

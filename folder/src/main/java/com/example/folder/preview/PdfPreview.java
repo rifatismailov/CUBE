@@ -1,4 +1,4 @@
-package com.example.cube.chat.preview;
+package com.example.folder.preview;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

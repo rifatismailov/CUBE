@@ -15,7 +15,7 @@
         android:background="@color/white" />
 
     <!-- Рамка обрізання -->
-    <com.example.image_account.CustomCropView
+    <com.example.setting.greate_image.CustomCropView
         android:id="@+id/cropFrame"
         android:layout_width="100dp"
         android:layout_height="100dp"

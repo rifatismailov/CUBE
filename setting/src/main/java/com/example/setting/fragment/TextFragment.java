@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,17 +45,11 @@ public class TextFragment extends Fragment {
         TextView idNumber = view.findViewById(R.id.idNumber);
         TextView name = view.findViewById(R.id.name);
         TextView lastName = view.findViewById(R.id.lastName);
-        ImageView imageView = view.findViewById(R.id.accountImage);
+        Button imageButton = view.findViewById(R.id.dateAccount);
         idNumber.setText(userSetting.getId());
         name.setText(userSetting.getName());
         lastName.setText(userSetting.getLastName());
-        if (accountImage.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(accountImage.getAbsolutePath());
-            imageView.setImageBitmap(bitmap);
-        } else {
-            imageView.setImageResource(R.color.blue); // Default image
-        }
-        imageView.setOnClickListener(view1 -> changeFragment.changeFragment());
+        imageButton.setOnClickListener(view1 -> changeFragment.changeFragment());
     }
 
     public interface ChangeFragment {

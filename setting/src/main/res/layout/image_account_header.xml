@@ -8,7 +8,6 @@
 
     <!-- Кругле зображення -->
 
-    <include layout="@layout/image_account" />
 
 
 </FrameLayout>

@@ -174,6 +174,9 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
         } else {
             directory = DIR;
             displayDirectoryContents(directory);
+            if(directory.equals(DIR)){
+                dismiss();
+            }
         }
     }
 

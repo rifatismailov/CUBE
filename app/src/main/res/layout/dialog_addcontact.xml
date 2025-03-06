@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/curved_style_white"
     android:gravity="right"
+
     android:orientation="vertical"
     android:padding="8dp">
 

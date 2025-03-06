@@ -7,11 +7,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.View;
 
-import com.example.cube.R;
-import com.example.cube.control.Check;
-import com.example.cube.holder.ReceiverViewHolder;
-import com.example.cube.holder.SentViewHolder;
-import com.example.textvisualization.visualization.Watcher;
+import com.example.cube.chat.holder.ReceiverViewHolder;
+import com.example.cube.visualization.Watcher;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 

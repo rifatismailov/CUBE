@@ -3,7 +3,7 @@ package com.example.cube.chat;
 import android.net.Uri;
 import android.util.Log;
 
-import com.example.cube.chat.message.FileData;
+import com.example.folder.FileData;
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.FIELD;
 import com.example.cube.control.Side;
@@ -14,8 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class OperationMSG {
     OperableMSG operableMSG;

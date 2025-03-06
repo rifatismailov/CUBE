@@ -56,7 +56,7 @@ public class SettingDialog extends Dialog {
     /**
      * Image views for displaying user avatar and account images.
      */
-    private ImageView avatarImage, accountImage;
+    private ImageView avatarImage;
 
     /**
      * Callback interface for saving user settings.
@@ -116,7 +116,6 @@ public class SettingDialog extends Dialog {
         switchNotifications = findViewById(R.id.switch_notifications);
         @SuppressLint("WrongViewCast") MaterialButton buttonSave = findViewById(R.id.button_save);
         avatarImage = findViewById(R.id.avatarImage);
-        accountImage = findViewById(R.id.accountImage);
         input_userPassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -167,8 +166,6 @@ public class SettingDialog extends Dialog {
 
         // Load user profile images
         setAvatarImage(userSetting.getAvatarImageUrl());
-        setAccountImage(userSetting.getAccountImageUrl());
-
         // Handle save button click
         buttonSave.setOnClickListener(v -> {
             saveSetting();
@@ -215,20 +212,6 @@ public class SettingDialog extends Dialog {
         }
     }
 
-    /**
-     * Sets the account image if the file exists, otherwise uses a default image.
-     *
-     * @param image Name of the image file.
-     */
-    public void setAccountImage(String image) {
-        File file = new File(externalDir + "/" + image);
-        if (file.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-            accountImage.setImageBitmap(bitmap);
-        } else {
-            accountImage.setImageResource(R.color.green); // Default image
-        }
-    }
 
     /**
      * Callback interface for handling settings updates.

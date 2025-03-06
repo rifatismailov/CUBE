@@ -1,102 +1,83 @@
 package com.example.cube.chat.message;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.cube.holder.ReceiverViewHolder;
-import com.example.cube.holder.SentViewHolder;
+import com.example.cube.chat.holder.ReceiverViewHolder;
+import com.example.cube.chat.holder.SentViewHolder;
 import com.example.folder.download.Downloader;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Клас ClickListeners відповідає за обробку натискань на елементи повідомлення
+ * у RecyclerView. Він налаштовує обробники подій для відправлених та отриманих
+ * повідомлень, включаючи взаємодію з текстом, зображеннями та файлами.
+ */
 public class ClickListeners {
 
+    /**
+     * Встановлює обробники подій для конкретного елемента списку повідомлень.
+     *
+     * @param context Контекст додатка.
+     * @param holder ViewHolder, який містить елемент повідомлення.
+     * @param message Об'єкт повідомлення, що містить інформацію.
+     */
     void setClickListeners(Context context, RecyclerView.ViewHolder holder, Message message) {
         int position = holder.getLayoutPosition();
-        //List<EmojiMany> manyReaction = MyEmoji.getManyReaction();
 
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
-//            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-////                    int[] location = new int[2];
-////                    viewHolder.binding.message.getLocationOnScreen(location);
-////                    int x = location[0];
-////                    int y = location[1];
-////                    message.setFeeling(reaction[0]);
-////                    int emoji = message.getFeeling();
-////                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-////                    //  viewHolder.binding.feeling.setImageResource(emoji);
-////                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-//                }
-//            });
-//
-//            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-////                    int[] location = new int[2];
-////                    viewHolder.binding.image.getLocationOnScreen(location);
-////                    int x = location[0];
-////                    int y = location[1];
-////                     message.setFeeling(reaction[0]);
-////                    int emoji = message.getFeeling();
-////                    //  viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-////                    //  viewHolder.binding.feeling.setImageResource(emoji);
-////                    //  viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-//                }
-//            });
+
+            // Обробник натискання на текст повідомлення
+            viewHolder.binding.message.setOnClickListener(v -> {
+                // Логіка для натискання на повідомлення
+            });
+
+            // Обробник натискання на зображення
+            viewHolder.binding.image.setOnClickListener(v -> {
+                // Логіка для натискання на зображення
+                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+
+            });
+
+            // Обробник натискання на файл у повідомленні
+            viewHolder.binding.file.setOnClickListener(v -> {
+                // Логіка для натискання на зображення
+                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+
+            });
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
-//            viewHolder.binding.message.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-////                    int[] location = new int[2];
-////                    viewHolder.binding.message.getLocationOnScreen(location);
-////                    int x = location[0];
-////                    int y = location[1];
-////                    message.setFeeling(reaction[0]);
-////                    int emoji = message.getFeeling();
-////                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-////                    // viewHolder.binding.feeling.setImageResource(emoji);
-////                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-//
-//                }
-//            });
-//
-//            viewHolder.binding.image.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-////                    int[] location = new int[2];
-////                    viewHolder.binding.image.getLocationOnScreen(location);
-////                    int x = location[0];
-////                    int y = location[1];
-////                    message.setFeeling(reaction[0]);
-////                    int emoji = message.getFeeling();
-////                    // viewHolder.binding.feelLayout.setVisibility(View.VISIBLE);
-////                    // viewHolder.binding.feeling.setImageResource(emoji);
-////                    // viewHolder.binding.feeling.setVisibility(View.VISIBLE);
-//                }
-//            });
+
+            // Обробник натискання на текст отриманого повідомлення
+            viewHolder.binding.message.setOnClickListener(v -> {
+                // Логіка для натискання на отримане повідомлення
+            });
+
+            // Обробник натискання на зображення
+            viewHolder.binding.image.setOnClickListener(v -> {
+                // Логіка для натискання на зображення отриманого повідомлення
+                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+
+            });
+
+            // Обробник натискання на файл у повідомленні
             viewHolder.binding.file.setOnClickListener(v -> {
                 if (!message.getUrl().toString().startsWith("http")) {
-                    if (new File(message.getUrl().toString()).exists() && new File(message.getUrl().toString()).isFile()) {
+                    File file = new File(message.getUrl().toString());
+                    if (file.exists() && file.isFile()) {
                         Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
                     }
-                    //відкриваємо за допомогою додатку для файлу
+                    // Відкриваємо за допомогою відповідного додатку
                 } else {
                     try {
-                        /*По факту ми отримаємо назву файлу так як їм на дуже буде зручно оперувати
-                         * Ми вже знаємо на який сервер звертатися та по якоми параметру */
-                        //Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
-                        URL url = new URL(message.getUrl().toString()); // Змініть IP на ваш
-                        Log.e("Listener", url.toString());
-
+                        // Отримання URL файлу для завантаження
+                        URL url = new URL(message.getUrl().toString());
                         File externalDir = new File(context.getExternalFilesDir(null), "cube");
                         new Downloader(context, url, externalDir, position, message.getMessageId());
                     } catch (MalformedURLException e) {
@@ -105,6 +86,5 @@ public class ClickListeners {
                 }
             });
         }
-
     }
 }

@@ -1,4 +1,4 @@
-package com.example.cube.chat.preview;
+package com.example.folder.preview;
 
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;

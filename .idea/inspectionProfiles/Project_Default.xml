@@ -7,5 +7,6 @@
     <inspection_tool class="JavadocDeclaration" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ADDITIONAL_TAGS" value="user,onItemClick,publicKey,senderKey,receiverPublicKey,receiverKey,convertVideo,convertFile,ConvertFile,envelope.getMessageId(),envelope.getSenderId(),avatar_name,envelope.getReceiverId(),Server,Id" />
     </inspection_tool>
+    <inspection_tool class="RawUseOfParameterizedType" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

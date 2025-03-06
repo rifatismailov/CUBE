@@ -392,7 +392,7 @@ public class Message implements Serializable {
 
     /**
      * Метод для генерації хешу
-     * отримуємо тільки хеш з повідомлення
+     * отримуємо тільки з повідомлення
      */
     public String getHash_m() throws NoSuchAlgorithmException {
         // Створюємо хеш за допомогою SHA-256
@@ -407,7 +407,7 @@ public class Message implements Serializable {
     }
 
     /**
-     * Метод для генерації хешу з файлом
+     * Метод для генерації хешу якщо є файл
      * отримуємо хеш з повідомлення, посилання на файл та хешу файлу
      */
     public String getHash_f() throws NoSuchAlgorithmException {
