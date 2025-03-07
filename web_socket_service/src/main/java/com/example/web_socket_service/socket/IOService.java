@@ -50,7 +50,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private final ConnectionInfo connectionInfo = new ConnectionInfo();
     private BroadcastReceiver receiver;
     private String senderId;
-    private String receiverId;
     private String ip;
     private String port;
     private MessageServiceManager messageManager;
@@ -138,7 +137,9 @@ public class IOService extends Service implements WebSocketClient.Listener {
     }
 
     /**
-     * Метод який обробляє отримані команди з основної активності
+     * Handles commands received from the main activity.
+     *
+     * @param command The command string received.
      */
     private void handleActivityCommand(String command) {
         try {
@@ -157,6 +158,11 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
+    /**
+     * Processes and handles the incoming message.
+     *
+     * @param message The JSON message received.
+     */
     private void setMessage(String message) {
         try {
             JSONObject object = new JSONObject(message);
@@ -175,21 +181,30 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     messageManager.deleteMessageById(envelope.getMessageId());
                     break;
                 default:
-                    // Не зберігаємо повідомлення якщо в нас обмін зображеннями так як ми не чекаємо відповідь від сервера стосовно отримання так як нам це не потрібно
-                    if (!envelope.getOperation().equals("AVATAR_ORG") &&
-                            !envelope.getOperation().equals("AVATAR") &&
-                            !envelope.getOperation().equals("GET_AVATAR")) {
-                        messageManager.setMessage(envelope, "send");
-                        Log.e("WebSocket", "IOService envelope " + envelope.getOperation());
-
-                        sendMessage(message);
-                    } else {
-                        sendMessage(message);
-                    }
+                    processEnvelope(envelope);
                     break;
             }
         } catch (Exception e) {
             Log.e("IOService", "Error parsing message", e);
+        }
+    }
+
+    /**
+     * Processes and stores messages unless they are avatars.
+     *
+     * @param envelope The message envelope to process.
+     */
+    private void processEnvelope(Envelope envelope) {
+        switch (envelope.getOperation()) {
+            case "AVATAR_ORG":
+            case "AVATAR":
+            case "GET_AVATAR":
+                sendMessage(envelope.toJson().toString());
+                break;
+            default:
+                messageManager.setMessage(envelope, "send");
+                sendMessage(envelope.toJson().toString());
+                break;
         }
     }
 
