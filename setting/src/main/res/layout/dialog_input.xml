@@ -43,7 +43,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="ID користувача">
+                    android:hint="Імʼя користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_username"
@@ -68,7 +68,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="ID користувача">
+                    android:hint="Прізвище користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_userLastName"

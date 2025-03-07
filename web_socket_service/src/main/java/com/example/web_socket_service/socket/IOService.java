@@ -67,7 +67,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
-        //messageManager.deleteAllMessages();
+        messageManager.deleteAllMessages();
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -199,6 +199,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             case "AVATAR_ORG":
             case "AVATAR":
             case "GET_AVATAR":
+            case "keyExchange":
                 sendMessage(envelope.toJson().toString());
                 break;
             default:
