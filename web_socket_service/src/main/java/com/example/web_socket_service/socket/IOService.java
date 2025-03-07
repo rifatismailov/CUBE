@@ -38,8 +38,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * IOService — Android service that manages communication with a WebSocket server.
- * It handles sending and receiving messages, maintaining notification updates, and managing service lifecycle.
+ * IOService — сервіс Android, який керує зв'язком із сервером WebSocket.
+ * Він обробляє надсилання й отримання повідомлень, підтримку оновлень сповіщень і керування життєвим циклом служби.
  */
 public class IOService extends Service implements WebSocketClient.Listener {
 
@@ -67,7 +67,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
-        messageManager.deleteAllMessages();
+        //messageManager.deleteAllMessages();
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -191,6 +191,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
 
     /**
      * Processes and stores messages unless they are avatars.
+     * Some messages are not saved because they can be requested again
+     * for example, avatar sharing and key sharing, which can be requested again
      *
      * @param envelope The message envelope to process.
      */
@@ -200,6 +202,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             case "AVATAR":
             case "GET_AVATAR":
             case "keyExchange":
+            case "handshake":
                 sendMessage(envelope.toJson().toString());
                 break;
             default:
@@ -423,10 +426,10 @@ public class IOService extends Service implements WebSocketClient.Listener {
     }
 
     /**
-     * Метод виводи оффлайн повідомлень якщо в они є
-     * Витягуємо повідомлення які не відноситься до відправляємих якщо такі є
-     * потім отримуємо повідомлення які відносяться до повідомлення або файлу
-     * якщо є щось інше то ми їх видаляємо щоб не було накопичення.
+     * Метод обробки оффлайн-повідомлень, якщо вони є.
+     * Отримуємо всі повідомлення, окрім тих, що стосуються операції "send".
+     * Якщо повідомлення є типу "message" або "file", зберігаємо їх.
+     * Всі інші повідомлення видаляємо, щоб уникнути накопичення нерелевантних даних.
      */
     private void getOfflineMessage() {
         HashMap<String, Envelope> messages = messageManager.getMessagesExceptOperation("send");
@@ -444,13 +447,13 @@ public class IOService extends Service implements WebSocketClient.Listener {
     }
 
     /**
-     * Метод сповіщення сервер о отриманні повідомлення
+     * Надсилає сповіщення серверу про отримання повідомлення.
      *
-     * @param envelope повідомлення яке прийшло
-     *                 отримуємо такі данні для відправки сповіщення:
-     *                 >    @envelope.getSenderId() Id відправника
-     *                 >    @envelope.getReceiverId() Id отримувача тоб то нащ
-     *                 >    @envelope.getMessageId() Id повідомлення з яким воно прийшло
+     * @param envelope отримане повідомлення, для якого потрібно надіслати підтвердження.
+     *                 Використовуються наступні дані:
+     *                 - @envelope.getSenderId() — ID відправника.
+     *                 - @envelope.getReceiverId() — ID отримувача (тобто наш ID).
+     *                 - @envelope.getMessageId() — ID отриманого повідомлення.
      */
     private void returnMessageDeliver(Envelope envelope) {
         Log.e("IOService", "Message : " + envelope.toJson());
