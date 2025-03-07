@@ -1,5 +1,6 @@
 package com.example.database_cube;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
@@ -165,7 +166,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " ORDER BY " + COLUMN_TIMESTAMP + " DESC LIMIT 1";
         Cursor cursor = db.rawQuery(query, null);
         if (cursor != null && cursor.moveToFirst()) {
-            long timestamp = cursor.getLong(cursor.getColumnIndex(COLUMN_TIMESTAMP));
+            @SuppressLint("Range") long timestamp = cursor.getLong(cursor.getColumnIndex(COLUMN_TIMESTAMP));
             cursor.close();
             return timestamp;
         }

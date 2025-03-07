@@ -68,6 +68,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
+        //messageManager.deleteAllMessages();
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -174,8 +175,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
                     messageManager.deleteMessageById(envelope.getMessageId());
                     break;
                 default:
-                    messageManager.setMessage(envelope, "send");
-                    sendMessage(message);
+                    // Не зберігаємо повідомлення якщо в нас обмін зображеннями так як ми не чекаємо відповідь від сервера стосовно отримання так як нам це не потрібно
+                    if (!envelope.getOperation().equals("AVATAR_ORG") &&
+                            !envelope.getOperation().equals("AVATAR") &&
+                            !envelope.getOperation().equals("GET_AVATAR")) {
+                        messageManager.setMessage(envelope, "send");
+                        Log.e("WebSocket", "IOService envelope " + envelope.getOperation());
+
+                        sendMessage(message);
+                    } else {
+                        sendMessage(message);
+                    }
                     break;
             }
         } catch (Exception e) {
@@ -373,6 +383,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
             try {
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
+
                 addMessage(message);
                 returnMessageDeliver(envelope);
                 if (envelope.getMessageStatus().equals("server")) {
@@ -380,6 +391,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 } else {
                     messageManager.setMessage(envelope);
                 }
+
             } catch (JSONException e) {
                 Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
                 Log.e("IOService", "Not a JSON message: " + message);

@@ -77,6 +77,8 @@ public class WebSocketClient {
                             String messageId = entry.getKey();
                             Envelope envelope = entry.getValue();
                             sendMessage(envelope.toJson().toString());
+                            Log.e("WebSocket", "WebSocket envelope "+envelope.toJson());
+
                         }
                     } else {
                         if (listener != null) {

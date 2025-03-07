@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.util.Pair;
 
 import com.example.cube.contact.ContactData;
 import com.example.cube.encryption.Encryption;
@@ -27,14 +28,17 @@ public class ContactManager {
     public static final String TABLE_CONTACTS = "contacts";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_ENCRYPTED_DATA = "encrypted_data";
+    private final SecretKey secretKey;
 
     /**
      * Constructor to initialize ContactManager with an SQLiteDatabase instance.
      *
      * @param database The database instance to manage contacts.
+     * @param secretKey The key used to decrypt contact data.
      */
-    public ContactManager(SQLiteDatabase database) {
+    public ContactManager(SQLiteDatabase database,SecretKey secretKey) {
         this.database = database;
+        this.secretKey=secretKey;
     }
 
     /**
@@ -48,10 +52,9 @@ public class ContactManager {
     /**
      * Retrieves all contacts from the database, decrypting their data using the provided SecretKey.
      *
-     * @param secretKey The key used to decrypt contact data.
      * @return A map of contact IDs to UserData objects.
      */
-    public Map<String, ContactData> getContacts(SecretKey secretKey) {
+    public Map<String, ContactData> getContacts() {
         Map<String, ContactData> contacts = new HashMap<>();
         Cursor cursor = null;
         try {
@@ -81,14 +84,44 @@ public class ContactManager {
         return contacts;
     }
 
+
+    public Pair<Boolean, String> getContactById(String id) {
+        Cursor cursor = null;
+        String decryptedJson = null;
+        boolean found = false;
+
+        try {
+            cursor = database.query(
+                    TABLE_CONTACTS,
+                    new String[]{COLUMN_ENCRYPTED_DATA},
+                    COLUMN_ID + " = ?",
+                    new String[]{id},
+                    null, null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                String encryptedData = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                decryptedJson = Encryption.AES.decryptCBCdb(encryptedData, secretKey);
+                found = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return new Pair<>(found, decryptedJson);
+    }
+
     /**
      * Inserts or updates multiple contacts in the database.
      * The data is encrypted using the provided SecretKey before storage.
      *
      * @param contacts  A map of contact IDs to UserData objects.
-     * @param secretKey The key used to encrypt contact data.
      */
-    public void setContacts(Map<String, ContactData> contacts, SecretKey secretKey) {
+    public void setContacts(Map<String, ContactData> contacts) {
         try {
             for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
                 String id = entry.getKey();
@@ -117,8 +150,8 @@ public class ContactManager {
      * Updates a specific contact in the database.
      * The updated data is encrypted using the provided SecretKey.
      *
-     * @param contactData  The updated UserData object.
-     * @param secretKey The key used to encrypt contact data.
+     * @param contactData The updated UserData object.
+     * @param secretKey   The key used to encrypt contact data.
      */
     public void updateContact(ContactData contactData, SecretKey secretKey) {
         try {
@@ -142,6 +175,7 @@ public class ContactManager {
             e.printStackTrace();
         }
     }
+
     public void deleteAll() {
         try {
             int deletedRows = database.delete(TABLE_CONTACTS, null, null);

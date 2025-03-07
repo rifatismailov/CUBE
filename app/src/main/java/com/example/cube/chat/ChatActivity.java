@@ -227,7 +227,14 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             FileExplorerDialog inputDialog = new FileExplorerDialog(this, serverUrl, senderKey);
             inputDialog.show();
         });
-        binding.imageAccount.setOnClickListener(view -> new QR(this, receiverId, accountImageUrl));
+        binding.imageAccount.setOnClickListener(view -> {
+            String jsonData = new UserSetting.Builder()
+                    .setId(receiverId)
+                    .setName(receiverName)
+                    .setLastName(receiverLastName)
+                    .build().toJson("userId", "name", "lastName").toString();
+            new QR(this, jsonData, accountImageUrl).show();
+        });
         binding.camera.setOnClickListener(view -> clearMessage());
     }
 

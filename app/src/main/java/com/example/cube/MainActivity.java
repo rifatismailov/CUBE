@@ -29,9 +29,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.cube.chat.ChatActivity;
 import com.example.cube.chat.message.Message;
@@ -131,19 +133,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     /**
-     * Додає новий контакт, отриманий через QR-код або інші джерела.
+     * Додає новий контакт, отриманий через QR-код або з поля вводу контакту.
      *
      * @param id_contact дані контакту у вигляді рядка JSON.
      */
 
     @Override
     public void setContact(String id_contact, String name_contact, String lastName_contact) {
-        // Додаємо новий контакт до списку користувачів
-        ContactData newUser = new ContactData(id_contact, name_contact, lastName_contact, "");
-        contactDataList.add(newUser);
-        contacts.put(newUser.getId(), newUser);   // Оновлюємо мапу контактів
-        contactManager.setContacts(contacts, secretKey);// Зберігаємо контакти у базу даних
-        request(getContactToJsonArray());// оновлюємо ключ зєднання
+        Pair<Boolean, String> result = contactManager.getContactById(id_contact);
+        if (result.first) {
+            Toast.makeText(this,"Контакт вже існує: " + result.second,Toast.LENGTH_SHORT).show();
+        } else {
+            // Додаємо новий контакт до списку користувачів
+            ContactData newUser = new ContactData(id_contact, name_contact, lastName_contact, "");
+            contactDataList.add(newUser);
+            contacts.put(newUser.getId(), newUser);   // Оновлюємо мапу контактів
+            contactManager.setContacts(contacts);// Зберігаємо контакти у базу даних
+            request(getContactToJsonArray());// оновлюємо ключ зєднання
+            Toast.makeText(this,"Контакт додано",Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -194,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         messageMainManager = new MessageMainManager(db);
         operation = new Operation(this, messageMainManager);
         manager.readAccount();
-        contactManager = new ContactManager(db);
+        contactManager = new ContactManager(db,secretKey);
         registerChatActivityReceiver();
         registerIOServiceReceiver();
         initUserList();
@@ -245,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void initUserList() {
         contactDataList.clear();
-        contacts = contactManager.getContacts(secretKey);
+        contacts = contactManager.getContacts();
         for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
             ContactData contactData = entry.getValue();
 
@@ -376,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private boolean checkContact(Envelope envelope) {
         boolean checkContact = false;
 
-        Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
+        Map<String, ContactData> contacts = contactManager.getContacts();
         for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
             if (envelope.getSenderId().equals(entry.getValue().getId())) {
                 checkContact = true;
@@ -628,7 +636,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String getContactToJsonArray() {
         String request = "";
         try {
-            Map<String, ContactData> contacts = contactManager.getContacts(secretKey);
+            Map<String, ContactData> contacts = contactManager.getContacts();
             JSONArray jsonContact = new JSONArray();
             for (Map.Entry<String, ContactData> entry : contacts.entrySet()) {
                 jsonContact.put(entry.getValue().getId());
