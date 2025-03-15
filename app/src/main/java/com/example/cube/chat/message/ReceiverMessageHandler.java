@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ReceiverMessageHandler {
-    private Context context;
+    private final Context context;
 
 
     public ReceiverMessageHandler(Context context) {
@@ -38,8 +38,6 @@ public class ReceiverMessageHandler {
                 handleTextMessage(viewHolder, message);
                 break;
         }
-
-
         new ClickListeners().setClickListeners(context, viewHolder, message);
     }
 

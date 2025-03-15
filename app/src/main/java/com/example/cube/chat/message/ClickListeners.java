@@ -41,18 +41,18 @@ public class ClickListeners {
             // Обробник натискання на зображення
             viewHolder.binding.image.setOnClickListener(v -> {
                 // Логіка для натискання на зображення
-                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
 
             });
 
             viewHolder.binding.image.setOnCancelListener(() -> {
-                Toast.makeText(context, "[ Завершення процесу  ] " + position, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "[ Завершення процесу  ] ", Toast.LENGTH_LONG).show();
 
             });
             // Обробник натискання на файл у повідомленні
             viewHolder.binding.file.setOnClickListener(v -> {
                 // Логіка для натискання на зображення
-                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
 
             });
         } else {
@@ -66,7 +66,7 @@ public class ClickListeners {
             // Обробник натискання на зображення
             viewHolder.binding.image.setOnClickListener(v -> {
                 // Логіка для натискання на зображення отриманого повідомлення
-                Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
 
             });
 
@@ -79,7 +79,7 @@ public class ClickListeners {
                 if (!message.getUrl().toString().startsWith("http")) {
                     File file = new File(message.getUrl().toString());
                     if (file.exists() && file.isFile()) {
-                        Toast.makeText(context, "[ " + message.getUrl().toString() + " ] " + position, Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
                     }
                     // Відкриваємо за допомогою відповідного додатку
                 } else {
