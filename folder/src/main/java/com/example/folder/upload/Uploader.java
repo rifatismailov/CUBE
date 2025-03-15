@@ -40,6 +40,8 @@ public class Uploader {
 //                            fileOMG.endProgress(positionId, "end");
 //                        }
                         fileOMG.setProgressShow(positionId, percentage, "");
+                        Log.e("progress", "[progress ] " + percentage);
+
                     });
                 }
             }

@@ -630,6 +630,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                             adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                         }
                         message.setProgress(progress);
+                        Log.e("progress", "[progress > ] " + progress);
+
                         adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                         break; // Завершуємо цикл, оскільки повідомлення знайдено
                     }

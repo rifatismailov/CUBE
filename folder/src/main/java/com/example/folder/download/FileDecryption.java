@@ -71,6 +71,8 @@ public class FileDecryption {
                     if (context instanceof Activity) {
                         int finalProgress = progress;
                         ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, finalProgress, ""));
+                        Log.e("progress", "[progress ] " + finalProgress);
+
                     }
                 }
 

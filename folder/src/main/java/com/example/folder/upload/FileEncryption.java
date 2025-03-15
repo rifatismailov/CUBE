@@ -90,6 +90,8 @@ public class FileEncryption {
                 int progress = (int) ((processedBytes / (double) totalBytes) * 100);
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
+                    Log.e("progress", "[progress ] " + progress);
+
                 }
             }
 

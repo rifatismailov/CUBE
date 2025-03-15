@@ -211,9 +211,12 @@ public class SendMessageHandler {
 
     private void updateProgress(SentViewHolder viewHolder, Message message) {
         if (message.getProgress() == 100) {
-            viewHolder.binding.messageNotifier.setProgress(0);
+         //   viewHolder.binding.messageNotifier.setProgress(0);
+            viewHolder.binding.image.setProgress(0);
         } else {
-            viewHolder.binding.messageNotifier.setProgress(message.getProgress());
+          //  viewHolder.binding.messageNotifier.setProgress(message.getProgress());
+            viewHolder.binding.image.setProgress(message.getProgress());
+
         }
     }
 

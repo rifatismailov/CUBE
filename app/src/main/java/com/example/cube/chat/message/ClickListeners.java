@@ -24,7 +24,7 @@ public class ClickListeners {
      * Встановлює обробники подій для конкретного елемента списку повідомлень.
      *
      * @param context Контекст додатка.
-     * @param holder ViewHolder, який містить елемент повідомлення.
+     * @param holder  ViewHolder, який містить елемент повідомлення.
      * @param message Об'єкт повідомлення, що містить інформацію.
      */
     void setClickListeners(Context context, RecyclerView.ViewHolder holder, Message message) {
@@ -45,6 +45,10 @@ public class ClickListeners {
 
             });
 
+            viewHolder.binding.image.setOnCancelListener(() -> {
+                Toast.makeText(context, "[ Завершення процесу  ] " + position, Toast.LENGTH_LONG).show();
+
+            });
             // Обробник натискання на файл у повідомленні
             viewHolder.binding.file.setOnClickListener(v -> {
                 // Логіка для натискання на зображення
@@ -66,6 +70,10 @@ public class ClickListeners {
 
             });
 
+            viewHolder.binding.image.setOnCancelListener(() -> {
+                Toast.makeText(context, "[ Завершення процесу  ] " + position, Toast.LENGTH_LONG).show();
+
+            });
             // Обробник натискання на файл у повідомленні
             viewHolder.binding.file.setOnClickListener(v -> {
                 if (!message.getUrl().toString().startsWith("http")) {

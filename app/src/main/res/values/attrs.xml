@@ -4,5 +4,12 @@
         <attr name="alignStart" format="boolean" />
         <attr name="spacing" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="LoadingImageView">
+        <attr name="progressColor" format="color" />
+        <attr name="progressThickness" format="dimension" />
+        <attr name="crossColor" format="color" />
+        <attr name="crossThickness" format="dimension" />
+    </declare-styleable>
+
 </resources>
 

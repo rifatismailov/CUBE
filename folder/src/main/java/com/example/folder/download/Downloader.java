@@ -114,6 +114,8 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
         // Оновлюємо прогрес у головному потоці
         if (context instanceof Activity) {
             ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
+            Log.e("progress", "[progress ] " + progress);
+
         }
     }
 

@@ -127,6 +127,9 @@ public class GetFileIcon {
             case "TIF":
                 icon = R.drawable.imagexgeneric_92742;
                 break;
+            case "ZIP":
+                icon = R.drawable.ic_archive;
+                break;
             case "message":
                 icon = R.drawable.message_icon_228461;
                 break;
