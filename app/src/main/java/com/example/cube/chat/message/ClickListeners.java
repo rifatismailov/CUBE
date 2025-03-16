@@ -84,10 +84,16 @@ public class ClickListeners {
                     // Відкриваємо за допомогою відповідного додатку
                 } else {
                     try {
-                        // Отримання URL файлу для завантаження
-                        URL url = new URL(message.getUrl().toString());
-                        File externalDir = new File(context.getExternalFilesDir(null), "cube");
-                        new Downloader(context, url, externalDir, position, message.getMessageId());
+                        if(message.getMessageStatus().equals("ready")) {
+                            // Отримання URL файлу для завантаження
+                            URL url = new URL(message.getUrl().toString());
+                            File externalDir = new File(context.getExternalFilesDir(null), "cube");
+                            new Downloader(context, url, externalDir, position, message.getMessageId());
+                        }else{
+                            Toast.makeText(context, "Файл ще не готовий для завантаження.\n" +
+                                    " Чекайте отримання статусу готовності для завантаження ", Toast.LENGTH_LONG).show();
+
+                        }
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

@@ -178,7 +178,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
             switch (status) {
                 case "update_to_user":
                 case "delivered_to_user":
-                    messageManager.deleteMessageById(envelope.getMessageId());
+                    sendMessage(envelope.toJson().toString());//не зберігаємо у базу даних
+                    messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
                     break;
                 default:
                     processEnvelope(envelope);
@@ -407,6 +408,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 returnMessageDeliver(envelope);
                 if (envelope.getMessageStatus().equals("server")) {
                     messageManager.deleteMessageById(envelope.getMessageId());
+                } else if (envelope.getMessageStatus().equals("received")) {
+                    messageManager.deleteMessageById(envelope.getMessageId());
                 } else {
                     messageManager.setMessage(envelope);
                 }
@@ -418,12 +421,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
-    private void saveMessagesToDatabase() {
-        Envelope message;
-        while ((message = messageQueue.poll()) != null) { // Витягуємо всі повідомлення з черги
-            messageManager.setMessage(message);
-        }
-    }
 
     /**
      * Метод обробки оффлайн-повідомлень, якщо вони є.
@@ -456,20 +453,18 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *                 - @envelope.getMessageId() — ID отриманого повідомлення.
      */
     private void returnMessageDeliver(Envelope envelope) {
-        Log.e("IOService", "Message : " + envelope.toJson());
-        if (!envelope.getOperation().equals("messageStatus")) {
-
-            String message = new Envelope.Builder().
-                    setSenderId(envelope.getReceiverId()).
-                    setReceiverId(envelope.getSenderId()).
-                    setOperation("messageStatus").
-                    setMessageStatus("delivered").
-                    setMessageId(envelope.getMessageId()).
-                    build().
-                    toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
-                    toString();
-            sendMessage(message);
-        }
+        //  if (!envelope.getOperation().equals("messageStatus")) {
+        String message = new Envelope.Builder().
+                setSenderId(envelope.getReceiverId()).
+                setReceiverId(envelope.getSenderId()).
+                setOperation("messageStatus").
+                setMessageStatus("delivered").
+                setMessageId(envelope.getMessageId()).
+                build().
+                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                toString();
+        sendMessage(message);
+        //   }
     }
 }
 

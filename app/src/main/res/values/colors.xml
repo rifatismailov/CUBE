@@ -14,6 +14,8 @@
     <color name="blue">#22adff</color>
     <color name="colorSender">#f2fafe</color>
     <color name="cube_blue">#0088cc</color>
+    <color name="light_notifier_one">#ABCDEF</color>
+    <color name="light_notifier_two">#123456</color>
 
     <color name="light_gray">#000</color>
     <color name="light_blue">#71c1ff</color>

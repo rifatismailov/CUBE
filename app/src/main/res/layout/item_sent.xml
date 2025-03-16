@@ -189,21 +189,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="20sp"
                 android:layout_marginBottom="4dp"
-                android:gravity="center"
+                android:gravity="left"
                 android:orientation="horizontal"
                 android:visibility="invisible">
 
                 <com.example.cube.draw.MessageNotifierView
                     android:id="@+id/messageNotifier"
-                    android:layout_width="35sp"
-                    android:layout_height="15sp"
-                    app:alignStart="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="15dp"
+                    android:minWidth="20dp"
+                    android:minHeight="20dp"
                     app:spacing="5dp" />
+
 
                 <ImageView
                     android:id="@+id/feeling"
                     android:layout_width="20sp"
                     android:layout_height="20sp"
+                    android:layout_marginStart="2dp"
                     android:layout_gravity="center"
                     android:visibility="invisible" />
 
@@ -211,14 +214,15 @@
                     android:id="@+id/time"
                     android:layout_width="wrap_content"
                     android:layout_height="15sp"
+                    android:layout_marginStart="2dp"
                     android:fontFamily="@font/ibmplexsans_medium"
                     android:gravity="left"
                     android:text="Time"
                     android:textColor="#676a6b"
                     android:textSize="10sp" />
 
-
             </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,164 +1,92 @@
 package com.example.cube.draw;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
+import androidx.annotation.Nullable;
 
-import com.example.cube.R;
-
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Клас MessageNotifierView - віджет для відображення кольорових кругів,
- * що представляють повідомлення, з можливістю візуалізації прогресу.
- */
 public class MessageNotifierView extends View {
+    private String text = "";
+    private int backgroundColor = 0xFFABCDEF; // Default color
+    private Paint backgroundPaint;
+    private Paint textPaint;
+    private RectF rect;
+    private int padding = 20;
 
-    /**
-     * Список кольорів, що будуть використовуватися для відображення кругів.
-     */
-    private List<Integer> colors = new ArrayList<>();
+    public MessageNotifierView(Context context) {
+        super(context);
+        init();
+    }
 
-    /**
-     * Поточний рівень прогресу (у відсотках).
-     */
-    private int progress = 0;
-
-    /**
-     * Радіус круга, що відображає прогрес.
-     */
-    private int progressRadius = 0;
-
-    /**
-     * Визначає, чи буде вирівнювання кругів починатися зліва (true) або справа (false).
-     */
-    private final boolean alignStart;
-
-    /**
-     * Відстань між кругами.
-     */
-    private final int spacing;
-
-    /**
-     * Конструктор класу, що ініціалізує параметри з XML.
-     *
-     * @param context Контекст додатку.
-     * @param attrs Атрибути, отримані з XML.
-     */
-    public MessageNotifierView(Context context, AttributeSet attrs) {
+    public MessageNotifierView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.MessageNotifierView, 0, 0);
-        try {
-            alignStart = a.getBoolean(R.styleable.MessageNotifierView_alignStart, true);
-            spacing = a.getDimensionPixelSize(R.styleable.MessageNotifierView_spacing, 30);
-        } finally {
-            a.recycle();
-        }
+        init();
     }
 
-    /**
-     * Встановлює список кольорів на основі переданих хешів.
-     *
-     * @param hashes Список хешів, які будуть перетворені в кольори.
-     */
-    public void setHashes(List<String> hashes) {
-        colors.clear();
-        for (String hash : hashes) {
-            int color = generateColorFromHash(hash);
-            colors.add(color);
-        }
-        invalidate(); // Оновлення вигляду
+    private void init() {
+        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(25);
+
+        // Встановлюємо шрифт як monospace та стиль як bold
+        textPaint.setTypeface(Typeface.MONOSPACE);  // Для шрифта monospace
+        textPaint.setTextSkewX(-0.25f);  // Для моноширинних шрифтів можна додавати інші ефекти (опційно)
+        textPaint.setFakeBoldText(true);  // Для жирного шрифта
+
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        rect = new RectF();
     }
 
-    /**
-     * Встановлює рівень прогресу.
-     *
-     * @param progress Значення прогресу (у відсотках).
-     */
-    public void setProgress(int progress) {
-        this.progress = progress;
-        invalidate(); // Оновлення вигляду
+    public void setMessage(String message) {
+        this.text = message;
+        requestLayout(); // Перерахунок розміру при зміні тексту
+        invalidate();
     }
 
-    /**
-     * Встановлює радіус прогресного круга.
-     *
-     * @param radius Радіус круга для відображення прогресу.
-     */
-    public void setProgressRadius(int radius) {
-        this.progressRadius = radius;
-        invalidate(); // Оновлення вигляду
+    public void setBackgroundColor(int color) {
+        this.backgroundColor = color;
+        invalidate();
     }
 
-    /**
-     * Генерує колір на основі хеш-значення.
-     *
-     * @param hash Хеш-рядок.
-     * @return Згенерований колір або чорний у разі помилки.
-     */
-    private int generateColorFromHash(String hash) {
-        try {
-            return Color.parseColor("#" + hash.substring(0, 6));
-        } catch (Exception e) {
-            return Color.BLACK;
-        }
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int minWidth = padding * 2;
+        int minHeight = padding * 2 + (int) textPaint.getTextSize();
+
+        // Вимірювання тексту
+        float textWidth = textPaint.measureText(text) + padding * 2;
+
+        int width = resolveSize((int) textWidth, widthMeasureSpec);
+        int height = resolveSize(minHeight, heightMeasureSpec);
+
+        setMeasuredDimension(width, height);
     }
 
-    /**
-     * Метод для малювання кругів на Canvas.
-     *
-     * @param canvas Canvas, на якому відображається графіка.
-     */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Paint paint = new Paint();
-        int circleRadius = 10; // Радіус основного круга
 
-        if (!colors.isEmpty()) {
-            int firstCircleY = getHeight() / 2; // Вертикальна координата
+        int width = getWidth();
+        int height = getHeight();
 
-            // Визначаємо початкову горизонтальну координату залежно від вирівнювання
-            int firstCircleX = alignStart ? circleRadius + 15 : getWidth() - circleRadius - 15;
+        rect.set(0, 0, width, height);
 
-            // Малюємо перший круг
-            paint.setColor(colors.get(0));
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawCircle(firstCircleX, firstCircleY, circleRadius, paint);
+        // Просто встановлюємо однорідний колір
+        backgroundPaint.setColor(backgroundColor);
+        backgroundPaint.setShader(null);  // Важливо прибрати градієнт
 
-            // Малюємо прогрес-індикатор
-            if (progress > 0) {
-                paint.setColor(colors.get(0));
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(5);
+        // Малюємо заокруглений прямокутник
+        canvas.drawRoundRect(rect, 40, 40, backgroundPaint);
 
-                int progressCircleRadius = progressRadius > 0 ? progressRadius : circleRadius + 5;
-                float sweepAngle = (float) (360 * progress / 100);
-
-                canvas.drawArc(
-                        firstCircleX - progressCircleRadius, firstCircleY - progressCircleRadius,
-                        firstCircleX + progressCircleRadius, firstCircleY + progressCircleRadius,
-                        -90, sweepAngle, false, paint
-                );
-            }
-
-            // Малюємо решту кругів
-            int direction = alignStart ? 1 : -1;
-            int spacingBetweenCircles = 2 * circleRadius + spacing;
-
-            for (int i = 1; i < colors.size(); i++) {
-                int x = firstCircleX + (i * spacingBetweenCircles * direction);
-                int y = firstCircleY;
-
-                paint.setColor(colors.get(i));
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(x, y, circleRadius, paint);
-            }
-        }
+        // Малюємо текст по центру
+        float x = width / 2f;
+        float y = (height / 2f) - ((textPaint.descent() + textPaint.ascent()) / 2);
+        canvas.drawText(text, x, y, textPaint);
     }
 }

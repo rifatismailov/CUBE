@@ -14,6 +14,8 @@ public class Envelope {
     private String operation;
     private String message;    // Саме повідомлення (може бути null)
     private String fileUrl;        // Посилання на файл (може бути null)
+    private String fileSize;       // Розмір файла (може бути null)
+    private String filetype;       // Тип файла (може бути null)
     private String fileHash;       // Хеш-сума файла (може бути null)
     private String messageStatus;
     private String timestamp;       // Час відправлення повідомлення
@@ -61,16 +63,6 @@ public class Envelope {
         this.messageId = messageId;
         this.timestamp = timestamp;
     }
-
-    // Конструктор для відправки лише файлу
-//    public Envelope(String senderId, String receiverId, String operation, String fileUrl, String fileHash, String messageId) {
-//        this.senderId = senderId;
-//        this.receiverId = receiverId;
-//        this.operation = operation;
-//        this.message = null;
-//        this.fileUrl = fileUrl;
-//        this.fileHash = fileHash;
-//    }
 
     // Приватний конструктор для білдера
     private Envelope(Builder builder) {
@@ -233,7 +225,6 @@ public class Envelope {
         return jsonObject;
     }
 
-    // Геттери та сеттери для полів
     // Геттери для доступу до полів (якщо потрібно)
     public String getSenderId() {
         return senderId;
@@ -283,37 +274,4 @@ public class Envelope {
         this.messageStatus = messageStatus;
     }
 
-    // Метод для генерації хешу
-    public String getHash_m() throws NoSuchAlgorithmException {
-        // Використовуємо лише відправника, отримувача і вміст повідомлення
-        String input = messageId + message + senderId + receiverId;
-
-        // Створюємо хеш за допомогою SHA-256
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(input.getBytes());
-
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashBytes) {
-            hexString.append(String.format("%02x", b));
-        }
-
-        return hexString.toString();
-    }
-
-    // Метод для генерації хешу з файлом
-    public String getHash_f() throws NoSuchAlgorithmException {
-        // Використовуємо лише відправника, отримувача і вміст повідомлення
-        String input = messageId + message + senderId + receiverId + fileUrl + fileHash;
-
-        // Створюємо хеш за допомогою SHA-256
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(input.getBytes());
-
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashBytes) {
-            hexString.append(String.format("%02x", b));
-        }
-
-        return hexString.toString();
-    }
 }

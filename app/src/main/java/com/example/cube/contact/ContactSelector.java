@@ -13,11 +13,9 @@ public class ContactSelector {
     }
 
     public void setContact(ContactData contactData) {
-        //contactData.setSize(0);
         this.contactData = contactData;
         this.contact = contactData.getId();
     }
-
     public void setContact(String contact) {
         this.contact = contact;
     }

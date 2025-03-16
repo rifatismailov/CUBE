@@ -200,12 +200,17 @@
                     android:id="@+id/feeling"
                     android:layout_width="20sp"
                     android:layout_height="20sp"
+                    android:layout_marginStart="2dp"
+
                     android:visibility="invisible" />
 
                 <com.example.cube.draw.MessageNotifierView
                     android:id="@+id/messageNotifier"
-                    android:layout_width="15sp"
-                    android:layout_height="15sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="15dp"
+                    android:minWidth="20dp"
+                    android:minHeight="20dp"
+                    android:layout_marginStart="2dp"
                     android:layout_marginEnd="5dp"
                     app:alignStart="true"
                     app:spacing="5dp" />

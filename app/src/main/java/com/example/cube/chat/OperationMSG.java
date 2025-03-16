@@ -132,8 +132,8 @@ public class OperationMSG {
     public void returnAboutDeliver(Message message) {
 
         String messageJson = new Envelope.Builder().
-                setSenderId(message.getReceiverId()).
-                setReceiverId(message.getSenderId()).
+                setSenderId(message.getSenderId()).
+                setReceiverId(message.getReceiverId()).
                 setOperation("messageStatus").
                 setMessageStatus("delivered_to_user").
                 setMessageId(message.getMessageId()).

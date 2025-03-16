@@ -42,6 +42,7 @@ import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
 import com.example.setting.UrlBuilder;
 import com.example.setting.UserSetting;
+import com.example.web_socket_service.socket.Envelope;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -439,6 +440,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 updatedMessage.setTypeFile(fileData.getFileType(file));
                 updatedMessage.setHas(has);
                 updatedMessage.setDataCreate(fileData.getFileDate(file));
+                updatedMessage.setMessageStatus("loaded");
 
                 // Оновлюємо в адаптері без використання DiffUtil
                 runOnUiThread(() -> {
@@ -643,8 +645,20 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     }
 
+    /**Метод для оповіщення закінчення завантаження файлу на сервер */
     @Override
     public void endProgress(String messageId, String info) {
+        String messageJson = new Envelope.Builder().
+                setSenderId(senderId).
+                setReceiverId(receiverId).
+                setOperation("messageStatus").
+                setMessageStatus("ready").
+                setMessageId(messageId).
+                build().
+                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+                toString();
+        sendDataBackToActivity(messageJson);
+        Log.e("end", "["+messageId+" ] " + info);
 
     }
 
