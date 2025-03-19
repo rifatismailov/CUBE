@@ -172,14 +172,15 @@ public class ContactManager {
             // Perform the update
             database.update(TABLE_CONTACTS, values, whereClause, whereArgs);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w("MessageMainManager", "Error while updating contact details: " + e);
+
         }
     }
 
     public void deleteAll() {
         try {
             int deletedRows = database.delete(TABLE_CONTACTS, null, null);
-            Log.e("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
+            Log.w("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
         } catch (Exception e) {
             Log.e("MessageMainManager", "Error deleting all messages: " + e.getMessage());
         }

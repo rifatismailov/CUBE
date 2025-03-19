@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -103,11 +104,11 @@ public class IOService extends Service implements WebSocketClient.Listener {
                             startWebSocket();
                             break;
                         case "MAIN_ACTIVITY_COMMAND":
-                            handleActivityCommand(intent.getStringExtra("COMMAND"));
+                            handleActivityCommand(intent.getStringExtra("command"));
                             break;
                     }
                 } catch (Exception e) {
-                    Log.e("IOService", "Під час отримання даних з активності було отримано null:" + e);
+                    Log.e("IOService", "When retrieving data from activity, null was received:" + e);
                 }
             }
         };
@@ -115,10 +116,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         // Registering receiver for multiple intent filters
         IntentFilter filter = new IntentFilter();
         filter.addAction("CUBE_ID_SENDER");
-        filter.addAction("CUBE_ID_RECIVER");
         filter.addAction("CUBE_SEND_TO_SERVER");
-        filter.addAction("CUBE_IP_TO_SERVER");
-        filter.addAction("CUBE_PORT_TO_SERVER");
         filter.addAction("MAIN_ACTIVITY_COMMAND");
         filter.addAction("MAIN_ACTIVITY_REGISTRATION");
         filter.addAction("CUBE_SEND_TO_SETTING");
@@ -291,29 +289,31 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 String setting = intent.getStringExtra("CUBE_SEND_TO_SETTING");
                 String command = intent.getStringExtra("MAIN_ACTIVITY_COMMAND");
                 String registration = intent.getStringExtra("MAIN_ACTIVITY_REGISTRATION");
-                JSONObject jsonObject = new JSONObject(setting);
+                if (setting != null) {
+                    JSONObject jsonObject = new JSONObject(setting);
 
-                // Отримання значень
-                senderId = jsonObject.getString("userId");
-                ip = jsonObject.getString("serverIp");
-                port = jsonObject.getString("serverPort");
+                    // Отримання значень
+                    senderId = jsonObject.getString("userId");
+                    ip = jsonObject.getString("serverIp");
+                    port = jsonObject.getString("serverPort");
 
-                connectionInfo.setSenderId(senderId);
-                connectionInfo.setIp(ip);
-                connectionInfo.setPort(port);
-                connectionInfo.setRegistration(registration);
-                if (command != null) {
-                    switch (command) {
-                        case "reborn":
-                            getOfflineMessage();
-                            connectionInfo.setLife(command);
-                            break;
-                        case "died":
-                            connectionInfo.setLife(command);
-                            break;
+                    connectionInfo.setSenderId(senderId);
+                    connectionInfo.setIp(ip);
+                    connectionInfo.setPort(port);
+                    connectionInfo.setRegistration(registration);
+                    if (command != null) {
+                        switch (command) {
+                            case "reborn":
+                                getOfflineMessage();
+                                connectionInfo.setLife(command);
+                                break;
+                            case "died":
+                                connectionInfo.setLife(command);
+                                break;
+                        }
                     }
+                    startWebSocket();
                 }
-                startWebSocket();
 
             } catch (Exception e) {
                 Log.e("IOService", "Error on Start Command: " + e);
@@ -384,7 +384,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      * Handles WebSocket notifications.
      */
     @Override
-    public void onNotification(String message) {
+    public void onNotification(@NonNull String message) {
         String[] info = message.split(":");
         updateNotification("CUBE is running", info[0]);
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
@@ -401,14 +401,16 @@ public class IOService extends Service implements WebSocketClient.Listener {
     public void onListener(String message) {
         if (message != null) {
             try {
+
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
-
-                addMessage(message);
                 returnMessageDeliver(envelope);
+                addMessage(message);
                 if (envelope.getMessageStatus().equals("server")) {
                     messageManager.deleteMessageById(envelope.getMessageId());
                 } else if (envelope.getMessageStatus().equals("received")) {
+                    messageManager.deleteMessageById(envelope.getMessageId());
+                } else if (envelope.getMessageStatus().equals("delivered")) {
                     messageManager.deleteMessageById(envelope.getMessageId());
                 } else {
                     messageManager.setMessage(envelope);
@@ -452,7 +454,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *                 - @envelope.getReceiverId() — ID отримувача (тобто наш ID).
      *                 - @envelope.getMessageId() — ID отриманого повідомлення.
      */
-    private void returnMessageDeliver(Envelope envelope) {
+    private void returnMessageDeliver(@NonNull Envelope envelope) {
         //  if (!envelope.getOperation().equals("messageStatus")) {
         String message = new Envelope.Builder().
                 setSenderId(envelope.getReceiverId()).

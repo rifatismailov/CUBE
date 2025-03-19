@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.folder.FileData;
 import com.example.folder.file.FileOMG;
 import com.example.folder.file.progress.ProgressRequestBody;
 
@@ -12,53 +13,56 @@ import okhttp3.*;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Клас Uploader відповідає за завантаження файлів на сервер.
+ */
 public class Uploader {
-    private FileOMG fileOMG;
-    String positionId;
-    Context context;
-    private final String server_address; // Змініть IP на ваш
+    private final FileOMG fileOMG;
+    private final String positionId;
+    private final Context context;
+    private final String server_address; // Адреса сервера
 
+    /**
+     * Конструктор класу Uploader.
+     *
+     * @param context        Контекст додатку.
+     * @param positionId     Ідентифікатор позиції для оновлення прогресу.
+     * @param server_address Адреса сервера, на який буде завантажено файл.
+     */
     public Uploader(Context context, String positionId, String server_address) {
         this.context = context;
         this.fileOMG = (FileOMG) context;
         this.positionId = positionId;
         this.server_address = server_address;
-        Log.e("Uploader", "PositionId: " + positionId);
-
     }
 
-    public void uploadFile(File file) throws InterruptedException {
-        Log.e("Uploader", "uploadFile " + file);
-
+    /**
+     * Метод для завантаження файлу на сервер.
+     *
+     * @param file Файл, який потрібно завантажити.
+     */
+    public void uploadFile(File file) {
         OkHttpClient client = new OkHttpClient();
+
+        // Обгортка файлу для відстеження прогресу завантаження
         ProgressRequestBody fileBody = new ProgressRequestBody(file, "application/octet-stream", new ProgressRequestBody.UploadCallbacks() {
             @Override
             public void onProgressUpdate(int percentage) {
-                if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> {
-//                        if (percentage >100) {
-//                            fileOMG.endProgress(positionId, "end");
-//                        }
-                        fileOMG.setProgressShow(positionId, percentage, "");
-                        Log.e("progress", "[progress ] " + percentage);
-
-                    });
-                }
+                setProgress(positionId, percentage, "");
             }
 
             @Override
-            public void onError() {
-
-                if (context instanceof Activity) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
-                }
+            public void onError(String e) {
+                setProgress(positionId, 0, "ERROR:" + e);
             }
 
             @Override
             public void onFinish() {
+                // Викликається після завершення завантаження
             }
         });
 
+        // Формування запиту з файлом
         MultipartBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("file", file.getName(), fileBody)
@@ -69,33 +73,35 @@ public class Uploader {
                 .post(requestBody)
                 .build();
 
+        // Виконання HTTP-запиту
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                if (context instanceof Activity) {
-                    Log.e("Uploader", "Проблема інтернет-з'єднання:" + e);
-
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
-                }
+                setProgress(positionId, 0, "ERROR:Sending error");
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response) {
                 if (!response.isSuccessful()) {
-                    ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка-відправки"));
+                    setProgress(positionId, 0, "ERROR:Sending error");
                 } else {
-
                     ((Activity) context).runOnUiThread(() -> {
                         try {
-                            fileOMG.setProgressShow(positionId, 100, "Файл успішно завантажено");
+                            fileOMG.setProgressShow(positionId, 100, "File successfully uploaded");
                             fileOMG.endProgress(positionId, "end");
-                            Log.e("Uploader", "Файл успішно завантажено: " + response.body().string());
+                            FileData.deleteFile(context,file.getAbsolutePath());
                         } catch (Exception e) {
-                            Log.e("Uploader", "ERROR: при обробці відповіді сервера: " + e.getMessage());
+                            Log.e("Uploader", "An error occurred while processing the server response.: " + e.getMessage());
                         }
                     });
                 }
             }
         });
+    }
+
+    private void setProgress(String positionId, int progress, String info) {
+        if (context instanceof Activity) {
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, info));
+        }
     }
 }

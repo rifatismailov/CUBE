@@ -1,17 +1,15 @@
-package com.example.folder.dialogwindows;
+package com.example.folder.explorer;
 
 public class Explorer {
-    public boolean isChecked;
-    public boolean box;
-    private String nomber;
+    private String number;
     private String time;
     private String information;
     private boolean check;
     private int image;
 
 
-    public Explorer(String nomber, String time, String information, int image, boolean check) {
-        this.nomber = nomber;
+    public Explorer(String number, String time, String information, int image, boolean check) {
+        this.number = number;
         this.time = time;
         this.information = information;
         this.image = image;
@@ -19,11 +17,11 @@ public class Explorer {
     }
 
     public String getNumber() {
-        return nomber;
+        return number;
     }
 
     public void setNumber(String number) {
-        this.nomber = number;
+        this.number = number;
     }
 
     public String getTime() {

@@ -11,24 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ColorfulDotsView - користувацький View для відображення кольорових квадратів.
- * Кольори генеруються на основі хешів, переданих у метод setHashes().
+ * ColorfulDotsView is a custom View for displaying colored squares.
+ * Colors are generated based on hashes passed to the setHashes() method.
  */
 public class ColorfulDotsView extends View {
-    private List<Integer> colors = new ArrayList<>(); // Список кольорів для відображення
+    private final List<Integer> colors = new ArrayList<>(); // List of colors to display
 
     /**
-     * Конструктор класу ColorfulDotsView.
-     * @param context Контекст застосунку
-     * @param attrs Атрибути, задані в XML
+     * Constructor of the ColorfulDotsView class.
+     * @param context Application context
+     * @param attrs Attributes specified in XML
      */
     public ColorfulDotsView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /**
-     * Оновлює кольори на основі переданих хешів.
-     * @param hashes Список хеш-рядків, з яких генеруються кольори
+     * Updates colors based on the passed hashes.
+     * @param hashes List of hash strings from which colors are generated
      */
     public void setHashes(List<String> hashes) {
         colors.clear();
@@ -36,38 +36,38 @@ public class ColorfulDotsView extends View {
             int color = generateColorFromHash(hash);
             colors.add(color);
         }
-        invalidate(); // Перемальовуємо View
+        invalidate(); // Redraw View
     }
 
     /**
-     * Генерує колір на основі першої частини хеш-рядка.
-     * @param hash Хеш-рядок
-     * @return Колір у форматі int
+     * Generates color based on the first part of the hash string.
+     * @param hash Hash string
+     * @return Color in int format
      */
     private int generateColorFromHash(String hash) {
         try {
-            return Color.parseColor("#" + hash.substring(0, 6)); // Використовуємо перші 6 символів хешу
+            return Color.parseColor("#" + hash.substring(0, 6)); // Use the first 6 characters of the hash
         } catch (Exception e) {
-            return Color.BLACK; // Якщо помилка, повертаємо чорний колір
+            return Color.BLACK; // If error, return black
         }
     }
 
     /**
-     * Метод для малювання кольорових квадратів.
-     * @param canvas Canvas для малювання
+     * Method for drawing colored squares.
+     * @param canvas Canvas to draw
      */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Paint paint = new Paint();
 
-        int squareWidth = 10; // Ширина квадрату
-        int squareHeight = 60; // Висота квадрату
-        int spacing = 10; // Відстань між квадратами
+        int squareWidth = 10; // Width of the square
+        int squareHeight = 60; // Height of the square
+        int spacing = 10; // Distance between squares
 
-        int totalWidth = colors.size() * (squareWidth + spacing) - spacing; // Загальна ширина всіх квадратів
-        int startX = (getWidth() - totalWidth) / 2; // Вирівнювання по центру горизонтально
-        int startY = (getHeight() - squareHeight) / 2; // Вирівнювання по центру вертикально
+        int totalWidth = colors.size() * (squareWidth + spacing) - spacing; // Total width of all squares
+        int startX = (getWidth() - totalWidth) / 2; // Center horizontally
+        int startY = (getHeight() - squareHeight) / 2; // Center vertically
 
         for (int i = 0; i < colors.size(); i++) {
             paint.setColor(colors.get(i));

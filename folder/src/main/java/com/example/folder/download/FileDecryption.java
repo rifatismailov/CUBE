@@ -2,13 +2,12 @@ package com.example.folder.download;
 
 import javax.crypto.SecretKey;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.RequiresApi;
-import com.example.folder.file.FileDetect;
+
 import com.example.folder.file.FileOMG;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -48,8 +47,6 @@ public class FileDecryption {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void fileDecryption() throws Exception {
 
-        Log.d("FileDecryption", "[decrypted FileName] " + decryptedFileName);
-
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
@@ -69,10 +66,7 @@ public class FileDecryption {
 
                     int progress = (int) ((processedBytes / (double) totalBytes) * 100);
                     if (context instanceof Activity) {
-                        int finalProgress = progress;
-                        ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, finalProgress, ""));
-                        Log.e("progress", "[progress ] " + finalProgress);
-
+                        ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
                     }
                 }
 
@@ -92,7 +86,6 @@ public class FileDecryption {
                         }
                         decryptionHandle.stopDecryption();
                     } else {
-                        Log.e("Downloader", "[ Помилка ] Не всі байти були оброблені. Processed bytes: " + processedBytes + " / Total bytes: " + totalBytes);
                         if (context instanceof Activity) {
                             ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "Помилка дешифрування"));
                         }

@@ -5,7 +5,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -54,8 +53,8 @@ import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
 import com.example.database_cube.DatabaseHelper;
+import com.example.folder.FileData;
 import com.example.folder.download.Downloader;
-import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileOMG;
 import com.example.folder.file.FilePathBuilder;
 import com.example.folder.file.Folder;
@@ -188,18 +187,39 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         user_id = findViewById(R.id.user_id);
 
         // Використання NavigationManager для обробки меню
-        navigationManager = new NavigationManager(this, findViewById(R.id.avatarImage), findViewById(R.id.accountImage),
-                findViewById(R.id.nav_account), findViewById(R.id.nav_settings), findViewById(R.id.nav_logout));
+        navigationManager = new NavigationManager(this);
+        File externalDir = new File(getExternalFilesDir(null), "key");
 
+        // Створюємо директорію, якщо її не існує
+        if (!externalDir.exists() && !externalDir.mkdirs()) {
+            Log.e("Downloader", "Не вдалося створити директорію");
+        }
 
-        //password = "1234567890123456";  // Пароль
-        byte[] keyBytes = "1234567890123456".getBytes();  // Генерація байт ключа
-        secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        String filePath = externalDir + "/SecretKey.key";
+        File keyFile = new File(filePath);
+        //FileData.write(KeyGenerator.AES.generateKey(16), filePath);
+        if (!keyFile.exists()) {
+            // Генеруємо новий ключ, якщо файлу немає
+            String key = KeyGenerator.AES.generateKey(16);
+            FileData.write(key, filePath);
+            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
+            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        } else {
+            // Читаємо існуючий ключ
+            String key = FileData.read(filePath);
+            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
+            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        }
+
+//        byte[] keyBytes = "1234567890123456".getBytes();  // Генерація байт ключа
+//        secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         manager = new Manager(this, db, secretKey);
         messageManager = new MessageManager(db);
         messageMainManager = new MessageMainManager(db);
+        //messageMainManager.deleteAllMessages();
+
         operation = new Operation(this, messageMainManager);
         manager.readAccount();
         contactManager = new ContactManager(db,secretKey);
@@ -213,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (manager.userSetting().getId() == null)
                 scannerQrAccount();
         }, 100);
+        //deleteAll();
     }
 
 
@@ -854,14 +875,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    public void setNotification(String clas, String log) {
+    public void setNotification(String info, String log) {
         runOnUiThread(() -> {
-            notificationLoggers.add(new NotificationLogger(clas, log));
+            notificationLoggers.add(new NotificationLogger(info, log));
             // Повідомити, що новий елемент було вставлено
             notificationAdapter.notifyItemInserted(notificationLoggers.size() - 1);
             // Прокрутити до нового елемента
             binding.log.smoothScrollToPosition(notificationLoggers.size() - 1);
-            Log.e(clas, log);
         });
     }
 
@@ -883,8 +903,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void giveAvatar(String recipient) {
-        FileDetect fileDetect = new FileDetect();
-
         try {
             File avatarImage = FilePathBuilder
                     .withDirectory(FilePathBuilder.getDirectory(this, "imageProfile"))
@@ -899,8 +917,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             for (ContactData user : contactDataList) {
                 if (user.getId().equals(recipient)) {
                     String key = user.getSenderKey();
-                    uploadFile(avatarImage, recipient + ":avatarImageUrl:" + fileDetect.getFileHash(avatarImage.toString(), "SHA-256"), key);
-                    uploadFile(accountImage, recipient + ":accountImage:" + fileDetect.getFileHash(accountImage.toString(), "SHA-256"), key);
+                    uploadFile(avatarImage, recipient + ":avatarImageUrl:" + FileData.getFileHash(avatarImage.toString(), "SHA-256"), key);
+                    uploadFile(accountImage, recipient + ":accountImage:" + FileData.getFileHash(accountImage.toString(), "SHA-256"), key);
                     break;
                 }
             }

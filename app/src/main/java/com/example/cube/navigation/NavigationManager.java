@@ -3,6 +3,7 @@ package com.example.cube.navigation;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -13,9 +14,14 @@ import com.example.cube.draw.ContactCircularImageView;
 
 import java.io.File;
 
+/**
+ * Клас NavigationManager відповідає за керування навігацією у додатку.
+ * Він взаємодіє з елементами UI, такими як кнопки, зображення аватара,
+ * а також обробляє події навігації між екранами.
+ */
 public class NavigationManager {
 
-    private Navigation navigation;
+    private final Navigation navigation;
     private final ImageView avatarImage;
     private final ContactCircularImageView accountImage;
     private final Button accountButton;
@@ -23,24 +29,36 @@ public class NavigationManager {
     private final Button logoutButton;
     private final File externalDir;
 
-    public NavigationManager(Activity activity,  ImageView avatarImage, ContactCircularImageView accountImage, Button accountButton, Button settingsButton, Button logoutButton) {
+    /**
+     * Конструктор ініціалізує менеджер навігації та прив'язує UI-елементи.
+     *
+     * @param activity Активність, яка повинна реалізовувати Navigation.
+     */
+    public NavigationManager(Activity activity) {
         if (!(activity instanceof Navigation)) {
-            //Перевірка типу activity у конструкторі: Якщо активність не імплементує Navigation, це може викликати ClassCastException.
-            throw new IllegalArgumentException("Activity must implement Navigation interface");
+            // Перевірка типу activity у конструкторі.
+            Log.e("NavigationManager", "Activity must implement Navigation interface");
         }
-        this.navigation = (Navigation) activity;
-        this.avatarImage = avatarImage;
-        this.accountImage = accountImage;
-        this.accountButton = accountButton;
-        this.settingsButton = settingsButton;
-        this.logoutButton = logoutButton;
+
+        // Створення директорії для збереження зображень профілю.
         externalDir = new File(activity.getExternalFilesDir(null), "imageProfile");
         if (!externalDir.exists()) {
-            boolean mkdirs = externalDir.mkdirs();
+            externalDir.mkdirs();
         }
+
+        this.navigation = (Navigation) activity;
+        this.avatarImage = activity.findViewById(R.id.avatarImage);
+        this.accountImage = activity.findViewById(R.id.accountImage);
+        this.accountButton = activity.findViewById(R.id.nav_account);
+        this.settingsButton = activity.findViewById(R.id.nav_settings);
+        this.logoutButton = activity.findViewById(R.id.nav_logout);
+
         setupButtons();
     }
 
+    /**
+     * Метод встановлює обробники натискань для кнопок навігації.
+     */
     private void setupButtons() {
         accountButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_account));
         settingsButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_settings));
@@ -48,41 +66,51 @@ public class NavigationManager {
         logoutButton.setOnClickListener(v -> handleMenuItemClick(R.id.nav_logout));
     }
 
+    /**
+     * Обробник подій натискання на елементи навігації.
+     *
+     * @param itemId ID натиснутого елемента.
+     */
     private void handleMenuItemClick(int itemId) {
         switch (itemId) {
             case R.id.nav_account:
-                // Логіка для "Акаунт"
                 navigation.showAccount();
                 break;
             case R.id.nav_settings:
-                // Логіка для "Налаштування"
                 navigation.showSetting();
                 break;
             case R.id.nav_logout:
                 navigation.logout();
-                // Логіка для "Вихід"
                 break;
             case R.id.accountImage:
                 navigation.imageNavigation();
                 break;
         }
-        // Закрити Drawer після вибору
-        // drawerLayout.closeDrawer(GravityCompat.START);
     }
 
+    /**
+     * Встановлює зображення аватара користувача.
+     *
+     * @param image Назва файлу зображення.
+     */
     public void setAvatarImage(String image) {
         File file = new File(externalDir + "/" + image);
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-
             avatarImage.setImageBitmap(bitmap);
         } else {
             avatarImage.setImageResource(R.color.blue); // Резервне зображення
         }
     }
-    public void setNotification(String status){
+
+    /**
+     * Встановлює статус повідомлення (наприклад, підключення, помилка тощо).
+     *
+     * @param status Статус у вигляді рядка ("closed", "failed", "connected").
+     */
+    public void setNotification(String status) {
         if (status != null) {
-            switch (status){
+            switch (status) {
                 case "closed":
                     accountImage.updateStatusColor("00");
                     break;
@@ -96,6 +124,11 @@ public class NavigationManager {
         }
     }
 
+    /**
+     * Встановлює зображення акаунта користувача.
+     *
+     * @param image Назва файлу зображення.
+     */
     public void setAccountImage(String image) {
         File file = new File(externalDir + "/" + image);
         if (file.exists()) {
@@ -106,6 +139,9 @@ public class NavigationManager {
         }
     }
 
+    /**
+     * Інтерфейс для визначення методів навігації між екранами.
+     */
     public interface Navigation {
         void scannerQrAccount();
 
@@ -114,6 +150,7 @@ public class NavigationManager {
         void showSetting();
 
         void showAccount();
+
         void logout();
     }
 }

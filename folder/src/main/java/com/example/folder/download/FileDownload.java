@@ -56,7 +56,7 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
                                 }
 
                                 @Override
-                                public void onError() {
+                                public void onError(String e) {
                                     new Handler(Looper.getMainLooper()).post(() -> handler.showDetails("Error during download"));
                                 }
 
@@ -82,7 +82,6 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
             public void onResponse(@NonNull Call call, @NonNull Response response) {
                 if (!response.isSuccessful()) {
                     handler.showDetails("Server response error");
-                    Log.e("FileDownload", "Server response error");
                     return;
                 }
 
@@ -100,7 +99,6 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
                     verifyFileIntegrity(destinationFile);
                 } catch (IOException e) {
                     handler.showDetails("Error saving file: " + e.getMessage());
-                    Log.e("FileDownload", "Error saving file " + e);
                 }
             }
         });
@@ -112,7 +110,7 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
      * @param file Файл для перевірки.
      */
     private void verifyFileIntegrity(File file) {
-        try (InputStream fis = new FileInputStream(file)) {
+        try (InputStream fis = Files.newInputStream(file.toPath())) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[8192]; // Оптимальний розмір буфера
             int bytesRead;
@@ -129,7 +127,6 @@ public class FileDownload implements FileDecryption.DecryptionHandle{
                 hexString.append(String.format("%02x", b));
             }
 
-            Log.d("FileDownload", "File hash: " + hexString.toString());
         } catch (IOException | NoSuchAlgorithmException e) {
             Log.e("FileDownload", "Error calculating file hash: " + e.getMessage());
         }

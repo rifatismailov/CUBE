@@ -6,7 +6,6 @@ public class NotificationHandler {
 
     @SuppressLint("SetTextI18n")
     public void setLog(NotificationViewHolder notificationViewHolder, NotificationLogger logger) {
-        notificationViewHolder.binding.clas.setText(logger.getClas());
-        //loggerViewHolder.binding.logger.setText(logger.getLog());
+        notificationViewHolder.binding.info.setText(logger.getInfo());
     }
 }

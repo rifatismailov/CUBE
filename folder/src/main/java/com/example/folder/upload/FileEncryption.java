@@ -7,6 +7,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.folder.FileData;
 import com.example.folder.file.FileOMG;
 
 import java.io.File;
@@ -15,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
@@ -62,7 +65,6 @@ public class FileEncryption {
      */
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void fileEncryption() throws Exception {
-        Log.e("FileEncryption", "encryptedFileName[ START ENCRYPT] " + encryptedFileName);
 
         // Підготовка до шифрування
         Cipher cipher = Cipher.getInstance(ALGORITHM);
@@ -71,15 +73,10 @@ public class FileEncryption {
         long totalBytes = inputFile.length();
         long processedBytes = 0;
 
-        // Створюємо нову назву для зашифрованого файлу
-
-        Log.e("FileEncryption", "encryptedFileName[ START SEND] " + encryptedFileName);
-
         // Запис шифрованих байтів у новий файл
-        try (InputStream fis = new FileInputStream(inputFile);
-             OutputStream fos = new FileOutputStream(encryptedFileName);
+        try (InputStream fis = Files.newInputStream(inputFile.toPath());
+             OutputStream fos = Files.newOutputStream(Paths.get(encryptedFileName));
              CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
-            Log.e("FileEncryption", "encryptedFileName[ START SEND try CATH] " + encryptedFileName);
 
             int bytesRead;
             while ((bytesRead = fis.read(buffer)) != -1) {
@@ -90,44 +87,31 @@ public class FileEncryption {
                 int progress = (int) ((processedBytes / (double) totalBytes) * 100);
                 if (context instanceof Activity) {
                     ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
-                    Log.e("progress", "[progress ] " + progress);
-
                 }
             }
 
             // Повідомляємо про успішне завершення
             if (context instanceof Activity) {
-                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 100, "Шифрування завершено"));
+                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 100, ""));
             }
 
             // Додатково: передача файлу на сервер (необов'язково)
             Uploader uploader = new Uploader(context, positionId, server_address);
-            Log.e("FileEncryption", "[encryptedFileName] " + encryptedFileName);
             uploader.uploadFile(new File(encryptedFileName));
 
         } catch (Exception e) {
-            Log.e("FileEncryption", "[encryptedFileName] " + encryptedFileName + " [ Помилка шифрування ] " + e);
-
-            e.printStackTrace();
             // Обробка помилки
             if (context instanceof Activity) {
-                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "Помилка шифрування"));
+                ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, "ERROR:Помилка шифрування"));
             }
         }
     }
 
     private static final String TRANSFORMATION = "AES"; // Трансформація (AES)
 
-    // Метод для отримання розширення файлу
-    public String getFileExtension(File file) {
-        String fileName = file.getName();
-        int dotIndex = fileName.lastIndexOf('.');
-        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
-    }
-
     public String generateEncryptedFileName(File inputFile) throws Exception {
         // Отримуємо тип файлу або розширення
-        String extension = encrypt(getFileExtension(inputFile), secretKey);
+        String extension = encrypt(FileData.getFileExtension(inputFile), secretKey);
         // Генеруємо нову назву файлу
         return inputFile.getParent() + File.separator +
                 "enc-" + UUID.randomUUID().toString() + (extension.isEmpty() ? "" : "." + extension);

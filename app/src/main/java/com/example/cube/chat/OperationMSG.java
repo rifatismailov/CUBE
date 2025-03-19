@@ -19,34 +19,35 @@ public class OperationMSG {
     OperableMSG operableMSG;
 
     /**
-     * Конструктор класу, що приймає об'єкт, який реалізує інтерфейс {@link OperableMSG}.
-     * Цей об'єкт використовується для додавання повідомлень та оновлення адаптера UI.
+     * Class constructor that accepts an object that implements the {@link OperableMSG} interface.
+     * This object is used to add messages and update the UI adapter.
      *
-     * @param operableMSG Об'єкт, що реалізує інтерфейс {@link OperableMSG}.
+     * @param operableMSG An object that implements the {@link OperableMSG} interface.
      */
     public OperationMSG(OperableMSG operableMSG) {
         this.operableMSG = operableMSG;
     }
 
     /**
-     * Обробляє отримані повідомлення та виконують відповідні операції в залежності від типу повідомлення.
-     * Різні типи операцій (повідомлення, обмін ключами, хендшейк) обробляються відповідно.
+     * Processes received messages and performs appropriate operations depending on the message type.
+     * Different types of operations (message, key exchange, handshake) are handled accordingly.
      *
-     * @param data Повідомлення у форматі JSON, яке потрібно обробити.
+     * @param data The JSON message to be processed.
      */
     public void onReceived(String senderKey, String data) {
         try {
             JSONObject object = new JSONObject(data);
             Envelope envelope = new Envelope(object);
-            String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-            String messageID = envelope.toJson().getString(FIELD.MESSAGE_ID.getFIELD());
+            String operation = envelope.getOperation();
+            String messageID = envelope.getMessageId();
 
-            // Обробляємо дані від Activity, наприклад, оновлюємо UI
+            // Process data from the Activity, for example, update the UI
             if (operation.equals(FIELD.MESSAGE.getFIELD())) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 if (envelope.getFileUrl() == null) {
                     Message message=new Message(rMessage, Side.Receiver, messageID);
                     message.setTimestamp(envelope.getTime());
+                    message.setMessageStatus(envelope.getMessageStatus());
                     operableMSG.readMessage(message);
                     returnAboutDeliver(message);
                 }
@@ -64,30 +65,27 @@ public class OperationMSG {
                 message.setTimestamp(envelope.getTime());
                 message.setTypeFile(FIELD.FILE.getFIELD());
                 message.setDataCreate("11.11.11 12.12.12");
+                message.setMessageStatus(envelope.getMessageStatus());
                 operableMSG.readMessageFile(message);
                 returnAboutDeliver(message);
             } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
-                // чому getString("publicKey"); тому що відправник вказує в повідомлення метрику як publicKey
-                // тим вказує що це його публічний кул так ми його забираємо
                 String rPublicKey = jsonObject.getString(FIELD.PUBLIC_KEY.getFIELD());
-
                 operableMSG.addReceiverPublicKey(rPublicKey);
             } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
                 String aesKey = jsonObject.getString(FIELD.AES_KEY.getFIELD());
                 operableMSG.addReceiverKey(aesKey);
             } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
-                // Обробка статусних повідомлень
+                // Processing status messages
                 String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
                 operableMSG.addNotifier(messageID, status);
-                //Toast.makeText(this, messageID, Toast.LENGTH_SHORT).show();
             }
         } catch (JSONException e) {
-            Log.e("OperationMSG", "Помилка під час отримання JSON: " + e);
+            Log.e("OperationMSG", "Error while receiving JSON: " + e);
 
         } catch (Exception e) {
-            Log.e("OperationMSG", "Помилка під час отримання даних : " + e);
+            Log.e("OperationMSG", "Error while receiving data: " + e);
         }
     }
 
@@ -95,20 +93,17 @@ public class OperationMSG {
         try {
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId,time);
-            //реалізація шифрування повідомлення
+            //implementation of message encryption
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
-            Log.e("OperationMSG", "Помилка під час відправки виникла помилка : " + e);
+            Log.e("OperationMSG", "Error while sending: " + e);
         }
     }
 
     public void onSendFile(String senderId, String receiverId, String message, String url, String has, String receiverKey, String messageId,String time) {
         try {
-            String filename = new File(url).getName();
-            Log.e("FileEncryption", " filename " + filename);
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
             String rURL = Encryption.AES.encrypt(url, receiverKey);
-            Log.e("FileEncryption", " rURL " + rURL);
             String rHAS = Encryption.AES.encrypt(has, receiverKey);
             String operation;
             operation = FIELD.FILE.getFIELD();
@@ -120,14 +115,14 @@ public class OperationMSG {
     }
 
     /**
-     * Метод сповіщення сервер о отриманні повідомлення
+     * Method for notifying the server about receiving a message
      *
-     * @param message повідомлення яке прийшло
-     *                отримуємо такі данні для відправки сповіщення:
-     *                >    @envelope.getSenderId() Id відправника
-     *                >    @envelope.getReceiverId() Id отримувача тоб то нащ
-     *                >    @envelope.getMessageId() Id повідомлення з яким воно прийшло
-     *                Дане повідомлення відправляється тільки до Сервісу  далі він не відправляється
+     * @param message the message that arrived
+     * we get the following data for sending the notification:
+     * > @envelope.getSenderId() Sender ID
+     * > @envelope.getReceiverId() Recipient ID, that is, our
+     * > @envelope.getMessageId() Message ID with which it arrived
+     * This message is sent only to the Service, then it is not sent
      */
     public void returnAboutDeliver(Message message) {
 
@@ -140,13 +135,12 @@ public class OperationMSG {
                 build().
                 toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
                 toString();
-        Log.e("IOService", "Return About Deliver" + messageJson);
         operableMSG.sendDataBackToActivity(messageJson);
     }
 
     /**
-     * Інтерфейс для взаємодії з іншими компонентами, такими як UI та адаптери.
-     * Використовується для додавання повідомлень, хендшейків, обміну AES-ключами та оновлення адаптерів.
+     * Interface for interacting with other components such as UI and adapters.
+     * Used for adding messages, handshakes, exchanging AES keys, and updating adapters.
      */
     public interface OperableMSG {
         void readMessage(Message message);

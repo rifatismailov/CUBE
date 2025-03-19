@@ -14,24 +14,24 @@ import com.example.cube.R;
 import com.google.android.material.imageview.ShapeableImageView;
 
 /**
- * LoadingImageView - це спеціальний віджет для відображення зображення
- * з можливістю показу прогресу завантаження та кнопки скасування.
+ * LoadingImageView is a special image display widget
+ * with the ability to show loading progress and a cancel button.
  *
- * Він успадковується від ShapeableImageView і додає функціональність:
- * - Відображення індикатора прогресу (кільцева анімація)
- * - Відображення кнопки скасування (хрестик), коли прогрес неповний
- * - Обробка подій натискання на кнопку скасування
+ * It inherits from ShapeableImageView and adds the following functionality:
+ * - Display a progress indicator (ring animation)
+ * - Display a cancel button (cross) when progress is incomplete
+ * - Handle cancel button click events
  */
 public class LoadingImageView extends ShapeableImageView {
 
-    private Paint progressPaint, crossPaint; // Об'єкти для малювання прогресу та кнопки скасування
-    private RectF rectF; // Обмежуючий прямокутник для малювання прогресу
-    private int progress = 0; // Поточний рівень прогресу (0-100)
-    private OnCancelListener cancelListener; // Слухач натискання на кнопку скасування
-    private boolean showCancelButton = false; // Прапорець для визначення, чи потрібно показувати кнопку скасування
+    private Paint progressPaint, crossPaint; // Objects for drawing progress and cancel buttons
+    private RectF rectF; // Bounding rectangle for drawing progress
+    private int progress = 0; // Current progress level (0-100)
+    private OnCancelListener cancelListener; // Cancel button click listener
+    private boolean showCancelButton = false; // Flag to specify whether to show the cancel button
 
     /**
-     * Конструктор для ініціалізації компонента в коді.
+     * Constructor to initialize the component in code.
      */
     public LoadingImageView(Context context) {
         super(context);
@@ -39,7 +39,7 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Конструктор для ініціалізації компонента через XML.
+     * Constructor to initialize the component via XML.
      */
     public LoadingImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -47,7 +47,7 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Конструктор для ініціалізації компонента через XML з параметрами стилю.
+     * Constructor to initialize the component via XML with style parameters.
      */
     public LoadingImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -55,76 +55,76 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Метод ініціалізації об'єктів малювання.
+     * Method for initializing drawing objects.
      */
     private void init(Context context, AttributeSet attrs) {
-        // Перевірка на наявність атрибутів в XML
+        // Check for attributes in XML
         if (attrs != null) {
-            // Отримуємо TypedArray для доступу до атрибутів
+            // Get a TypedArray to access the attributes
             TypedArray typedArray = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.LoadingImageView,
                     0, 0);
 
             try {
-                // Зчитуємо значення атрибутів з XML, якщо вони є, або використовуємо значення за замовчуванням
+                // Read the attribute values from XML, if they exist, or use the default values
                 int progressColor = typedArray.getColor(R.styleable.LoadingImageView_progressColor, Color.BLUE);
                 float progressThickness = typedArray.getDimension(R.styleable.LoadingImageView_progressThickness, 10);
                 int crossColor = typedArray.getColor(R.styleable.LoadingImageView_crossColor, Color.RED);
                 float crossThickness = typedArray.getDimension(R.styleable.LoadingImageView_crossThickness, 8);
 
-                // Налаштування пензля для прогрес-бару
+                // Setting the brush for the progress bar
                 progressPaint = new Paint();
-                progressPaint.setColor(progressColor); // Встановлюємо колір прогрес-бару
-                progressPaint.setStyle(Paint.Style.STROKE); // Стиль малювання - лише контур
-                progressPaint.setStrokeWidth(progressThickness); // Товщина лінії прогрес-бару
-                progressPaint.setAntiAlias(true); // Включаємо згладжування для кращого вигляду ліній
-                progressPaint.setStrokeCap(Paint.Cap.ROUND); // Круглі кінці лінії для м'якших переходів
+                progressPaint.setColor(progressColor); // Setting the color of the progress bar
+                progressPaint.setStyle(Paint.Style.STROKE); // Drawing style - outline only
+                progressPaint.setStrokeWidth(progressThickness); // Progress bar line thickness
+                progressPaint.setAntiAlias(true); // Enabling anti-aliasing for better line appearance
+                progressPaint.setStrokeCap(Paint.Cap.ROUND); // Round line ends for smoother transitions
 
-                // Налаштування пензля для хрестика (кнопка скасування)
+                // Setting the brush for the cross (undo button)
                 crossPaint = new Paint();
-                crossPaint.setColor(crossColor); // Встановлюємо колір хрестика
-                crossPaint.setStyle(Paint.Style.STROKE); // Стиль малювання - лише контур
-                crossPaint.setStrokeWidth(crossThickness); // Товщина лінії хрестика
-                crossPaint.setAntiAlias(true); // Включаємо згладжування ліній для кращого вигляду
+                crossPaint.setColor(crossColor); // Setting the color of the cross
+                crossPaint.setStyle(Paint.Style.STROKE); // Drawing style - only outline
+                crossPaint.setStrokeWidth(crossThickness); // Cross line thickness
+                crossPaint.setAntiAlias(true); // Enable anti-aliasing for better appearance
 
             } finally {
-                // Вивільняємо ресурси, пов'язані з TypedArray
+                // Free resources associated with TypedArray
                 typedArray.recycle();
             }
         }
 
-        // Ініціалізація прямокутника для прогресу
-        rectF = new RectF(); // Створюємо новий об'єкт RectF, який буде використовуватися для малювання прогрес-бару
+        // Initialize rectangle for progress
+        rectF = new RectF(); // Create a new RectF object that will be used to draw the progress bar
     }
 
     /**
-     * Встановлення рівня прогресу (0-100).
-     * @param progress значення прогресу
+     * Set the progress level (0-100).
+     * @param progress progress value
      */
     public void setProgress(int progress) {
         this.progress = Math.max(0, Math.min(progress, 100));
         showCancelButton = (progress > 0 && progress < 100);
 
         if (progress == 100) {
-            progressPaint.setAlpha(0); // Приховуємо індикатор
+            progressPaint.setAlpha(0); // Hide the indicator
             showCancelButton = false;
         } else {
             progressPaint.setAlpha(255);
         }
-        invalidate(); // Викликаємо перерисовку
+        invalidate(); // Invoke repaint
     }
 
     /**
-     * Встановлення слухача на кнопку скасування.
-     * @param listener об'єкт, що реалізує OnCancelListener
+     * Set a listener for the cancel button.
+     * @param listener an object that implements OnCancelListener
      */
     public void setOnCancelListener(OnCancelListener listener) {
         this.cancelListener = listener;
     }
 
     /**
-     * Малює компонент на Canvas.
+     * Draws a component on the Canvas.
      */
     @Override
     protected void onDraw(Canvas canvas) {
@@ -152,7 +152,7 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Малює хрестик кнопки скасування.
+     * Draws the cross for the cancel button.
      */
     private void drawCancelButton(Canvas canvas, int width, int height) {
         int size = Math.min(width, height) / 6;
@@ -164,7 +164,7 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Обробляє дотики користувача.
+     * Handles user touches.
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -175,7 +175,7 @@ public class LoadingImageView extends ShapeableImageView {
             int cx = width / 2;
             int cy = height / 2;
 
-            // Перевіряємо, чи натиснуто на хрестик
+            // Check if the cross was clicked
             if (event.getX() > cx - size && event.getX() < cx + size &&
                     event.getY() > cy - size && event.getY() < cy + size) {
 
@@ -189,7 +189,7 @@ public class LoadingImageView extends ShapeableImageView {
     }
 
     /**
-     * Інтерфейс для обробки натискання на кнопку скасування.
+     * Interface for handling the cancel button click.
      */
     public interface OnCancelListener {
         void onCancel();

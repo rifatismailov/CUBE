@@ -1,7 +1,6 @@
-package com.example.folder.dialogwindows;
+package com.example.folder.explorer;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -11,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,8 +20,8 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.folder.FileData;
 import com.example.folder.R;
-import com.example.folder.file.FileDetect;
 import com.example.folder.file.Folder;
 import com.example.folder.upload.FileEncryption;
 
@@ -40,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Клас Open відповідає за відображення діалогового вікна, яке дозволяє
  * користувачеві переглядати файли та директорії, а також завантажувати файли на сервер.
  */
-public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClickListener {
+public class FileExplorer extends Dialog implements AdapterView.OnItemClickListener {
     private static final String ALGORITHM = "AES";
 
     private final Context context;
@@ -60,9 +58,9 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
      * Конструктор класу Open.
      *
      * @param context   Контекст, у якому працює діалог.
-     * @param senderKey
+     * @param senderKey Ключ відправника.
      */
-    public FileExplorerDialog(Context context, String serverUrl, String senderKey) {
+    public FileExplorer(Context context, String serverUrl, String senderKey) {
         super(context);
         this.directory = DIR;
         this.context = context;
@@ -108,10 +106,8 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
 
             displayDirectoryContents(directory);
         } catch (Resources.NotFoundException e) {
-            Log.e("showDialog", "Resource not found: " + e.getMessage());
             Toast.makeText(context, "Resource not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
         } catch (Exception e) {
-            Log.e("showDialog", "Unexpected error: " + e.getMessage());
             Toast.makeText(context, "Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
@@ -199,7 +195,7 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
             directory = selectedPath;
             displayDirectoryContents(directory);
         } else {
-            Log.e("onItemClick", "Невідомий тип: " + selectedPath);
+            Log.e("FileExplorer", "Невідомий тип: " + selectedPath);
         }
     }
 
@@ -221,7 +217,7 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
                 // Шифруємо файл
                 fileEncryption.fileEncryption();
             } catch (Exception e) {
-                Log.e("uploadFile", "Помилка завантаження файлу", e);
+                Log.e("FileExplorer", "Помилка завантаження файлу", e);
             }
         }).start();
     }
@@ -229,11 +225,10 @@ public class FileExplorerDialog extends Dialog implements AdapterView.OnItemClic
 
     /**
      * Закриття діалогового вікна та оновлення інформації у батьківському компоненті.
+     * @param encFile зашифрований файл
      */
-
     public void onFinish(String encFile) {
-        FileDetect fileDetect = new FileDetect();
-        folder.addFile(messageId, directory + "/" + fileName, encFile, fileDetect.getFileHash(directory + "/" + fileName, "SHA-256"));
+        folder.addFile(messageId, directory + "/" + fileName, encFile, FileData.getFileHash(directory + "/" + fileName, "SHA-256"));
         dismiss();
     }
 }

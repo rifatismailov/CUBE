@@ -26,21 +26,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Адаптер для відображення списку контактів у ListView.
+ * Adapter for displaying a list of contacts in a ListView.
  */
 public class ContactAdapter extends ArrayAdapter<ContactData> {
-    private final List<ContactData> contactList; // Список контактів
-    private final Context mContext; // Контекст застосунку
-    private final ContactInterface contactInterface; // Інтерфейс для обробки натискань
-    private ContactData contactData; // Поточний контакт
-    private final int layout; // Ідентифікатор макету
+    private final List<ContactData> contactList; // List of contacts
+    private final Context mContext; // Application context
+    private final ContactInterface contactInterface; // Interface for handling clicks
+    private ContactData contactData; // Current contact
+    private final int layout; // Layout identifier
 
     /**
-     * Конструктор адаптера.
+     * Adapter constructor.
      *
-     * @param context      Контекст застосунку
-     * @param layout       Макет елемента списку
-     * @param contactList  Список контактів
+     * @param context Application context
+     * @param layout List item layout
+     * @param contactList List of contacts
      */
     public ContactAdapter(@NonNull Context context, int layout, List<ContactData> contactList) {
         super(context, layout, contactList);
@@ -51,12 +51,12 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
     }
 
     /**
-     * Метод для отримання вигляду елемента списку.
+     * Method for getting the layout of a list item.
      *
-     * @param position  Позиція елемента у списку
-     * @param view      Існуючий вигляд (може бути null)
-     * @param parent    Батьківський контейнер
-     * @return          Заповнений вигляд елемента списку
+     * @param position The position of the item in the list
+     * @param view The existing view (may be null)
+     * @param parent The parent container
+     * @return The filled view of the list item
      */
     @NonNull
     @SuppressLint({"SuspiciousIndentation", "SetTextI18n"})
@@ -72,18 +72,18 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
         ColorfulDotsView rPublicKey = view.findViewById(R.id.rPublicKey);
         ColorfulDotsView receiverKey = view.findViewById(R.id.receiverKey);
 
-        // Оновлення статусу контакту
+        // Update contact status
         if (contactData.getStatusContact() != null) {
             image.updateStatusColor(contactData.getStatusContact());
         }
 
-        // Встановлення типу повідомлення та тексту
+        // Set message type and text
         if (contactData.getMessageType() != null) {
             messageType.setImageResource(GetFileIcon.getIcon(contactData.getMessageType()));
             message.setText(contactData.getMessage());
         }
 
-        // Оновлення прогресу (якщо є)
+        // Update progress (if any)
         if (contactData.getProgress() > 0) {
             image.setProgress(contactData.getProgress());
         }
@@ -91,10 +91,10 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
             image.clearProgress();
         }
 
-        // Завантаження зображення контакту або створення QR-коду
+        // Loading contact image or creating QR code
         if (contactData.getAccountImageUrl() != null && !contactData.getAccountImageUrl().isEmpty()) {
             BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 2; // Зменшення розміру
+            options.inSampleSize = 2; // Reducing size
             Bitmap bitmap = BitmapFactory.decodeFile(contactData.getAccountImageUrl(), options);
             image.setImageBitmap(bitmap);
         } else {
@@ -106,20 +106,20 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
             image.setImageBitmap(QRCode.getQRCode(jsonData, contactData.getName().substring(0, 2)));
         }
 
-        // Встановлення текстових значень
+        // Setting text values
         userName.setText(contactData.getName() + " " + contactData.getLastName());
         idNumber.setText(contactData.getId());
 
-        // Обробка ключів безпеки
+        // Handling security keys
         List<String> chunksPublicKey = splitHash(Encryption.getHash(contactData.getReceiverPublicKey()), 10);
         rPublicKey.setHashes(chunksPublicKey);
         List<String> chunksReceiverKey = splitHash(Encryption.getHash(contactData.getReceiverKey()), 10);
         receiverKey.setHashes(chunksReceiverKey);
 
-        // Обробка кліку по зображенню контакту
+        // Handling clicks on contact image
         image.setOnClickListener(view1 -> contactInterface.onImageClickContact(position));
 
-        // Відображення розміру повідомлення
+        // Display message size
         messageSize.setText(contactData.getMessageSize());
         if (messageSize.getText().toString().isEmpty()) {
             messageSize.setVisibility(View.GONE);
@@ -131,10 +131,10 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
     }
 
     /**
-     * Оновлює прогрес для конкретного контакту в списку.
+     * Updates the progress for a specific contact in the list.
      *
-     * @param position Позиція контакту
-     * @param progress Новий рівень прогресу
+     * @param position The position of the contact
+     * @param progress The new progress level
      */
     public void setProgressForPosition(int position, int progress) {
         if (position >= 0 && position < contactList.size()) {
@@ -145,11 +145,11 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
     }
 
     /**
-     * Розбиває хеш на частини заданого розміру.
+     * Splits the hash into chunks of the specified size.
      *
-     * @param hash      Хеш-рядок
-     * @param chunkSize Розмір кожної частини
-     * @return Список частин хешу
+     * @param hash The hash string
+     * @param chunkSize The size of each chunk
+     * @return A list of hash chunks
      */
     public List<String> splitHash(String hash, int chunkSize) {
         List<String> chunks = new ArrayList<>();

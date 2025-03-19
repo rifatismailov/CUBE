@@ -34,7 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cube.databinding.ActivityChatBinding;
 import com.example.database_cube.DatabaseHelper;
-import com.example.folder.dialogwindows.FileExplorerDialog;
+import com.example.folder.explorer.FileExplorer;
 import com.example.folder.file.Folder;
 import com.example.folder.download.Downloader;
 import com.example.folder.file.FileOMG;
@@ -217,17 +217,19 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 binding.messageBox.setText("");
             }
         });
-        String serverUrl = new UrlBuilder.Builder()
-                .setProtocol("http")
-                .setIp(fileServerIP)
-                .setPort(fileServerPort)
-                .setDirectory("/api/files/upload")
-                .build()
-                .buildUrl();
+
         binding.attachmentBtn.setOnClickListener(v -> {
-            FileExplorerDialog inputDialog = new FileExplorerDialog(this, serverUrl, senderKey);
+            String serverUrl = new UrlBuilder.Builder()
+                    .setProtocol("http")
+                    .setIp(fileServerIP)
+                    .setPort(fileServerPort)
+                    .setDirectory("/api/files/upload")
+                    .build()
+                    .buildUrl();
+            FileExplorer inputDialog = new FileExplorer(this, serverUrl, senderKey);
             inputDialog.show();
         });
+
         binding.imageAccount.setOnClickListener(view -> {
             String jsonData = new UserSetting.Builder()
                     .setId(receiverId)
@@ -236,6 +238,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     .build().toJson("userId", "name", "lastName").toString();
             new QR(this, jsonData, accountImageUrl).show();
         });
+
         binding.camera.setOnClickListener(view -> clearMessage());
     }
 
@@ -374,25 +377,19 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             FileData fileData;
             String fileName = new File(url).getName();
             String messageTxt = binding.messageBox.getText().toString();
+
             if (!messageTxt.isEmpty()) {
                 binding.messageBox.setText("");
             }
-            if (url.endsWith(".jpg") ||
-                    url.endsWith(".jpeg") ||
-                    url.endsWith(".png") ||
-                    url.endsWith(".webp") ||
-                    url.endsWith(".bmp") ||
-                    url.endsWith(".gif") ||
-                    url.endsWith(".heic") ||
-                    url.endsWith(".heif") ||
-                    url.endsWith(".tiff") ||
-                    url.endsWith(".tif")) {
+
+            if (url.matches(".*\\.(jpg|jpeg|png|webp|bmp|gif|heic|heif|tiff|tif)$")) {
                 fileData = new FileData().convertImage(url);
                 message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
                 fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             }
+
             message.setFileName(fileName);
             message.setFileSize(fileData.getFileSize(new File(url)));
             message.setTypeFile(fileData.getFileType(new File(url)));
@@ -402,7 +399,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             addMessageFile(message, encFile);
 
         } catch (Exception e) {
-            Log.e("ChatActivity", "Помилка під час додовання файлу :" + e);
+            Log.e("ChatActivity", "Error adding file :" + e);
         }
     }
 
@@ -452,7 +449,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 });
 
             } catch (Exception e) {
-                Log.e("ChatActivity", "Помилка під час відкриття файлу: " + e);
+                Log.e("ChatActivity", "Error opening file: " + e);
             }
         });
     }
@@ -499,14 +496,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 if (message.getMessageId().equals(currentMessage.getMessageId())) {
                     // Перевірка хешу повідомлення на дублювання
                     if (currentMessage.getHash_m().equals(message.getHash_m())) {
-                        Log.e("ChatActivity", message.getHash_m()+" Hash: " +currentMessage.getHash_m());
                         return; // Повідомлення дубльоване, виходимо з методу
                     }
                     // Оновлення існуючого повідомлення
                     manager.updateMessage(message);
                     adapter.notifyItemChanged(i);
                     messageExists = true;
-                    Log.e("ChatActivity", "Change message: " + message.getMessage());
                     break;
                 }
             }
@@ -516,7 +511,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setReceiverId(receiverId);
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
-                Log.e("ChatActivity", "message: " + message.getMessage());
                 // Оновлення списку за допомогою DiffUtil
                 DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
                 messages.clear();
@@ -527,7 +521,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 });
             }
         } catch (Exception e) {
-            Log.e("ChatActivity", "Помилка під час отримання повідомлення: " + e);
+            Log.e("ChatActivity", "Error while receiving message: " + e);
         }
     }
 
@@ -575,7 +569,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
 
         } catch (Exception e) {
-            Log.e("ChatActivity", "Помилка під час отримання повідомлення з файлом: " + e);
+            Log.e("ChatActivity", "Error while receiving message with file: " + e);
         }
     }
 
@@ -598,14 +592,21 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             for (int i = 0; i < messages.size(); i++) {
                 Message message = messages.get(i);
                 if (message.getMessageId().equals(messageId)) {
-                    message.setMessageStatus(messageStatus);
-                    manager.updateMessage(message);
+                    if(message.getMessageStatus()!=null) {
+                        if (!message.getMessageStatus().equals("received")) {
+                            message.setMessageStatus(messageStatus);
+                            manager.updateMessage(message);
+                        }
+                    }else {
+                        message.setMessageStatus(messageStatus);
+                        manager.updateMessage(message);
+                    }
 
                     // Перевірка коректності адаптера
                     if (adapter != null) {
                         adapter.notifyItemChanged(i); // Оновлюємо тільки змінений елемент
                     } else {
-                        Log.e("ChatActivity", "Адаптер дорівнює NULL. Unable to notify.");
+                        Log.e("ChatActivity", "Adapter is NULL. Unable to notify");
                     }
                     break;
                 }
@@ -632,8 +633,6 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                             adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                         }
                         message.setProgress(progress);
-                        Log.e("progress", "[progress > ] " + progress);
-
                         adapter.notifyItemChanged(i); // Оновлюємо лише один елемент
                         break; // Завершуємо цикл, оскільки повідомлення знайдено
                     }

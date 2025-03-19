@@ -8,9 +8,8 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.folder.FileData;
 import com.example.folder.file.Folder;
-import com.example.folder.file.FileDeletion;
-import com.example.folder.file.FileDetect;
 import com.example.folder.file.FileOMG;
 
 import java.io.File;
@@ -112,18 +111,12 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
     @Override
     public void setProgress(int progress) {
         // Оновлюємо прогрес у головному потоці
-        if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, ""));
-            Log.e("progress", "[progress ] " + progress);
-
-        }
+        setProgress(positionId, progress, "");
     }
 
     @Override
     public void showDetails(String info) {
-        if (context instanceof Activity) {
-            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, 0, info));
-        }
+        setProgress(positionId, 0, info);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -134,7 +127,6 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
                 FileDecryption fileDecryption = new FileDecryption(this, context, positionId);
                 SecretKey secretKey = new SecretKeySpec(downloaderHandler.getKey(positionId).getBytes(), "AES");
                 decryptedFileName = fileDecryption.getDecFile(new File(directory + "/" + fileName), secretKey);
-                Log.e("Downloader", "decryptedFileName " + decryptedFileName);
                 fileDecryption.fileDecryption();
             } else {
                 Log.e("Downloader", "відсутній ключ для розшифровці файлу");
@@ -144,16 +136,20 @@ public class Downloader implements FileDownload.DownloadHandler, FileDecryption.
         }
     }
 
+    private void setProgress(String positionId, int progress, String info) {
+        if (context instanceof Activity) {
+            ((Activity) context).runOnUiThread(() -> fileOMG.setProgressShow(positionId, progress, info));
+        }
+    }
+
     @Override
     public void stopDecryption() {
         try {
             new Handler().postDelayed(() -> {
-                FileDetect fileDetect = new FileDetect();
-                folder.updateItem(position, positionId, decryptedFileName, fileDetect.getFileHash(decryptedFileName, "SHA-256"));
+                folder.updateItem(position, positionId, decryptedFileName, FileData.getFileHash(decryptedFileName, "SHA-256"));
             }, 1);
-            Log.e("Downloader", "Decryption of file " + directory + "/" + fileName + " to file > " + decryptedFileName);
             //Видаляємо шифрований файл щоб не було накопичування
-            FileDeletion.deleteFile(context, directory + "/" + fileName);
+            FileData.deleteFile(context, directory + "/" + fileName);
         } catch (Exception e) {
             Log.e("Downloader", "Помилка при оновленні інформації про розшифрований файл", e);
         }

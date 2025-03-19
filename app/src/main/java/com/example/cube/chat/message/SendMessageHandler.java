@@ -44,7 +44,7 @@ public class SendMessageHandler {
     @SuppressLint("SetTextI18n")
     public void setMessage(SentViewHolder viewHolder, Message message) {
         // Add text change listener for the message
-        viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
+        viewHolder.binding.message.addTextChangedListener(new Watcher());
 
         switch (message.getCheck()) {
             case Image:
@@ -262,12 +262,17 @@ public class SendMessageHandler {
             viewHolder.binding.messageNotifier.setMessage(message.getMessageStatus());
             int color = ContextCompat.getColor(context, R.color.light_notifier_one);
             viewHolder.binding.messageNotifier.setBackgroundColor(color);
-        } else   if ("received".equals(message.getMessageStatus())) {
+        } else if ("delivered".equals(message.getMessageStatus())) {
             viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
             viewHolder.binding.messageNotifier.setMessage(message.getMessageStatus());
             int color = ContextCompat.getColor(context, R.color.light_notifier_one);
             viewHolder.binding.messageNotifier.setBackgroundColor(color);
-        }else {
+        }  else if ("received".equals(message.getMessageStatus())) {
+            viewHolder.binding.messageNotifier.setVisibility(View.VISIBLE);
+            viewHolder.binding.messageNotifier.setMessage(message.getMessageStatus());
+            int color = ContextCompat.getColor(context, R.color.light_notifier_one);
+            viewHolder.binding.messageNotifier.setBackgroundColor(color);
+        } else {
             viewHolder.binding.messageNotifier.setVisibility(View.GONE);
         }
     }

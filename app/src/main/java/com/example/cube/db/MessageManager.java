@@ -4,14 +4,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
 
 import com.example.cube.chat.message.Message;
 import com.example.cube.control.Check;
 import com.example.cube.control.Side;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,7 +19,7 @@ import java.util.List;
  */
 public class MessageManager {
 
-    private SQLiteDatabase database;
+    private final SQLiteDatabase database;
 
     private static final String TABLE_MESSAGES = "messages";
     private static final String COLUMN_SENDER = "sender";
@@ -43,41 +41,41 @@ public class MessageManager {
     private static final String COLUMN_DATE_CREATE = "data_create";
 
     /**
-     * Конструктор класу MessageManager.
+     * Constructor of the MessageManager class.
      *
-     * @param database SQLiteDatabase об’єкт, який використовується для зв’язку з базою даних.
+     * @param database SQLiteDatabase object used to connect to the database.
      */
     public MessageManager(SQLiteDatabase database) {
         this.database = database;
     }
 
     /**
-     * Очищає таблицю повідомлень.
+     * Clears the message table.
      */
     public void clearMessagesTable() {
         database.execSQL("DELETE FROM " + TABLE_MESSAGES);
     }
 
     /**
-     * Додає нове повідомлення до бази даних.
+     * Adds a new message to the database.
      *
-     * @param message Об’єкт Message, який містить інформацію про повідомлення.
+     * @param message Message object containing information about the message.
      */
     public void addMessage(Message message) {
         ContentValues values = new ContentValues();
 
-        // Додавання спільних полів
+        // Add shared fields
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSenderId());
         values.put(COLUMN_RECEIVER, message.getReceiverId());
         values.put(COLUMN_MESSAGE, message.getMessage());
 
-        // Визначення типу повідомлення
+// Determine the message type
         switch (message.getCheck()) {
-            case Message: // Для текстового повідомлення
+            case Message: // For a text message
                 break;
 
-            case File: // Для повідомлення з файлом
+            case File: // For a message with a file
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
@@ -93,7 +91,7 @@ public class MessageManager {
                 }
                 break;
 
-            case Image: // Для повідомлення із зображенням
+            case Image: // For a message with a picture
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
@@ -117,31 +115,28 @@ public class MessageManager {
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
         values.put(COLUMN_TIMESTAMP, message.getTimestamp());
-        // буває дублювання та якщо воно є просто перезаписуємо
+        // there is duplication and if there is, we simply overwrite it
         database.insertWithOnConflict(TABLE_MESSAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 
         //database.insert(TABLE_MESSAGES, null, values);
     }
 
     /**
-     * Видаляє повідомлення за ID отримувача.
+     * Deletes messages by recipient ID.
      *
-     * @param receiverId ID отримувача.
-     * @return Кількість видалених записів.
+     * @param receiverId The recipient ID.
      */
-    public int deleteMessagesByReceiverId(String receiverId) {
-        return database.delete(TABLE_MESSAGES, COLUMN_RECEIVER + " = ?", new String[]{receiverId});
+    public void deleteMessagesByReceiverId(String receiverId) {
+        database.delete(TABLE_MESSAGES, COLUMN_RECEIVER + " = ?", new String[]{receiverId});
     }
 
     /**
-     * Оновлює повідомлення в базі даних.
+     * Updates messages in the database.
      *
-     * @param message Об’єкт Message, який містить оновлені дані.
-     * @return Кількість оновлених записів.
+     * @param message A Message object containing the updated data.
      */
-    public int updateMessage(Message message) {
+    public void updateMessage(Message message) {
         ContentValues values = new ContentValues();
-        Log.e("Listener", "Id " + message.getMessageId());
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSenderId());
         values.put(COLUMN_RECEIVER, message.getReceiverId());
@@ -151,7 +146,7 @@ public class MessageManager {
             case Message:
                 break;
 
-            case File: // Для повідомлення з файлом
+            case File: // For a message with a file
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
@@ -167,7 +162,7 @@ public class MessageManager {
                 }
                 break;
 
-            case Image: // Для повідомлення із зображенням
+            case Image: // For a message with a picture
                 if (message.getUrl() != null && !message.getUrl().toString().isEmpty()) {
                     values.put(COLUMN_SELECTED_URL, message.getUrl().toString());
                     values.put(COLUMN_FILE_NAME, message.getFileName());
@@ -190,18 +185,16 @@ public class MessageManager {
         values.put(COLUMN_SIDE, message.getSide().toString());
         values.put(COLUMN_CHECK, message.getCheck().toString());
         values.put(COLUMN_STATUS, message.getMessageStatus());
-
         values.put(COLUMN_TIMESTAMP, message.getTimestamp());
-        Log.e("Listener", "Time  " + message.getTimestamp());
 
-        return database.update(TABLE_MESSAGES, values, COLUMN_MESSAGE_ID + " = ?", new String[]{message.getMessageId()});
+        database.update(TABLE_MESSAGES, values, COLUMN_MESSAGE_ID + " = ?", new String[]{message.getMessageId()});
     }
 
     /**
-     * Отримує список повідомлень за ID отримувача.
+     * Gets a list of messages by recipient ID.
      *
-     * @param receiverId ID отримувача.
-     * @return Список об’єктів Message.
+     * @param receiverId The recipient ID.
+     * @return A list of Message objects.
      */
     public List<Message> getMessagesByReceiverId(String receiverId) {
         List<Message> messages = new ArrayList<>();
@@ -238,8 +231,6 @@ public class MessageManager {
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
                 message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-                Log.e("Listener", "Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-
                 messages.add(message);
             } while (cursor.moveToNext());
         }
@@ -248,10 +239,10 @@ public class MessageManager {
         return messages;
     }
     /**
-     * Отримує останнє повідомлення за ID отримувача.
+     * Gets the last message by recipient ID.
      *
-     * @param receiverId ID отримувача.
-     * @return Останнє повідомлення або null, якщо немає повідомлень.
+     * @param receiverId The recipient ID.
+     * @return The last message or null if there are no messages.
      */
     public Message getLastMessageByReceiverId(String receiverId) {
         List<Message> messages = new ArrayList<>();
@@ -288,11 +279,10 @@ public class MessageManager {
                 message.setCheck(Check.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHECK))));
                 message.setMessageStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
                 message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-                Log.e("Listener", "Time read " + cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
-
                 messages.add(message);
             } while (cursor.moveToNext());
         }
+        assert cursor != null;
         cursor.close();
         return messages.get(messages.size()-1);
     }

@@ -1,21 +1,21 @@
 package com.example.cube.notification;
 
 public class NotificationLogger {
-    private String clas;
+    private String info;
     private String log;
 
-    public NotificationLogger(String clas, String log) {
-        this.clas = clas;
+    public NotificationLogger(String info, String log) {
+        this.info = info;
         this.log = log;
     }
 
 
-    public String getClas() {
-        return clas;
+    public String getInfo() {
+        return info;
     }
 
-    public void setClas(String clas) {
-        this.clas = clas;
+    public void setInfo(String info) {
+        this.info = info;
     }
 
     public String getLog() {

@@ -8,29 +8,29 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
- * Клас BundleProcessor обробляє дані з переданого Bundle.
- * Він витягує інформацію про відправника, одержувача та ключі шифрування.
+ * The BundleProcessor class processes data from the passed Bundle.
+ * It extracts information about the sender, recipient, and encryption keys.
  */
 public class BundleProcessor {
-    private String senderId; // ID відправника
-    private String receiverName; // Ім'я одержувача
-    private String receiverLastName; // Прізвище одержувача
-    private String receiverId; // ID одержувача
-    private String receiverStatus; // Статус одержувача
-    private KeyGenerator.RSA keyGenerator; // Генератор ключів RSA
-    private String senderKey; // Ключ відправника
-    private String receiverKey; // Ключ одержувача
-    private PublicKey publicKey; // Публічний ключ відправника
-    private PrivateKey privateKey; // Приватний ключ відправника
-    private PublicKey receiverPublicKey; // Публічний ключ одержувача
-    private String avatarImageUrl; // URL аватарки
-    private String accountImageUrl; // URL зображення профілю
-    private String fileServerIP; // IP сервера для файлів
-    private String fileServerPort; // Порт сервера для файлів
+    private String senderId; // Sender ID
+    private String receiverName; // Recipient First Name
+    private String receiverLastName; // Recipient Last Name
+    private String receiverId; // Recipient ID
+    private String receiverStatus; // Recipient Status
+    private final KeyGenerator.RSA keyGenerator; // RSA Key Generator
+    private String senderKey; // Sender Key
+    private String receiverKey; // Recipient Key
+    private PublicKey publicKey; // Sender Public Key
+    private PrivateKey privateKey; // Sender Private Key
+    private PublicKey receiverPublicKey; // Recipient Public Key
+    private String avatarImageUrl; // Avatar URL
+    private String accountImageUrl; // Profile Image URL
+    private String fileServerIP; // File Server IP
+    private String fileServerPort; // File Server Port
 
     /**
-     * Конструктор класу, приймає Bundle та обробляє його вміст.
-     * @param bundle Переданий об'єкт Bundle
+     * Class constructor, accepts a Bundle and processes its contents.
+     * @param bundle The passed Bundle object
      */
     public BundleProcessor(Bundle bundle) {
         keyGenerator = new KeyGenerator.RSA();
@@ -38,8 +38,8 @@ public class BundleProcessor {
     }
 
     /**
-     * Метод для обробки Bundle та витягування необхідних даних.
-     * @param bundle Переданий об'єкт Bundle
+     * Method to process the Bundle and extract the required data.
+     * @param bundle The passed Bundle object
      */
     private void processBundle(Bundle bundle) {
         try {
@@ -71,11 +71,11 @@ public class BundleProcessor {
             fileServerIP = bundle.getString(FIELD.FILE_SERVER_IP.getFIELD());
             fileServerPort = bundle.getString(FIELD.FILE_SERVER_PORT.getFIELD());
         } catch (Exception e) {
-            throw new RuntimeException("Помилка при обробці Bundle", e);
+            throw new RuntimeException("Error processing Bundle", e);
         }
     }
 
-    // Гетери для отримання оброблених даних
+    // Getters for receiving processed data
     public String getSenderId() { return senderId; }
     public String getReceiverName() { return receiverName; }
     public String getReceiverLastName() { return receiverLastName; }

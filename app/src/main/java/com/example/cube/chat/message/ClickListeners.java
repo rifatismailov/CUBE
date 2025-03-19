@@ -1,6 +1,8 @@
 package com.example.cube.chat.message;
 
 import android.content.Context;
+
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,18 +16,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Клас ClickListeners відповідає за обробку натискань на елементи повідомлення
- * у RecyclerView. Він налаштовує обробники подій для відправлених та отриманих
- * повідомлень, включаючи взаємодію з текстом, зображеннями та файлами.
+ * The ClickListeners class is responsible for handling clicks on message items
+ * in the RecyclerView. It configures event handlers for sent and received
+ * messages, including interaction with text, images, and files.
  */
 public class ClickListeners {
 
     /**
-     * Встановлює обробники подій для конкретного елемента списку повідомлень.
+     * Sets event handlers for a specific message list item.
      *
-     * @param context Контекст додатка.
-     * @param holder  ViewHolder, який містить елемент повідомлення.
-     * @param message Об'єкт повідомлення, що містить інформацію.
+     * @param context The application context.
+     * @param holder  ViewHolder that contains the message element.
+     * @param message Message object that contains the information.
      */
     void setClickListeners(Context context, RecyclerView.ViewHolder holder, Message message) {
         int position = holder.getLayoutPosition();
@@ -33,69 +35,65 @@ public class ClickListeners {
         if (holder.getClass().equals(SentViewHolder.class)) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
 
-            // Обробник натискання на текст повідомлення
+            // Message text click handler
             viewHolder.binding.message.setOnClickListener(v -> {
-                // Логіка для натискання на повідомлення
+                // Message click logic
             });
 
-            // Обробник натискання на зображення
+            // Image click handler
             viewHolder.binding.image.setOnClickListener(v -> {
-                // Логіка для натискання на зображення
+                // Image click logic
                 Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
 
             });
 
             viewHolder.binding.image.setOnCancelListener(() -> {
-                Toast.makeText(context, "[ Завершення процесу  ] ", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "[ End of process ] ", Toast.LENGTH_LONG).show();
 
             });
-            // Обробник натискання на файл у повідомленні
+            // Handler for clicking on a file in a message
             viewHolder.binding.file.setOnClickListener(v -> {
-                // Логіка для натискання на зображення
+                // Logic for clicking on an image
                 Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
-
             });
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
-
-            // Обробник натискання на текст отриманого повідомлення
+            // Handler for clicking on the text of a received message
             viewHolder.binding.message.setOnClickListener(v -> {
-                // Логіка для натискання на отримане повідомлення
+            // Logic for clicking on a received message
             });
 
-            // Обробник натискання на зображення
+            // Image click handler
             viewHolder.binding.image.setOnClickListener(v -> {
-                // Логіка для натискання на зображення отриманого повідомлення
+            // Logic for clicking on the image of the received message
                 Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
-
             });
 
             viewHolder.binding.image.setOnCancelListener(() -> {
-                Toast.makeText(context, "[ Завершення процесу  ] " + position, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "[ End of process ] " + position, Toast.LENGTH_LONG).show();
 
             });
-            // Обробник натискання на файл у повідомленні
+            // Handler for clicking on a file in a message
             viewHolder.binding.file.setOnClickListener(v -> {
                 if (!message.getUrl().toString().startsWith("http")) {
                     File file = new File(message.getUrl().toString());
                     if (file.exists() && file.isFile()) {
                         Toast.makeText(context, message.getUrl().toString(), Toast.LENGTH_LONG).show();
                     }
-                    // Відкриваємо за допомогою відповідного додатку
+                    // Open using the appropriate application
                 } else {
                     try {
-                        if(message.getMessageStatus().equals("ready")) {
-                            // Отримання URL файлу для завантаження
+                        if (message.getMessageStatus().equals("ready")) {
+                            // Get the URL of the file to download
                             URL url = new URL(message.getUrl().toString());
                             File externalDir = new File(context.getExternalFilesDir(null), "cube");
                             new Downloader(context, url, externalDir, position, message.getMessageId());
-                        }else{
-                            Toast.makeText(context, "Файл ще не готовий для завантаження.\n" +
-                                    " Чекайте отримання статусу готовності для завантаження ", Toast.LENGTH_LONG).show();
-
+                        } else {
+                            Toast.makeText(context, "The file is not ready for download yet.\n" +
+                                    " Wait for the status to be ready to load ", Toast.LENGTH_LONG).show();
                         }
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
+                        Log.e("ClickListeners","error while trying to download file: "+e);
                     }
                 }
             });

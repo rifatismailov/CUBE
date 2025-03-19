@@ -19,8 +19,8 @@ public class Visualization {
     );
     final private TextColor WORKING_METHODS_FIRST = new TextColor(
             Pattern.compile("\\b(read()|write()|tell()|seek()|close()|open()|closed|mode|name|softspace)\\b"),
-                    Color.parseColor("#b3b102")
-            );
+            Color.parseColor("#b3b102")
+    );
 
     final private TextColor HASHTAG = new TextColor(
             Pattern.compile("\\B(\\#[a-zA-Z]+\\b)(?!;)"),
@@ -88,7 +88,7 @@ public class Visualization {
         return colors;
     }
 
-    public class TextColor {
+    public static class TextColor {
         public final Pattern pattern;
         public final int color;
 

@@ -14,13 +14,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
- * MessageMainManager - клас для управління операціями над повідомленнями в базі даних SQLite.
- * Використовується під час отримання повідомлень коли користувач не виконує чат з контактам тоб то
- * активного месенджуваня нема з контактом від якого прийшло повідомлення
- * Цей клас надає методи для додавання, оновлення, видалення та отримання повідомлень з бази даних.
+ * MessageMainManager - a class for managing operations on messages in the SQLite database.
+ * Used when receiving messages when the user is not chatting with contacts, i.e.
+ * there is no active messaging with the contact from whom the message came
+ * This class provides methods for adding, updating, deleting and retrieving messages from the database.
  */
 public class MessageMainManager {
-    private SQLiteDatabase database;
+    private final SQLiteDatabase database;
 
     public static final String TABLE_MESSAGES_MAIN = "messages_main";
     private static final String COLUMN_ID = "id";
@@ -31,39 +31,77 @@ public class MessageMainManager {
 
 
     /**
-     * Конструктор для ініціалізації MessageMainManager екземпляром SQLiteDatabase.
+     * Constructor to initialize MessageMainManager with SQLiteDatabase instance.
      *
-     * База даних @param Екземпляр бази даних для керування контактами.
+     * @param database The database instance to manage contacts.
      */
     public MessageMainManager(SQLiteDatabase database) {
         this.database = database;
     }
 
     /**
-     * Метод для зберігання повідомлень
-     * @param envelope саме повідомлення
+     * Method to store messages
+     *
+     * @param envelope the message itself
      */
-    public void setMessage(Envelope envelope,String time) {
+    public void setMessage(Envelope envelope, String time) {
         try {
+            Log.e("MessageMainManager", "Save or Update Message: " + envelope.getMessageId() + " " + envelope.toJson());
+
             ContentValues values = new ContentValues();
             values.put(COLUMN_ID, envelope.getMessageId());
             values.put(COLUMN_SENDER, envelope.getSenderId());
             values.put(COLUMN_OPERATION, envelope.getOperation());
             values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
             values.put(COLUMN_TIMESTAMP, time);
-            long result = database.insertWithOnConflict(TABLE_MESSAGES_MAIN, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-            Log.e("MessageMainManager", "Insert result: " + result);
+
+            // Перевіряємо, чи вже існує запис з таким ID
+            int rowsUpdated = database.update(TABLE_MESSAGES_MAIN, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
+
+            if (rowsUpdated == 0) {
+                // Якщо запису немає, додаємо новий
+                long result = database.insert(TABLE_MESSAGES_MAIN, null, values);
+                Log.i("MessageMainManager", "Insert result: " + result);
+            } else {
+                Log.i("MessageMainManager", "Message updated successfully: " + envelope.getMessageId());
+            }
 
         } catch (Exception e) {
-            Log.e("MessageMainManager", "Error inserting message: " + e.getMessage());
+            Log.e("MessageMainManager", "Error inserting or updating message: " + e.getMessage());
+        }
+    }
+
+
+    public void setMessageUpdate(Envelope envelope, String time) {
+        try {
+            Log.e("MessageMainManager", "Update Message: " + envelope.getMessageId() + " " + envelope.getMessageStatus());
+
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_SENDER, envelope.getSenderId());
+            values.put(COLUMN_OPERATION, envelope.getOperation());
+            values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
+            values.put(COLUMN_TIMESTAMP, time);
+
+            // Оновлюємо запис за ID
+            int rowsUpdated = database.update(TABLE_MESSAGES_MAIN, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
+
+            if (rowsUpdated > 0) {
+                Log.i("MessageMainManager", "Message updated successfully: " + envelope.getMessageId());
+            } else {
+                Log.w("MessageMainManager", "No message found with ID: " + envelope.getMessageId());
+            }
+
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error updating message: " + e.getMessage());
         }
     }
 
     /**
-     * Метод для отримання кількості повідомлень за контактом
-     * @param senderId відправник
-     * @param operation операція за яким прийшло повідомлення
-     *                  підрахунок робимо коли повідомлення має operation message або file
+     * Method for getting the number of messages by contact
+     *
+     * @param senderId  sender
+     * @param operation operation by which the message arrived
+     *                  we count when the message has the operation message or file
      */
     public int getMessageCountBySenderAndOperation(String senderId, String operation) {
         int count = 0;
@@ -76,7 +114,6 @@ public class MessageMainManager {
             if (cursor.moveToFirst()) {
                 count = cursor.getInt(0);
             }
-            Log.e("MessageMainManager", "Count result: " + count);
         } catch (Exception e) {
             Log.e("MessageMainManager", "Error counting messages: " + e.getMessage());
         } finally {
@@ -88,30 +125,29 @@ public class MessageMainManager {
     }
 
     /**
-     * Метод для отримання повідомлень за контактом
-     * @param senderId відправник
-     *                 повідомлення отримується від старшого до молодшого
+     * Method for receiving messages by contact
+     *
+     * @param senderId sender
+     *                 message is received from oldest to youngest
      */
     public HashMap<String, Envelope> getMessagesByReceiverId(String senderId) {
-        HashMap<String, Envelope> messages = new LinkedHashMap<>(); // Використовуємо LinkedHashMap для збереження порядку
+        HashMap<String, Envelope> messages = new LinkedHashMap<>(); // We use LinkedHashMap to preserve the order
         Cursor cursor = null;
         try {
             String selectQuery = "SELECT * FROM " + TABLE_MESSAGES_MAIN +
                     " WHERE " + COLUMN_SENDER + " = ?" +
-                    " ORDER BY " + COLUMN_TIMESTAMP + " ASC"; // Сортування за зростанням часу
+                    " ORDER BY " + COLUMN_TIMESTAMP + " ASC"; // Sort by increasing time
             cursor = database.rawQuery(selectQuery, new String[]{senderId});
 
             if (cursor.moveToFirst()) {
                 do {
-                    try {
-                        String messageId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
-                        String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
-                        JSONObject jsonObject = new JSONObject(jsonMessage);
-                        Envelope envelope = new Envelope(jsonObject);
-                        messages.put(messageId, envelope);
-                    } catch (Exception e) {
-                        Log.e("MessageMainManager", "Error parsing message: " + e.getMessage());
-                    }
+                    String messageId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                    String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                    JSONObject jsonObject = new JSONObject(jsonMessage);
+                    Envelope envelope = new Envelope(jsonObject);
+                    Log.e("MessageMainManager", "Get Message: " + envelope.getMessageId() + " " + envelope.getMessageStatus());
+
+                    messages.put(messageId, envelope);
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
@@ -124,27 +160,52 @@ public class MessageMainManager {
         return messages;
     }
 
+    public Envelope getMessageById(String messageId) {
+        Envelope envelope = null;
+        Cursor cursor = null;
+        try {
+            String selectQuery = "SELECT * FROM " + TABLE_MESSAGES_MAIN +
+                    " WHERE " + COLUMN_ID + " = ?" +
+                    " ORDER BY " + COLUMN_TIMESTAMP + " DESC LIMIT 1"; // Беремо останнє повідомлення
+
+            cursor = database.rawQuery(selectQuery, new String[]{messageId});
+
+            if (cursor.moveToFirst()) {
+                String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                JSONObject jsonObject = new JSONObject(jsonMessage);
+                envelope = new Envelope(jsonObject);
+            }
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return envelope;
+    }
+
     /**
-     * Метод для видалення повідомлень
-     * @param messageId ідентифікаційним номер повідомлення який буде видалений
+     * Method for deleting messages
      *
+     * @param messageId the identification number of the message to be deleted
      */
     public void deleteMessageById(String messageId) {
         try {
             int deletedRows = database.delete(TABLE_MESSAGES_MAIN, COLUMN_ID + " = ?", new String[]{messageId});
-            Log.e("MessageMainManager", "Deleted rows: " + deletedRows);
+            Log.i("MessageMainManager", "Deleted rows: " + deletedRows);
         } catch (Exception e) {
             Log.e("MessageMainManager", "Error deleting message: " + e.getMessage());
         }
     }
-    /**
-     * Метод для видалення всіх повідомлень
 
+    /**
+     * Method to delete all messages
      */
     public void deleteAllMessages() {
         try {
             int deletedRows = database.delete(TABLE_MESSAGES_MAIN, null, null);
-            Log.e("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
+            Log.i("MessageMainManager", "All messages deleted. Rows affected: " + deletedRows);
         } catch (Exception e) {
             Log.e("MessageMainManager", "Error deleting all messages: " + e.getMessage());
         }

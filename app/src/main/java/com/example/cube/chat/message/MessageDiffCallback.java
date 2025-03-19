@@ -1,22 +1,23 @@
 package com.example.cube.chat.message;
 
 import androidx.recyclerview.widget.DiffUtil;
+
 import java.util.List;
 
 /**
- * Клас {@code MessageDiffCallback} використовується для оптимізованого оновлення списку повідомлень
- * у {@link androidx.recyclerview.widget.RecyclerView}. Він порівнює старий і новий список
- * повідомлень, визначаючи, які елементи змінилися.
+ * The {@code MessageDiffCallback} class is used for optimized updating of the message list
+ * in {@link androidx.recyclerview.widget.RecyclerView}. It compares the old and new list
+ * of messages, determining which elements have changed.
  */
 public class MessageDiffCallback extends DiffUtil.Callback {
     private final List<Message> oldList;
     private final List<Message> newList;
 
     /**
-     * Конструктор для ініціалізації старого та нового списку повідомлень.
+     * Constructor to initialize the old and new message lists.
      *
-     * @param oldList старий список повідомлень
-     * @param newList новий список повідомлень
+     * @param oldList old message list
+     * @param newList new message list
      */
     public MessageDiffCallback(List<Message> oldList, List<Message> newList) {
         this.oldList = oldList;
@@ -24,9 +25,9 @@ public class MessageDiffCallback extends DiffUtil.Callback {
     }
 
     /**
-     * Повертає розмір старого списку.
+     * Returns the size of the old list.
      *
-     * @return кількість елементів у старому списку
+     * @return number of items in the old list
      */
     @Override
     public int getOldListSize() {
@@ -34,9 +35,9 @@ public class MessageDiffCallback extends DiffUtil.Callback {
     }
 
     /**
-     * Повертає розмір нового списку.
+     * Returns the size of the new list.
      *
-     * @return кількість елементів у новому списку
+     * @return number of items in the new list
      */
     @Override
     public int getNewListSize() {
@@ -44,11 +45,11 @@ public class MessageDiffCallback extends DiffUtil.Callback {
     }
 
     /**
-     * Перевіряє, чи два елементи є однаковими за унікальним ідентифікатором повідомлення.
+     * Checks if two items are the same by unique message identifier.
      *
-     * @param oldItemPosition позиція елемента у старому списку
-     * @param newItemPosition позиція елемента у новому списку
-     * @return {@code true}, якщо елементи мають однаковий ідентифікатор, інакше {@code false}
+     * @param oldItemPosition the position of the item in the old list
+     * @param newItemPosition the position of the item in the new list
+     * @return {@code true} if the items have the same ID, otherwise {@code false}
      */
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
@@ -56,11 +57,11 @@ public class MessageDiffCallback extends DiffUtil.Callback {
     }
 
     /**
-     * Перевіряє, чи вміст двох елементів однаковий.
+     * Checks if the contents of two items are the same.
      *
-     * @param oldItemPosition позиція елемента у старому списку
-     * @param newItemPosition позиція елемента у новому списку
-     * @return {@code true}, якщо вміст елементів однаковий, інакше {@code false}
+     * @param oldItemPosition the position of the item in the old list
+     * @param newItemPosition the position of the item in the new list
+     * @return {@code true} if the contents of the items are the same, otherwise {@code false}
      */
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {

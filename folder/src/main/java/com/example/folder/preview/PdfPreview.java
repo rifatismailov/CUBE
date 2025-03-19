@@ -8,13 +8,32 @@ import android.os.ParcelFileDescriptor;
 
 import java.io.File;
 
+/**
+ * Клас для генерації прев'ю з PDF-файлів.
+ */
 public class PdfPreview {
 
+    /**
+     * Отримує прев'ю для вказаної сторінки PDF-документа.
+     *
+     * @param file      PDF-файл, з якого потрібно отримати прев'ю.
+     * @param pageIndex Індекс сторінки (починається з 0).
+     * @param width     Ширина зображення прев'ю.
+     * @param height    Висота зображення прев'ю.
+     * @return Bitmap із зображенням сторінки PDF або null у разі помилки.
+     */
     public static Bitmap getPdfPreview(File file, int pageIndex, int width, int height) {
         try {
             // Отримати дескриптор файлу
             ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
             PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+
+            // Перевірка коректності індексу сторінки
+            if (pageIndex < 0 || pageIndex >= pdfRenderer.getPageCount()) {
+                pdfRenderer.close();
+                fileDescriptor.close();
+                return null;
+            }
 
             // Відкрити сторінку PDF
             PdfRenderer.Page page = pdfRenderer.openPage(pageIndex);
@@ -35,11 +54,9 @@ public class PdfPreview {
             fileDescriptor.close();
 
             return bitmap;
-
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 }

@@ -10,10 +10,7 @@ import android.text.style.ForegroundColorSpan;
 import java.util.regex.Matcher;
 
 public class Watcher implements TextWatcher {
-    Activity activity;
-    public Watcher(Activity activity) {
-        this.activity=activity;
-    }
+
 
     //до изменении текста
     @Override

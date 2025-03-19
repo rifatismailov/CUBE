@@ -26,8 +26,8 @@ import java.util.Objects;
 public class ContactCreator implements View.OnClickListener {
 
     private AlertDialog alertDialog;
-    private Context context;
-    private CreatorOps creatorOps;
+    private final Context context;
+    private final CreatorOps creatorOps;
     private ImageButton qr_code_scanner;
     private LinearLayout save_contact;
     private EditText id;

@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.view.View;
 
 import androidx.core.content.ContextCompat;
@@ -15,9 +14,6 @@ import com.example.cube.chat.holder.ReceiverViewHolder;
 import com.example.cube.visualization.Watcher;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * This class handles the logic for displaying and managing received messages. It takes care of
@@ -46,7 +42,7 @@ public class ReceiverMessageHandler {
      */
     @SuppressLint("SetTextI18n")
     public void setMessage(ReceiverViewHolder viewHolder, Message message) {
-        viewHolder.binding.message.addTextChangedListener(new Watcher((Activity) context));
+        viewHolder.binding.message.addTextChangedListener(new Watcher());
 
         switch (message.getCheck()) {
             case Image:

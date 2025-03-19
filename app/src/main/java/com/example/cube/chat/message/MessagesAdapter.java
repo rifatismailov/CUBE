@@ -22,23 +22,23 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Адаптер для відображення списку повідомлень у RecyclerView.
- * Відповідає за створення та оновлення елементів списку, а також за їхній вигляд.
+ * Adapter for displaying a list of messages in a RecyclerView.
+ * Responsible for creating and updating list items, as well as their appearance.
  */
 public class MessagesAdapter extends RecyclerView.Adapter {
 
-    private Context context;
-    private ArrayList<Message> messages;
-    private HashMap<String, Boolean> expandedStates = new HashMap<>(); // Сховище стану розкриття повідомлень
+    private final Context context;
+    private final ArrayList<Message> messages;
+    private final HashMap<String, Boolean> expandedStates = new HashMap<>(); // Store message expansion state
 
     private static final int ITEM_SENT = 1;
     private static final int ITEM_RECEIVE = 2;
 
     /**
-     * Конструктор адаптера.
+     * Adapter constructor.
      *
-     * @param context  Контекст активності чату.
-     * @param messages Список повідомлень.
+     * @param context The context of the chat activity.
+     * @param messages The list of messages.
      */
     public MessagesAdapter(ChatActivity context, ArrayList<Message> messages) {
         this.context = context;
@@ -46,9 +46,9 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     }
 
     /**
-     * Оновлює список повідомлень з використанням DiffUtil для оптимізації оновлень.
+     * Updates the list of messages using DiffUtil to optimize updates.
      *
-     * @param newMessages Новий список повідомлень.
+     * @param newMessages The new list of messages.
      */
     public void updateMessages(List<Message> newMessages) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newMessages));
@@ -79,43 +79,42 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
-        String messageId = message.getMessageId(); // Отримуємо унікальний ідентифікатор повідомлення
+        String messageId = message.getMessageId(); // Get the unique message identifier
 
         if (holder instanceof SentViewHolder) {
             SentViewHolder viewHolder = (SentViewHolder) holder;
             new SendMessageHandler(context).setMessage(viewHolder, message);
 
-            // Переконайтеся, що всі поля встановлені
+            // Make sure all fields are set
             viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
             viewHolder.binding.file.setText(message.getFileName() != null ? message.getFileName() : "");
 
-            // Встановлюємо видимість полів
+            // Set the visibility of the fields
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
+
             viewHolder.binding.fileLayout.setVisibility(message.getFileName() != null ? View.VISIBLE : View.GONE);
 
         } else {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             new ReceiverMessageHandler(context).setMessage(viewHolder, message);
-            // Переконайтеся, що всі поля встановлені
+            // Make sure all the fields are set
             viewHolder.binding.message.setText(message.getMessage() != null ? message.getMessage() : "");
-            // Встановлюємо видимість полів
+            // Set the visibility of the fields
             viewHolder.binding.messageLayout.setVisibility(message.getMessage() != null ? View.VISIBLE : View.GONE);
             new ReceiverMessageHandler(context).setMessage(viewHolder, message);
 
         }
     }
 
-
     @Override
     public int getItemCount() {
         return messages.size();
     }
 
-
     /**
-     * Додає нове повідомлення та автоматично розгортає його.
+     * Adds a new message and automatically expands it.
      *
-     * @param newMessage Нове повідомлення.
+     * @param newMessage The new message.
      */
     public void addMessage(Message newMessage) {
         messages.add(newMessage);
@@ -124,10 +123,10 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     }
 
     /**
-     * Оновлює повідомлення на певній позиції.
+     * Updates a message at a specific position.
      *
-     * @param position Позиція в списку.
-     * @param message  Оновлене повідомлення.
+     * @param position The position in the list.
+     * @param message The updated message.
      */
     public void updateItem(int position, Message message) {
         try {
@@ -139,9 +138,9 @@ public class MessagesAdapter extends RecyclerView.Adapter {
     }
 
     /**
-     * Видаляє повідомлення на заданій позиції.
+     * Removes the message at the given position.
      *
-     * @param position Позиція повідомлення у списку.
+     * @param position The position of the message in the list.
      */
     public void removeItem(int position) {
         if (position >= 0 && position < messages.size()) {
