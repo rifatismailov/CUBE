@@ -415,15 +415,24 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 if (connectionInfo.getLife().equals("reborn")) {
                         addMessage(message);
                         messageManager.setMessage(envelope);
+                        Log.e("IOService", connectionInfo.getLife() + " JSON message: " + envelope.toJson());
+
                 } else {
-                    if ("ready".equals(envelope.getMessageStatus())) {
-                        Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
-                        saveEnvelope.setMessageStatus(envelope.getMessageStatus());
-                        messageManager.setMessage(saveEnvelope, saveEnvelope.getTime());
-                    } else {
-                        messageManager.setMessage(envelope);
-                    }
+                    Log.e("IOService", envelope.getMessageStatus()+" died JSON : " + envelope.toJson());
+                    messageManager.setMessage(envelope);
+//                    if ("ready".equals(envelope.getMessageStatus())) {
+//                        Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
+//                        saveEnvelope.setMessageStatus(envelope.getMessageStatus());
+//                        messageManager.setMessage(saveEnvelope, saveEnvelope.getTime());
+//                        Log.e("IOService", connectionInfo.getLife() + " ready JSON message: " + envelope.toJson());
+//
+//                    } else {
+//                        messageManager.setMessage(envelope);
+//                        Log.e("IOService", connectionInfo.getLife() + " JSON message: " + envelope.toJson());
+//
+//                    }
                 }
+
 //                if (envelope.getMessageStatus().equals("server")) {
 //                    messageManager.deleteMessageById(envelope.getMessageId());
 //                    messageManager.setMessage(envelope);
@@ -434,6 +443,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
 //                    messageManager.deleteMessageById(envelope.getMessageId());
 //                    messageManager.setMessage(envelope);
 //                }
+
             } catch (JSONException e) {
                 Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
                 Log.e("IOService", "Not a JSON message: " + message);

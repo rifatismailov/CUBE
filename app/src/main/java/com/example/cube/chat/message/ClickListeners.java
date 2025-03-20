@@ -83,15 +83,18 @@ public class ClickListeners {
                     // Open using the appropriate application
                 } else {
                     try {
-                        if (message.getMessageStatus().equals("ready")) {
-                            // Get the URL of the file to download
-                            URL url = new URL(message.getUrl().toString());
-                            File externalDir = new File(context.getExternalFilesDir(null), "cube");
-                            new Downloader(context, url, externalDir, position, message.getMessageId());
-                        } else {
-                            Toast.makeText(context, "The file is not ready for download yet.\n" +
-                                    " Wait for the status to be ready to load ", Toast.LENGTH_LONG).show();
-                        }
+                        URL url = new URL(message.getUrl().toString());
+                        File externalDir = new File(context.getExternalFilesDir(null), "cube");
+                        new Downloader(context, url, externalDir, position, message.getMessageId());
+//                        if (message.getMessageStatus().equals("ready")) {
+//                            // Get the URL of the file to download
+//                            URL url = new URL(message.getUrl().toString());
+//                            File externalDir = new File(context.getExternalFilesDir(null), "cube");
+//                            new Downloader(context, url, externalDir, position, message.getMessageId());
+//                        } else {
+//                            Toast.makeText(context, "The file is not ready for download yet.\n" +
+//                                    " Wait for the status to be ready to load ", Toast.LENGTH_LONG).show();
+//                        }
                     } catch (MalformedURLException e) {
                         Log.e("ClickListeners","error while trying to download file: "+e);
                     }

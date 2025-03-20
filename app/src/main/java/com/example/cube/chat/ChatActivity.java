@@ -389,7 +389,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
             if (url.matches(".*\\.(jpg|jpeg|png|webp|bmp|gif|heic|heif|tiff|tif)$")) {
                 fileData = new FileData().convertImage(url);
-                message = new Message("", Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
+                message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
             } else {
                 fileData = new FileData().convertFilePreviewLocal(fileName, url, has);
                 message = new Message(messageTxt, Uri.parse(url), fileData.getImageBytes(), fileData.getWidth(), fileData.getHeight(), Side.Sender, messageId);
@@ -617,7 +617,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 }
             }
             // Створюємо множину дозволених статусів
-            Set<String> allowedStatuses = new HashSet<>(Arrays.asList("delivered", "received", "server"));
+            Set<String> allowedStatuses = new HashSet<>(Arrays.asList("delivered", "received", "server","ready"));
 
             if (allowedStatuses.contains(messageStatus)) {
                 Message message = new Message();
@@ -663,17 +663,16 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     /**Метод для оповіщення закінчення завантаження файлу на сервер */
     @Override
     public void endProgress(String messageId, String info) {
-        String messageJson = new Envelope.Builder().
-                setSenderId(senderId).
-                setReceiverId(receiverId).
-                setOperation("messageStatus").
-                setMessageStatus("ready").
-                setMessageId(messageId).
-                build().
-                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
-                toString();
-        sendDataBackToActivity(messageJson);
-        Log.e("end", "["+messageId+" ] " + info);
+//        String messageJson = new Envelope.Builder().
+//                setSenderId(senderId).
+//                setReceiverId(receiverId).
+//                setOperation("messageStatus").
+//                setMessageStatus("ready").
+//                setMessageId(messageId).
+//                build().
+//                toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
+//                toString();
+//        sendDataBackToActivity(messageJson);
 
     }
 

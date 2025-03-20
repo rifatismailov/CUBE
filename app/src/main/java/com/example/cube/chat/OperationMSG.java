@@ -64,7 +64,7 @@ public class OperationMSG {
                 message.setFileSize(envelope.getFileSize());
                 message.setTimestamp(envelope.getTime());
                 message.setTypeFile(envelope.getFiletype());
-                message.setDataCreate("------------------");
+                message.setDataCreate("[d].[m].[year] [t]:[m]:[s]");
                 message.setMessageStatus(envelope.getMessageStatus());
                 operableMSG.readMessageFile(message);
                 returnAboutDeliver(message, "delivered_to_user");
