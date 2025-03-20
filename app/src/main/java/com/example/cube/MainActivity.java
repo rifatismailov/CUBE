@@ -424,11 +424,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             Envelope envelope = new Envelope(new JSONObject(save_message));
             if (checkContact(envelope)) {
+                Log.e("MainActivity", "Save Message "+envelope);
+
                 saveMessage(save_message);
                 notificationMessage(envelope);
-            } else {
-                operation.setMessageStatus(envelope);
             }
+//            else {
+//              //  operation.setMessageStatus(envelope);
+//            }
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка збереження повідомлення: " + e);
         }
