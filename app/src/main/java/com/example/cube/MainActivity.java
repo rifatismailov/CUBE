@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void setContact(String id_contact, String name_contact, String lastName_contact) {
         Pair<Boolean, String> result = contactManager.getContactById(id_contact);
         if (result.first) {
-            Toast.makeText(this,"Контакт вже існує: " + result.second,Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Контакт вже існує: " + result.second, Toast.LENGTH_SHORT).show();
         } else {
             // Додаємо новий контакт до списку користувачів
             ContactData newUser = new ContactData(id_contact, name_contact, lastName_contact, "");
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             contacts.put(newUser.getId(), newUser);   // Оновлюємо мапу контактів
             contactManager.setContacts(contacts);// Зберігаємо контакти у базу даних
             request(getContactToJsonArray());// оновлюємо ключ зєднання
-            Toast.makeText(this,"Контакт додано",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Контакт додано", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -165,7 +165,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        contactSelector.setContact("");//обнуляємо контакт для відображення кількості повідомлень у списку не унеможливлення передачі до чат активності так як він не запушений
+        contactSelector.setContact("");
+        //обнуляємо контакт для відображення кількості повідомлень у списку не унеможливлення передачі до чат активності так як він не запушений
         /*З початку Android 13 необхідно запитувати у користувача дозвіл на відображення нотифікацій. Це робиться так:*/
         setContentView(binding.getRoot());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Створюємо директорію, якщо її не існує
         if (!externalDir.exists() && !externalDir.mkdirs()) {
-            Log.e("Downloader", "Не вдалося створити директорію");
+            Log.e("MainActivity", "Не вдалося створити директорію");
         }
 
         String filePath = externalDir + "/SecretKey.key";
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         operation = new Operation(this, messageMainManager);
         manager.readAccount();
-        contactManager = new ContactManager(db,secretKey);
+        contactManager = new ContactManager(db, secretKey);
         registerChatActivityReceiver();
         registerIOServiceReceiver();
         initUserList();
@@ -300,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param data Отримані дані.
      */
     private void receivingData(String data) {
-        if (data.equals("endUser")) {
+        if ("endUser".equals(data)) {
             contactSelector.setContact("");
         } else {
             if (contactSelector.getContactData() != null) {
@@ -334,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             switch (status) {
                 case "delivered_to_user":
-                case "update_to_user":
+                case "update_to_message":
                     sendMessageToService(message);
                     messageMainManager.deleteMessageById(envelope.getMessageId());
                     break;
@@ -720,9 +721,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         FIELD.HANDSHAKE.getFIELD(),
                         FIELD.PUBLIC_KEY.getFIELD(),
                         // відправка публічного ключа отримувачу та чекаємо ключа від нього, після буде автоматично обмін AES ключа
-                        contactData.getPublicKey());
+                        contactData.getPublicKey(), operation.getTime());
             } else {
-                Log.e("MainActivity", "Failed to generate AES key");
                 return;
             }
             //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
@@ -738,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // Якщо в нас ReceiverPublicKey відсутній то ми ще раз відправляємо свій ключ якщо по якимось причинам в нас не пройшов хеншейк.
             // Сервер отримає хеншейк та якщо отримувач ще не відправив свій ключ то він збереже його
             if (contactData.getReceiverPublicKey() == null) {
-                sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+                sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey(), operation.getTime());
                 contactSelector.setContact("");  //Анулюймо контакт так як нам треба отримувати повідомлення якщо вони і будуть йти
             } else {
                 if (contactSelector.getContact() != null && !contactSelector.getContact().isEmpty()) {
@@ -754,7 +754,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(contactData.getReceiverPublicKey());
                         String AES = Encryption.RSA.encrypt(contactData.getSenderKey(), receiverPublicKey);
                         if (AES != null && !AES.isEmpty()) {
-                            sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                            sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES, operation.getTime());
                         } else {
                             Log.e("MainActivity", "Failed to encrypt AES key");
                         }
@@ -824,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         contactData.setPrivateKey(keyGenerator.getPrivateKey());
         String key = KeyGenerator.AES.generateKey(16);
         contactData.setSenderKey(key);
-        sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey());
+        sendHandshake(manager.userSetting().getId(), contactSelector.getContact(), FIELD.HANDSHAKE.getFIELD(), FIELD.PUBLIC_KEY.getFIELD(), contactData.getPublicKey(), operation.getTime());
         contactSelector.setContact("");
         return false;
     }
@@ -959,7 +959,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         } catch (Exception e) {
-            Log.e("MainActivity", " Error " + e);
+            Log.e("MainActivity", "Помилка у методі [addAvatar] " + e);
         }
     }
 
@@ -998,7 +998,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 addPositionID(sender, encryptedFile);
                 fileEncryption.fileEncryption();
             } catch (Exception e) {
-                Log.e("MainActivity", "Помилка під час шифрування файлу " + e);
+                Log.e("MainActivity", "Помилка під час шифрування файлу [uploadFile]" + e);
             }
         }, 1);
     }
@@ -1075,9 +1075,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param nameKey    Назва ключа.
      * @param key        Значення ключа.
      */
-    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key) {
+
+    public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key, String time) {
+
         String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
-        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "", getTime()).toJson().toString());
+        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "", time).toJson().toString());
     }
 
     /**
@@ -1093,7 +1095,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     user.setReceiverPublicKey(publicKey);
                     PublicKey receiverPublicKey = new KeyGenerator.RSA().decodePublicKey(user.getReceiverPublicKey());
                     String AES = Encryption.RSA.encrypt(user.getSenderKey(), receiverPublicKey);
-                    sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES);
+                    sendHandshake(manager.userSetting().getId(), sender, FIELD.KEY_EXCHANGE.getFIELD(), "aes_key", AES, operation.getTime());
                     contactManager.updateContact(user, secretKey);
                     break;
                 }
@@ -1257,7 +1259,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onImageClickContact(int position) {
         ContactData contactData = contactDataList.get(position);
-        sendHandshake(manager.userSetting().getId(), contactData.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", contactData.getPublicKey());
+        sendHandshake(manager.userSetting().getId(), contactData.getId(), FIELD.GET_AVATAR.getFIELD(), "get_avatar", contactData.getPublicKey(), operation.getTime());
     }
 
     /**
@@ -1311,7 +1313,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR_ORG.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString(), getTime()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(), operation.getTime()).toJson().toString());
                     } else {
                         String rMessage = Encryption.AES.encrypt("avatar", user.getSenderKey());
                         String Url = Encryption.AES.encrypt(serverUrl, user.getSenderKey());
@@ -1319,7 +1321,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         sendMessageToService(new Envelope(manager.userSetting().getId(), position[0], FIELD.AVATAR.getFIELD(),
                                 rMessage,
-                                Url, Has, UUID.randomUUID().toString(), getTime()).toJson().toString());
+                                Url, Has, UUID.randomUUID().toString(), operation.getTime()).toJson().toString());
                     }
                     break;
                 }
@@ -1331,12 +1333,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void addFile(String messageId, String url, String encFile, String has) {
-    }
-
-    private String getTime() {
-        Date currentDate = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
-        return formatter.format(currentDate);
     }
 
     /**

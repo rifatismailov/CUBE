@@ -174,13 +174,18 @@ public class IOService extends Service implements WebSocketClient.Listener {
             }
 
             switch (status) {
-                case "update_to_user":
+                case "update_to_message":
+                    messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
+                    Log.e("IOService", "envelope " + envelope.toJson());
+
                 case "delivered_to_user":
                     sendMessage(envelope.toJson().toString());//не зберігаємо у базу даних
                     messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
                     break;
                 default:
                     processEnvelope(envelope);
+                    Log.e("IOService", "processEnvelope " + envelope.toJson());
+
                     break;
             }
         } catch (Exception e) {
@@ -197,6 +202,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      */
     private void processEnvelope(Envelope envelope) {
         switch (envelope.getOperation()) {
+            //повідомлення з цими параметрами не зберігаємо бо не ма підтвердження по ним
             case "AVATAR_ORG":
             case "AVATAR":
             case "GET_AVATAR":
@@ -404,18 +410,30 @@ public class IOService extends Service implements WebSocketClient.Listener {
 
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
-                returnMessageDeliver(envelope);
-                addMessage(message);
-                if (envelope.getMessageStatus().equals("server")) {
-                    messageManager.deleteMessageById(envelope.getMessageId());
-                } else if (envelope.getMessageStatus().equals("received")) {
-                    messageManager.deleteMessageById(envelope.getMessageId());
-                } else if (envelope.getMessageStatus().equals("delivered")) {
-                    messageManager.deleteMessageById(envelope.getMessageId());
-                } else {
-                    messageManager.setMessage(envelope);
-                }
 
+                returnMessageStatus(envelope);
+                if (connectionInfo.getLife().equals("reborn")) {
+                        addMessage(message);
+                        messageManager.setMessage(envelope);
+                } else {
+                    if ("ready".equals(envelope.getMessageStatus())) {
+                        Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
+                        saveEnvelope.setMessageStatus(envelope.getMessageStatus());
+                        messageManager.setMessage(saveEnvelope, saveEnvelope.getTime());
+                    } else {
+                        messageManager.setMessage(envelope);
+                    }
+                }
+//                if (envelope.getMessageStatus().equals("server")) {
+//                    messageManager.deleteMessageById(envelope.getMessageId());
+//                    messageManager.setMessage(envelope);
+//                } else if (envelope.getMessageStatus().equals("received")) {
+//                    messageManager.deleteMessageById(envelope.getMessageId());
+//                    messageManager.setMessage(envelope);
+//                } else if (envelope.getMessageStatus().equals("delivered")) {
+//                    messageManager.deleteMessageById(envelope.getMessageId());
+//                    messageManager.setMessage(envelope);
+//                }
             } catch (JSONException e) {
                 Log.e("IOService", " JSON processing error while receiving message - " + e.getMessage());
                 Log.e("IOService", "Not a JSON message: " + message);
@@ -436,13 +454,13 @@ public class IOService extends Service implements WebSocketClient.Listener {
         for (Map.Entry<String, Envelope> entry : messages.entrySet()) {
             String messageId = entry.getKey();
             Envelope envelope = entry.getValue();
-            if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
-                saveMessage(envelope.toJson().toString());
-            } else {
-                messageManager.deleteMessageById(messageId);
-            }
+            saveMessage(envelope.toJson().toString());
+//            if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
+//                saveMessage(envelope.toJson().toString());
+//            } else {
+//                messageManager.deleteMessageById(messageId);
+//            }
         }
-
     }
 
     /**
@@ -454,8 +472,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *                 - @envelope.getReceiverId() — ID отримувача (тобто наш ID).
      *                 - @envelope.getMessageId() — ID отриманого повідомлення.
      */
-    private void returnMessageDeliver(@NonNull Envelope envelope) {
-        //  if (!envelope.getOperation().equals("messageStatus")) {
+    private void returnMessageStatus(@NonNull Envelope envelope) {
         String message = new Envelope.Builder().
                 setSenderId(envelope.getReceiverId()).
                 setReceiverId(envelope.getSenderId()).
@@ -466,7 +483,6 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
                 toString();
         sendMessage(message);
-        //   }
     }
 }
 

@@ -54,19 +54,19 @@ public class Operation {
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
 
             // Обробка різних операцій на основі отриманого повідомлення
-            if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
+            if (FIELD.HANDSHAKE.getFIELD().equals(operation)) {
                 operable.addHandshake(envelope);
                 operable.addMessage(message);
-            } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
+            } else if (FIELD.KEY_EXCHANGE.getFIELD().equals(operation)) {
                 operable.addAESKey(sender, receivedMessage);
                 operable.addMessage(message);
-            } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
+            } else if (FIELD.STATUS_MESSAGE.getFIELD().equals(operation)) {
                 operable.addMessage(message); // Обробка статусу повідомлень
-            } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
+            } else if (FIELD.GET_AVATAR.getFIELD().equals(operation)) {
                 operable.giveAvatar(sender);  // Обробка запиту на отримання зображення аккаунту
-            } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
+            } else if (FIELD.AVATAR.getFIELD().equals(operation)) {
                 operable.getAvatar(envelope); // Обробка запрасованих зображення контакту
-            } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
+            } else if (FIELD.AVATAR_ORG.getFIELD().equals(operation)) {
                 operable.getAvatarORG(envelope); // Обробка запрасованих зображення контакту
             } else {
                 operable.addMessage(message); // Обробка  повідомлення
@@ -86,25 +86,19 @@ public class Operation {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             HashMap<String, Envelope> messages = messageManager.getMessagesByReceiverId(receiverId);
             Iterator<Map.Entry<String, Envelope>> iterator = messages.entrySet().iterator(); // ОТРИМУЄМО ІТЕРАТОР
-            int messageCount = messageManager.getMessageCountBySenderAndOperation(receiverId, FIELD.MESSAGE.getFIELD()) +
-                    messageManager.getMessageCountBySenderAndOperation(receiverId, FIELD.FILE.getFIELD());
-            Log.e("Operation", "Count Save Message: " + messageCount);
+
 
             while (iterator.hasNext()) {
                 Map.Entry<String, Envelope> entry = iterator.next();
                 Envelope envelope = entry.getValue();
-                if (envelope.getSenderId().equals(receiverId)) {
+                if (receiverId.equals(envelope.getSenderId())) {
 
                     String operation = envelope.getOperation();
-                    Log.e("Operation", "operation "+operation );
-
-                    if (operation.equals(FIELD.MESSAGE.getFIELD())) {
+                    if (FIELD.MESSAGE.getFIELD().equals(operation)) {
                         operable.addMessage(envelope.toJson().toString());
-                        Log.e("Operation", "Open save message" );
                     }
-                    if (operation.equals(FIELD.FILE.getFIELD())) {
+                    if (FIELD.FILE.getFIELD().equals(operation)) {
                         operable.addMessage(envelope.toJson().toString());
-                        Log.e("Operation", "Open save message file" );
                     }
                     iterator.remove(); // Видаляємо елемент після обробки
                 }
@@ -125,9 +119,7 @@ public class Operation {
         try {
             String message = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
-            if (operation.equals(FIELD.MESSAGE.getFIELD()) || operation.equals(FIELD.FILE.getFIELD())) {
-                Log.e("Operation", "Save Message: " +operation);
-
+            if (FIELD.MESSAGE.getFIELD().equals(operation) || FIELD.FILE.getFIELD().equals(operation)) {
                 saveMessage.put(envelope.getMessageId(), envelope);
                 messageManager.setMessage(envelope, envelope.getTime());
                 for (ContactData user : userList) {
@@ -140,21 +132,20 @@ public class Operation {
                             user.setMessageSize("");  // Оновлюємо messageSize
                         } else {
                             user.setMessageSize("" + messageCount);
-                            Log.e("Operation", "Count Save Message: " + messageCount);
                         }
                         break;  // Вихід після оновлення користувача
                     }
                 }
                 // Оновлюємо адаптер для відображення змін у списку користувачів
                 operable.updateAdapter();
-            } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
+            } else if (FIELD.HANDSHAKE.getFIELD().equals(operation)) {
                 operable.addHandshake(envelope); // Обробка отримання   ключа
-            } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
+            } else if (FIELD.KEY_EXCHANGE.getFIELD().equals(operation)) {
                 operable.addAESKey(envelope.getSenderId(), message); // Обробка  отримання ключа у повідомленні
-            } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
-                Envelope saveEnvelope=messageManager.getMessageById(envelope.getMessageId());
-                if(saveEnvelope!=null){
-                    if(envelope.getMessageStatus().equals("ready")){
+            } else if (FIELD.STATUS_MESSAGE.getFIELD().equals(operation)) {
+                Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
+                if (saveEnvelope != null) {
+                    if ("ready".equals(envelope.getMessageStatus())) {
                         saveEnvelope.setMessageStatus(envelope.getMessageStatus());
                         messageManager.setMessage(saveEnvelope, saveEnvelope.getTime());
                     }
@@ -162,11 +153,11 @@ public class Operation {
                     saveMessage.put(envelope.getMessageId(), envelope); // Обробка  статусу повідомлення
                     messageManager.setMessage(envelope, envelope.getTime());
                 }
-            } else if (operation.equals(FIELD.GET_AVATAR.getFIELD())) {
+            } else if (FIELD.GET_AVATAR.getFIELD().equals(operation)) {
                 operable.giveAvatar(envelope.getSenderId());  // Обробка запиту на отримання зображення аккаунту
-            } else if (operation.equals(FIELD.AVATAR.getFIELD())) {
+            } else if (FIELD.AVATAR.getFIELD().equals(operation)) {
                 operable.getAvatar(envelope); // Обробка запрасованих зображення контакту
-            } else if (operation.equals(FIELD.AVATAR_ORG.getFIELD())) {
+            } else if (FIELD.AVATAR_ORG.getFIELD().equals(operation)) {
                 operable.getAvatarORG(envelope); // Обробка запрасованих зображення контакту
             }
         } catch (JSONException e) {
@@ -190,6 +181,12 @@ public class Operation {
                 toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
                 toString();
         operable.setMessage(messageJson);
+    }
+
+    public String getTime() {
+        Date currentDate = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Формат дати і часу
+        return formatter.format(currentDate);
     }
 
     /**

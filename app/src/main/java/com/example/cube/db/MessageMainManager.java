@@ -46,24 +46,31 @@ public class MessageMainManager {
      */
     public void setMessage(Envelope envelope, String time) {
         try {
-            Log.e("MessageMainManager", "Save or Update Message: " + envelope.getMessageId() + " " + envelope.toJson());
+            Log.e("MessageMainManager", "Save or Update Message: " + envelope.getMessageId());
 
             ContentValues values = new ContentValues();
             values.put(COLUMN_ID, envelope.getMessageId());
             values.put(COLUMN_SENDER, envelope.getSenderId());
             values.put(COLUMN_OPERATION, envelope.getOperation());
             values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
-            values.put(COLUMN_TIMESTAMP, time);
 
-            // Перевіряємо, чи вже існує запис з таким ID
-            int rowsUpdated = database.update(TABLE_MESSAGES_MAIN, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
+            // Перевіряємо, чи є запис у базі
+            Cursor cursor = database.query(TABLE_MESSAGES_MAIN, new String[]{COLUMN_TIMESTAMP}, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()}, null, null, null);
 
-            if (rowsUpdated == 0) {
-                // Якщо запису немає, додаємо новий
-                long result = database.insert(TABLE_MESSAGES_MAIN, null, values);
-                Log.i("MessageMainManager", "Insert result: " + result);
+            if (cursor.moveToFirst()) {
+                String existingTime = cursor.getString(0);
+                cursor.close();
+
+                // Оновлюємо запис, залишаючи час незмінним
+                values.put(COLUMN_TIMESTAMP, existingTime); // Використовуємо старий час
+                int rowsUpdated = database.update(TABLE_MESSAGES_MAIN, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
+                Log.i("MessageMainManager", "Message updated: " + envelope.getMessageId());
             } else {
-                Log.i("MessageMainManager", "Message updated successfully: " + envelope.getMessageId());
+                cursor.close();
+                // Додаємо новий запис із вказаним часом
+                values.put(COLUMN_TIMESTAMP, time);
+                long result = database.insert(TABLE_MESSAGES_MAIN, null, values);
+                Log.i("MessageMainManager", "Message inserted: " + result);
             }
 
         } catch (Exception e) {
@@ -72,29 +79,6 @@ public class MessageMainManager {
     }
 
 
-    public void setMessageUpdate(Envelope envelope, String time) {
-        try {
-            Log.e("MessageMainManager", "Update Message: " + envelope.getMessageId() + " " + envelope.getMessageStatus());
-
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_SENDER, envelope.getSenderId());
-            values.put(COLUMN_OPERATION, envelope.getOperation());
-            values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
-            values.put(COLUMN_TIMESTAMP, time);
-
-            // Оновлюємо запис за ID
-            int rowsUpdated = database.update(TABLE_MESSAGES_MAIN, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
-
-            if (rowsUpdated > 0) {
-                Log.i("MessageMainManager", "Message updated successfully: " + envelope.getMessageId());
-            } else {
-                Log.w("MessageMainManager", "No message found with ID: " + envelope.getMessageId());
-            }
-
-        } catch (Exception e) {
-            Log.e("MessageMainManager", "Error updating message: " + e.getMessage());
-        }
-    }
 
     /**
      * Method for getting the number of messages by contact
@@ -145,8 +129,6 @@ public class MessageMainManager {
                     String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
                     JSONObject jsonObject = new JSONObject(jsonMessage);
                     Envelope envelope = new Envelope(jsonObject);
-                    Log.e("MessageMainManager", "Get Message: " + envelope.getMessageId() + " " + envelope.getMessageStatus());
-
                     messages.put(messageId, envelope);
                 } while (cursor.moveToNext());
             }

@@ -14,8 +14,8 @@ public class Envelope {
     private String operation;
     private String message;    // Саме повідомлення (може бути null)
     private String fileUrl;        // Посилання на файл (може бути null)
-    private String fileSize;       // Розмір файла (може бути null)
     private String filetype;       // Тип файла (може бути null)
+    private String fileSize;       // Розмір файла (може бути null)
     private String fileHash;       // Хеш-сума файла (може бути null)
     private String messageStatus;
     private String timestamp;       // Час відправлення повідомлення
@@ -71,6 +71,8 @@ public class Envelope {
         this.operation = builder.operation;
         this.message = builder.message;
         this.fileUrl = builder.fileUrl;
+        this.filetype = builder.filetype;
+        this.fileSize = builder.fileSize;
         this.fileHash = builder.fileHash;
         this.messageId = builder.messageId;
         this.messageStatus = builder.messageStatus;
@@ -85,6 +87,8 @@ public class Envelope {
         private String operation;
         private String message;
         private String fileUrl;
+        private String filetype;
+        private String fileSize;
         private String fileHash;
         private String messageStatus;
         public String timestamp;
@@ -111,6 +115,16 @@ public class Envelope {
 
         public Builder setFileUrl(String fileUrl) {
             this.fileUrl = fileUrl;
+            return this;
+        }
+
+        public Builder setFiletype(String filetype) {
+            this.filetype = filetype;
+            return this;
+        }
+
+        public Builder setFileSize(String fileSize) {
+            this.fileSize = fileSize;
             return this;
         }
 
@@ -147,6 +161,8 @@ public class Envelope {
             this.operation = jsonObject.optString("operation", null);
             this.message = jsonObject.optString("message", null);
             this.fileUrl = jsonObject.optString("fileUrl", null);
+            this.filetype = jsonObject.optString("filetype", null);
+            this.fileSize = jsonObject.optString("fileSize", null);
             this.fileHash = jsonObject.optString("fileHash", null);
             this.messageId = jsonObject.optString("messageId", null);
             this.messageStatus = jsonObject.optString("messageStatus", null);
@@ -180,6 +196,12 @@ public class Envelope {
                     case "message":
                         jsonObject.put("message", message);
                         break;
+                    case "filetype":
+                        jsonObject.put("filetype", filetype);
+                        break;
+                    case "fileSize":
+                        jsonObject.put("fileSize", fileSize);
+                        break;
                     case "fileUrl":
                         jsonObject.put("fileUrl", fileUrl);
                         break;
@@ -193,7 +215,7 @@ public class Envelope {
                         jsonObject.put("messageStatus", messageStatus);
                         break;
                     case "timestamp":
-                        jsonObject.put("messageStatus", timestamp);
+                        jsonObject.put("timestamp", timestamp);
                         break;
                     default:
                         break;
@@ -214,6 +236,8 @@ public class Envelope {
             jsonObject.put("operation", operation);
             jsonObject.put("message", message);
             jsonObject.put("fileUrl", fileUrl);
+            jsonObject.put("filetype", filetype);
+            jsonObject.put("fileSize", fileSize);
             jsonObject.put("fileHash", fileHash);
             jsonObject.put("messageId", messageId);
             jsonObject.put("messageStatus", messageStatus);
@@ -244,6 +268,22 @@ public class Envelope {
 
     public String getFileUrl() {
         return fileUrl;
+    }
+
+    public String getFiletype() {
+        return filetype;
+    }
+
+    public void setFiletype(String filetype) {
+        this.filetype = filetype;
+    }
+
+    public String getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(String fileSize) {
+        this.fileSize = fileSize;
     }
 
     public String getFileHash() {

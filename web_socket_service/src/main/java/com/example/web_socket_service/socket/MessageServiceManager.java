@@ -56,7 +56,30 @@ public class MessageServiceManager {
             Log.e("MessageMainManager", "Error inserting message: " + e.getMessage());
         }
     }
+    public Envelope getMessageById(String messageId) {
+        Envelope envelope = null;
+        Cursor cursor = null;
+        try {
+            String selectQuery = "SELECT * FROM " + TABLE_MESSAGES_SERVICE +
+                    " WHERE " + COLUMN_ID + " = ?" +
+                    " ORDER BY " + COLUMN_TIMESTAMP + " DESC LIMIT 1"; // Беремо останнє повідомлення
 
+            cursor = database.rawQuery(selectQuery, new String[]{messageId});
+
+            if (cursor.moveToFirst()) {
+                String jsonMessage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ENCRYPTED_DATA));
+                JSONObject jsonObject = new JSONObject(jsonMessage);
+                envelope = new Envelope(jsonObject);
+            }
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error executing query: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return envelope;
+    }
     /**
      * Метод для зберігання повідомлень
      *
@@ -70,11 +93,29 @@ public class MessageServiceManager {
             values.put(COLUMN_OPERATION, operation); //сюди буде додаватися назва операції send що значить на відправу
             values.put(COLUMN_ENCRYPTED_DATA, envelope.toJson().toString());
             values.put(COLUMN_TIMESTAMP, envelope.getTime());
-            long result = database.insertWithOnConflict(TABLE_MESSAGES_SERVICE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-            Log.e("MessageMainManager", "Insert result: " + result);
+            // Перевіряємо, чи вже є запис із таким ID
+            Cursor cursor = database.query(TABLE_MESSAGES_SERVICE,
+                    new String[]{COLUMN_ID},
+                    COLUMN_ID + " = ?",
+                    new String[]{envelope.getMessageId()},
+                    null, null, null);
+
+            boolean exists = cursor.getCount() > 0;
+            cursor.close();
+
+            if (exists) {
+                // Якщо запис є, оновлюємо його
+                int rowsUpdated = database.update(TABLE_MESSAGES_SERVICE, values, COLUMN_ID + " = ?", new String[]{envelope.getMessageId()});
+                Log.i("MessageMainManager", "Message updated: " + envelope.getMessageId() + " (" + rowsUpdated + " rows affected)");
+            } else {
+                // Якщо запису немає, додаємо новий
+                values.put(COLUMN_ID, envelope.getMessageId());
+                long result = database.insert(TABLE_MESSAGES_SERVICE, null, values);
+                Log.i("MessageMainManager", "New message inserted: " + result);
+            }
 
         } catch (Exception e) {
-            Log.e("MessageMainManager", "Error inserting message: " + e.getMessage());
+            Log.e("MessageMainManager", "Error inserting/updating message: " + e.getMessage());
         }
     }
 
@@ -253,9 +294,9 @@ public class MessageServiceManager {
             Log.e("MessageMainManager", "Error deleting message: " + e.getMessage());
         }
     }
+
     /**
      * Метод для видалення всіх повідомлень
-
      */
     public void deleteAllMessages() {
         try {

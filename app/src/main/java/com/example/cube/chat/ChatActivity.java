@@ -49,9 +49,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,6 +80,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private String accountImageUrl;
     private String fileServerIP;
     private String fileServerPort;
+    private OperationMSG operationMSG;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @SuppressLint("SetTextI18n")
         @Override
@@ -133,7 +137,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         //DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = new DatabaseHelper(this).getWritableDatabase();
         manager = new MessageManager(db);
-
+        operationMSG=new OperationMSG(this);
         // Реєструємо ресівер для отримання даних
         registerDataReceiver();
 
@@ -259,7 +263,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     }
 
     private void handleReceivedData(String data) {
-        new OperationMSG(this).onReceived(senderKey, data);
+        operationMSG.onReceived(senderKey, data);
     }
 
     // Метод для відправки даних назад у Activity
@@ -317,7 +321,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             newList.add(message);
 
             // Відправляємо повідомлення
-            new OperationMSG(this).onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey, message.getTimestamp());
+            operationMSG.onSend(senderId, receiverId, message.getMessage(), message.getMessageId(), receiverKey, message.getTimestamp());
 
             // Використовуємо DiffUtil для оновлення списку
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
@@ -354,7 +358,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     .buildUrl();
 
             // Відправляємо файл
-            new OperationMSG(this).onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId(), message.getTimestamp());
+            //            operationMSG.onSendFile(senderId, receiverId, message.getMessage(), url, message.getHas(), receiverKey, message.getMessageId(), message.getTimestamp());
+            operationMSG.onSendFile(message, url, receiverKey);
 
             // Використовуємо DiffUtil для оптимального оновлення
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
@@ -611,6 +616,17 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     break;
                 }
             }
+            // Створюємо множину дозволених статусів
+            Set<String> allowedStatuses = new HashSet<>(Arrays.asList("delivered", "received", "server"));
+
+            if (allowedStatuses.contains(messageStatus)) {
+                Message message = new Message();
+                message.setMessageId(messageId);
+                message.setSenderId(senderId);
+                message.setReceiverId(receiverId);
+                operationMSG.returnAboutDeliver(message, "update_to_message");
+            }
+
         });
     }
 

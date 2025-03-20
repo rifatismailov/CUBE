@@ -42,16 +42,16 @@ public class OperationMSG {
             String messageID = envelope.getMessageId();
 
             // Process data from the Activity, for example, update the UI
-            if (operation.equals(FIELD.MESSAGE.getFIELD())) {
+            if (FIELD.MESSAGE.getFIELD().equals(operation)) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 if (envelope.getFileUrl() == null) {
-                    Message message=new Message(rMessage, Side.Receiver, messageID);
+                    Message message = new Message(rMessage, Side.Receiver, messageID);
                     message.setTimestamp(envelope.getTime());
                     message.setMessageStatus(envelope.getMessageStatus());
                     operableMSG.readMessage(message);
-                    returnAboutDeliver(message);
+                    returnAboutDeliver(message, "delivered_to_user");
                 }
-            }else if (operation.equals(FIELD.FILE.getFIELD())) {
+            } else if (FIELD.FILE.getFIELD().equals(operation)) {
                 String rMessage = Encryption.AES.decrypt(envelope.getMessage(), senderKey);
                 String fileUrl = Encryption.AES.decrypt(envelope.getFileUrl(), senderKey);
                 String fileHash = Encryption.AES.decrypt(envelope.getFileHash(), senderKey);
@@ -61,22 +61,22 @@ public class OperationMSG {
                 message.setUrl(Uri.parse(fileUrl));
                 message.setHas(fileHash);
                 message.setFileName(fileUrl);
-                message.setFileSize("100mb");
+                message.setFileSize(envelope.getFileSize());
                 message.setTimestamp(envelope.getTime());
-                message.setTypeFile(FIELD.FILE.getFIELD());
-                message.setDataCreate("11.11.11 12.12.12");
+                message.setTypeFile(envelope.getFiletype());
+                message.setDataCreate("------------------");
                 message.setMessageStatus(envelope.getMessageStatus());
                 operableMSG.readMessageFile(message);
-                returnAboutDeliver(message);
-            } else if (operation.equals(FIELD.HANDSHAKE.getFIELD())) {
+                returnAboutDeliver(message, "delivered_to_user");
+            } else if (FIELD.HANDSHAKE.getFIELD().equals(operation)) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
                 String rPublicKey = jsonObject.getString(FIELD.PUBLIC_KEY.getFIELD());
                 operableMSG.addReceiverPublicKey(rPublicKey);
-            } else if (operation.equals(FIELD.KEY_EXCHANGE.getFIELD())) {
+            } else if (FIELD.KEY_EXCHANGE.getFIELD().equals(operation)) {
                 JSONObject jsonObject = new JSONObject(envelope.getMessage());
                 String aesKey = jsonObject.getString(FIELD.AES_KEY.getFIELD());
                 operableMSG.addReceiverKey(aesKey);
-            } else if (operation.equals(FIELD.STATUS_MESSAGE.getFIELD())) {
+            } else if (FIELD.STATUS_MESSAGE.getFIELD().equals(operation)) {
                 // Processing status messages
                 String status = envelope.toJson().getString(FIELD.STATUS_MESSAGE.getFIELD());
                 operableMSG.addNotifier(messageID, status);
@@ -89,10 +89,10 @@ public class OperationMSG {
         }
     }
 
-    public void onSend(String senderId, String receiverId, String message, String messageId, String receiverKey,String time) {
+    public void onSend(String senderId, String receiverId, String message, String messageId, String receiverKey, String time) {
         try {
             String rMessage = Encryption.AES.encrypt(message, receiverKey);
-            Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId,time);
+            Envelope envelope = new Envelope(senderId, receiverId, FIELD.MESSAGE.getFIELD(), rMessage, messageId, time);
             //implementation of message encryption
             operableMSG.sendDataBackToActivity(envelope.toJson().toString());
         } catch (Exception e) {
@@ -100,15 +100,26 @@ public class OperationMSG {
         }
     }
 
-    public void onSendFile(String senderId, String receiverId, String message, String url, String has, String receiverKey, String messageId,String time) {
+    public void onSendFile(Message message, String url, String receiverKey) {
         try {
-            String rMessage = Encryption.AES.encrypt(message, receiverKey);
+            String rMessage = Encryption.AES.encrypt(message.getMessage(), receiverKey);
             String rURL = Encryption.AES.encrypt(url, receiverKey);
-            String rHAS = Encryption.AES.encrypt(has, receiverKey);
-            String operation;
-            operation = FIELD.FILE.getFIELD();
-            Envelope envelope = new Envelope(senderId, receiverId, operation, rMessage, rURL, rHAS, messageId,time);
-            operableMSG.sendDataBackToActivity(envelope.toJson().toString());
+            String rHAS = Encryption.AES.encrypt(message.getHas(), receiverKey);
+            String messageJson = new Envelope.Builder().
+                    setSenderId(message.getSenderId()).
+                    setReceiverId(message.getReceiverId()).
+                    setOperation(FIELD.FILE.getFIELD()).
+                    setMessage(rMessage).
+                    setFileUrl(rURL).
+                    setFiletype(message.getTypeFile()).
+                    setFileSize(message.getFileSize()).
+                    setFileHash(rHAS).
+                    setMessageId(message.getMessageId()).
+                    setTime(message.getTimestamp()).
+                    build().
+                    toJson("senderId", "receiverId", "operation", "message", "fileUrl", "filetype", "fileSize", "fileHash", "messageId", "timestamp").
+                    toString();
+            operableMSG.sendDataBackToActivity(messageJson);
         } catch (Exception e) {
 
         }
@@ -118,19 +129,19 @@ public class OperationMSG {
      * Method for notifying the server about receiving a message
      *
      * @param message the message that arrived
-     * we get the following data for sending the notification:
-     * > @envelope.getSenderId() Sender ID
-     * > @envelope.getReceiverId() Recipient ID, that is, our
-     * > @envelope.getMessageId() Message ID with which it arrived
-     * This message is sent only to the Service, then it is not sent
+     *                we get the following data for sending the notification:
+     *                > @envelope.getSenderId() Sender ID
+     *                > @envelope.getReceiverId() Recipient ID, that is, our
+     *                > @envelope.getMessageId() Message ID with which it arrived
+     *                This message is sent only to the Service, then it is not sent
      */
-    public void returnAboutDeliver(Message message) {
+    public void returnAboutDeliver(Message message, String messageStatus) {
 
         String messageJson = new Envelope.Builder().
                 setSenderId(message.getSenderId()).
                 setReceiverId(message.getReceiverId()).
                 setOperation("messageStatus").
-                setMessageStatus("delivered_to_user").
+                setMessageStatus(messageStatus).
                 setMessageId(message.getMessageId()).
                 build().
                 toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
