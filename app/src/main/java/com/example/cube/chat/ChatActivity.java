@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.cube.chat.message.BundleProcessor;
+import com.example.cube.sound.SoundPlayer;
 import com.example.folder.FileData;
 import com.example.cube.R;
 import com.example.cube.chat.message.MessageDiffCallback;
@@ -42,7 +43,6 @@ import com.example.qrcode.QR;
 import com.example.qrcode.QRCode;
 import com.example.setting.UrlBuilder;
 import com.example.setting.UserSetting;
-import com.example.web_socket_service.socket.Envelope;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -50,6 +50,7 @@ import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -81,6 +82,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     private String fileServerIP;
     private String fileServerPort;
     private OperationMSG operationMSG;
+    private SoundPlayer soundPlayer;
     private BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @SuppressLint("SetTextI18n")
         @Override
@@ -138,6 +140,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
         SQLiteDatabase db = new DatabaseHelper(this).getWritableDatabase();
         manager = new MessageManager(db);
         operationMSG=new OperationMSG(this);
+        soundPlayer = new SoundPlayer();
         // Реєструємо ресівер для отримання даних
         registerDataReceiver();
 
@@ -255,12 +258,22 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
     @SuppressLint("NotifyDataSetChanged")
     private void showMessage() {
         List<Message> messagesdb = manager.getMessagesByReceiverId(receiverId);
+
+        // Сортуємо повідомлення за часом (перетворюємо String у long)
+        Collections.sort(messagesdb, (m1, m2) -> {
+            long time1 = parseTimestamp(m1.getTimestamp());
+            long time2 = parseTimestamp(m2.getTimestamp());
+            return Long.compare(time1, time2);
+        });
+
         messages.addAll(messagesdb);
+
         runOnUiThread(() -> {
-            adapter.notifyDataSetChanged(); // Повідомити адаптер про всі зміни
-            binding.recyclerView.smoothScrollToPosition(messages.size());
+            adapter.notifyDataSetChanged(); // Оновлюємо адаптер
+            binding.recyclerView.smoothScrollToPosition(messages.size()); // Прокручуємо вниз
         });
     }
+
 
     private void handleReceivedData(String data) {
         operationMSG.onReceived(senderKey, data);
@@ -517,19 +530,38 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
                 // Оновлення списку за допомогою DiffUtil
+                // **Сортуємо за часом** (від старих до нових)
+                Collections.sort(newList, (m1, m2) -> {
+                    long time1 = parseTimestamp(m1.getTimestamp());
+                    long time2 = parseTimestamp(m2.getTimestamp());
+                    return Long.compare(time1, time2);
+                });
+                // Використовуємо DiffUtil для плавного оновлення
                 DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
                 messages.clear();
                 messages.addAll(newList);
+
                 runOnUiThread(() -> {
                     diffResult.dispatchUpdatesTo(adapter);
-                    autoScroll(); // Автоскрол після оновлення
+                    autoScroll(); // Прокрутка вниз
                 });
+
+                if (!messageExists) {
+                    soundPlayer.playNotificationSoundChat(this);
+                }
             }
         } catch (Exception e) {
             Log.e("ChatActivity", "Error while receiving message: " + e);
         }
     }
-
+    // Метод для безпечного перетворення рядка у long
+    private long parseTimestamp(String timestamp) {
+        try {
+            return Long.parseLong(timestamp);
+        } catch (NumberFormatException | NullPointerException e) {
+            return 0; // або інше значення за замовчуванням
+        }
+    }
 
     /**
      * Метод додовання повідомлення з файлом від сервера
@@ -563,6 +595,12 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                 message.setReceiverId(receiverId);
                 manager.addMessage(message);  // Додаємо нове повідомлення
                 newList.add(message);
+                // **Сортуємо за часом** (від старих до нових)
+                Collections.sort(newList, (m1, m2) -> {
+                    long time1 = parseTimestamp(m1.getTimestamp());
+                    long time2 = parseTimestamp(m2.getTimestamp());
+                    return Long.compare(time1, time2);
+                });
                 // Оновлення списку за допомогою DiffUtil
                 DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MessageDiffCallback(messages, newList));
                 messages.clear();
@@ -571,6 +609,7 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
                     diffResult.dispatchUpdatesTo(adapter);
                     autoScroll(); // Автоскрол після оновлення
                 });
+                soundPlayer.playNotificationSoundChat(this);
             }
 
         } catch (Exception e) {

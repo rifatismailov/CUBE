@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -30,10 +31,13 @@ import com.example.web_socket_service.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +60,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     private MessageServiceManager messageManager;
     private ExecutorService executorService;
     private final Queue<Envelope> messageQueue = new ConcurrentLinkedQueue<>();
+    private SoundPlayer soundPlayer;
 
     /**
      * Called when the service is first created. Initializes BroadcastReceiver and notification manager.
@@ -64,7 +69,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     public void onCreate() {
         super.onCreate();
         executorService = Executors.newSingleThreadExecutor();
-
+        soundPlayer=new SoundPlayer();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
@@ -181,6 +186,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 case "delivered_to_user":
                     sendMessage(envelope.toJson().toString());//не зберігаємо у базу даних
                     messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
+                    Log.e("IOService", "envelope Del" + envelope.toJson());
+
                     break;
                 default:
                     processEnvelope(envelope);
@@ -420,6 +427,12 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 } else {
                     Log.e("IOService", envelope.getMessageStatus()+" died JSON : " + envelope.toJson());
                     messageManager.setMessage(envelope);
+                    // Створюємо множину дозволених статусів
+                    Set<String> allowedStatuses = new HashSet<>(Arrays.asList("message", "file"));
+
+                    if (allowedStatuses.contains(envelope.getOperation())) {
+                        soundPlayer.playNotificationSound(this);
+                    }
 //                    if ("ready".equals(envelope.getMessageStatus())) {
 //                        Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
 //                        saveEnvelope.setMessageStatus(envelope.getMessageStatus());
@@ -493,6 +506,19 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 toJson("senderId", "receiverId", "operation", "messageStatus", "messageId").
                 toString();
         sendMessage(message);
+    }
+
+    public class SoundPlayer {
+        private MediaPlayer mediaPlayer;
+
+        public void playNotificationSound(Context context) {
+            if (mediaPlayer != null) {
+                mediaPlayer.release(); // Звільняємо попередній плеєр
+            }
+            mediaPlayer = MediaPlayer.create(context, R.raw.notification_2_310755); // Файл в res/raw/
+            mediaPlayer.setOnCompletionListener(mp -> mp.release()); // Автоматичне закриття після завершення
+            mediaPlayer.start(); // Відтворення
+        }
     }
 }
 

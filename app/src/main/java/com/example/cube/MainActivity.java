@@ -52,6 +52,7 @@ import com.example.cube.notification.NotificationLogger;
 import com.example.cube.navigation.NavigationManager;
 import com.example.cube.permission.Permission;
 import com.example.cube.control.FIELD;
+import com.example.cube.sound.SoundPlayer;
 import com.example.database_cube.DatabaseHelper;
 import com.example.folder.FileData;
 import com.example.folder.download.Downloader;
@@ -79,12 +80,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
@@ -118,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final List<ContactData> contactDataList = new ArrayList<>();  // Список користувачів
     private final HashMap<String, Envelope> saveMessage = new HashMap<>();  // Збережені повідомлення
     private final HashMap<String, String> avatar_map = new HashMap<>();
+    private SoundPlayer soundPlayer;
 
     @Override
     public void setAccount(String userId, String name, String lastName, String password, String avatarImageUrl, String accountImageUrl) {
@@ -165,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        soundPlayer = new SoundPlayer();
         contactSelector.setContact("");
         //обнуляємо контакт для відображення кількості повідомлень у списку не унеможливлення передачі до чат активності так як він не запушений
         /*З початку Android 13 необхідно запитувати у користувача дозвіл на відображення нотифікацій. Це робиться так:*/
@@ -383,6 +387,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     /**
      * Метод обробки отриманих повідомлень
+     * @param message повідомлення яке було отримано
+     *                а також виконує функцію звукового сповіщення під час збереження повідомлення
      */
     private void byMessage(String message) {
         try {
@@ -394,6 +400,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             } else {
                 saveMessage(message);
                 notificationMessage(envelope);
+                // Перевіряємо повідомлення на належність до якого воно відноситься
+                // сповіщаємо якщо це message або file
+                Set<String> allowedStatuses = new HashSet<>(Arrays.asList("message", "file"));
+                if (allowedStatuses.contains(envelope.getOperation())) {
+                    soundPlayer.playNotificationSound(this);
+                }
             }
         } catch (Exception e) {
             Log.e("MainActivity", "Помилка отримання повідомлення: " + e);
@@ -424,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             Envelope envelope = new Envelope(new JSONObject(save_message));
             if (checkContact(envelope)) {
-                Log.e("MainActivity", "Save Message "+envelope);
+                Log.e("MainActivity", "Save Message " + envelope);
 
                 saveMessage(save_message);
                 notificationMessage(envelope);
@@ -529,6 +541,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void openSaveMessage() {
         if (!contactSelector.getContact().isEmpty()) {
             operation.openSaveMessage(contactSelector.getContact());
+            for (ContactData user : contactDataList) {
+                // Оновлюємо кількість повідомлень для користувача
+                if (user.getId().equals(contactSelector.getContact())) {
+                    user.setMessageSize("");  // Оновлюємо messageSize
+                    break;  // Вихід після оновлення користувача
+                }
+            }
         }
     }
 
