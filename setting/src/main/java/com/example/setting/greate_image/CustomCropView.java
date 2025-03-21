@@ -25,7 +25,7 @@ public class CustomCropView extends View {
 
     private void init() {
         paint = new Paint();
-        paint.setColor(Color.parseColor("#ff33b5e5"));
+        paint.setColor(Color.parseColor("#000000"));
         paint.setAntiAlias(true); // Для згладжування країв
 
         circlePaint = new Paint();

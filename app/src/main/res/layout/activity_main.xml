@@ -33,16 +33,17 @@
 
                 <ImageView
                     android:id="@+id/setting"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:layout_marginStart="10dp"
-                    android:background="@drawable/settings" />
+                    android:background="@drawable/lines_menu_burger_icon" />
 
                 <!-- Контейнер для ID, Name та RecyclerView -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:layout_marginStart="5dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -105,7 +106,12 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="16dp"
-            app:srcCompat="@drawable/contact_icon" />
+            style="@style/BlackFloatingActionButton"
+            android:src="@drawable/chat_message_icon"
+            app:maxImageSize="48dp"
+
+            app:tint="@color/white"/>
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

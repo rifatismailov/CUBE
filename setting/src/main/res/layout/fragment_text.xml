@@ -25,12 +25,12 @@
         android:gravity="center"
         android:padding="8dp">
 
-        <Button
+        <ImageButton
             android:id="@+id/dateAccount"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:text="Show QR Code"
-            android:background="@color/blue"/>
+            android:background="@drawable/qr_code_scaner_icon"/>
     </LinearLayout>
 
 </RelativeLayout>

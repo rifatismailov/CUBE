@@ -12,7 +12,6 @@
         android:background="@color/white"
         android:orientation="vertical">
 
-        <include layout="@layout/image_account_header" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -30,7 +29,8 @@
                 android:text="Загальні налаштування"
                 android:textColor="@color/blue_f"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:typeface="monospace" />
 
             <!-- Поле Ім'я користувача -->
             <LinearLayout
@@ -50,8 +50,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -75,8 +76,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
@@ -92,15 +94,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="Введіть ID користувача">
+                    android:hint="ID користувача">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_userId"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -124,8 +127,10 @@
                         android:layout_height="wrap_content"
                         android:autofillHints="password"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:maxLength="32" />
+                        android:maxLength="32"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -144,17 +149,22 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Сповіщення"
-
                     android:textColor="@color/blue"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:typeface="monospace" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_notifications"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@null"
+                    android:background="@color/white"
+                    android:checked="true"
+                    android:textColor="@color/white"
+                    app:switchMinWidth="56dp"
+                    app:thumbTint="@color/blue"
+                    app:trackTint="@color/black" />
 
-                    android:checked="true" />
             </LinearLayout>
 
             <!-- Заголовок розділу -->
@@ -166,7 +176,8 @@
                 android:text="Налаштування серверу"
                 android:textColor="@color/blue_f"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:typeface="monospace" />
 
             <!-- Поле IP сервера обміну повідомленнями -->
             <LinearLayout
@@ -179,7 +190,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="Введіть IP сервера обміну повідомленнями"
+                    android:hint="IP сервера обміну повідомленнями"
 
                     >
 
@@ -188,8 +199,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -204,15 +216,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="Введіть порт сервера обміну повідомленнями">
+                    android:hint="Порт сервера обміну повідомленнями">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_messaging_server_port"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -227,15 +240,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="Введіть IP сервера обміну файлами">
+                    android:hint="IP сервера обміну файлами">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_file_server_ip"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -250,15 +264,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_extralight"
-                    android:hint="Введіть порт сервера обміну файлами">
+                    android:hint="Порт сервера обміну файлами">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/input_file_server_port"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white"
-                        android:fontFamily="@font/roboto_regular"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:textStyle="bold"
+                        android:typeface="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>

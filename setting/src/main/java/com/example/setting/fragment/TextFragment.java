@@ -45,7 +45,7 @@ public class TextFragment extends Fragment {
         TextView idNumber = view.findViewById(R.id.idNumber);
         TextView name = view.findViewById(R.id.name);
         TextView lastName = view.findViewById(R.id.lastName);
-        Button imageButton = view.findViewById(R.id.dateAccount);
+        ImageButton imageButton = view.findViewById(R.id.dateAccount);
         idNumber.setText(userSetting.getId());
         name.setText(userSetting.getName());
         lastName.setText(userSetting.getLastName());

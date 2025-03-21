@@ -56,7 +56,7 @@ public class SettingDialog extends Dialog {
     /**
      * Image views for displaying user avatar and account images.
      */
-    private ImageView avatarImage;
+    //private ImageView avatarImage;
 
     /**
      * Callback interface for saving user settings.
@@ -115,7 +115,7 @@ public class SettingDialog extends Dialog {
         inputFileServerPort = findViewById(R.id.input_file_server_port);
         switchNotifications = findViewById(R.id.switch_notifications);
         @SuppressLint("WrongViewCast") MaterialButton buttonSave = findViewById(R.id.button_save);
-        avatarImage = findViewById(R.id.avatarImage);
+        //avatarImage = findViewById(R.id.avatarImage);
         input_userPassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -165,7 +165,7 @@ public class SettingDialog extends Dialog {
         Log.e("UserSetting", userSetting.getAvatarImageUrl() + " " + userSetting.getAccountImageUrl());
 
         // Load user profile images
-        setAvatarImage(userSetting.getAvatarImageUrl());
+        //setAvatarImage(userSetting.getAvatarImageUrl());
         // Handle save button click
         buttonSave.setOnClickListener(v -> {
             saveSetting();
@@ -197,20 +197,20 @@ public class SettingDialog extends Dialog {
         }
     }
 
-    /**
-     * Sets the avatar image if the file exists, otherwise uses a default image.
-     *
-     * @param image Name of the image file.
-     */
-    public void setAvatarImage(String image) {
-        File file = new File(externalDir + "/" + image);
-        if (file.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-            avatarImage.setImageBitmap(bitmap);
-        } else {
-            avatarImage.setImageResource(R.color.blue); // Default image
-        }
-    }
+//    /**
+//     * Sets the avatar image if the file exists, otherwise uses a default image.
+//     *
+//     * @param image Name of the image file.
+//     */
+//    public void setAvatarImage(String image) {
+//        File file = new File(externalDir + "/" + image);
+//        if (file.exists()) {
+//            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+//            avatarImage.setImageBitmap(bitmap);
+//        } else {
+//            avatarImage.setImageResource(R.color.blue); // Default image
+//        }
+//    }
 
 
     /**

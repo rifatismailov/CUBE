@@ -1,18 +1,18 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white" >
+    android:background="@color/white">
 
-    <!-- Зображення, яке користувач вибирає -->
+    <!-- Зображення профілю -->
     <ImageView
         android:id="@+id/imageProfile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
-
-        android:scaleType="fitCenter"
-        android:background="@color/white" />
+        android:adjustViewBounds="true"
+        android:background="@color/white"
+        android:scaleType="fitCenter" />
 
     <!-- Рамка обрізання -->
     <com.example.setting.greate_image.CustomCropView
@@ -20,19 +20,23 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center"
-        android:background="@drawable/crop_frame_background"
-        android:alpha="0.5" />
+        android:alpha="0.5"
+        android:background="@drawable/crop_frame_background" />
 
     <!-- Кнопка для обрізання -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCrop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/black"
+        android:paddingHorizontal="32dp"
+        android:paddingVertical="12dp"
         android:text="Обрізати"
-        android:background="@android:color/holo_blue_dark"
+        android:textAllCaps="false"
         android:textColor="@android:color/white" />
+
 
     <!-- Зображення акаунта -->
     <ImageView
@@ -41,6 +45,7 @@
         android:layout_height="100dp"
         android:layout_gravity="top|end"
         android:layout_margin="16dp"
-        android:scaleType="centerCrop"
-        android:background="@android:color/darker_gray" />
+        android:background="@color/white"
+        android:scaleType="centerCrop" />
+
 </FrameLayout>

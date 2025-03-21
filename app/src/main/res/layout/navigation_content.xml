@@ -17,23 +17,21 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp">
+        >
 
         <Button
             android:id="@+id/nav_account"
             style="@style/CustomButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="@android:color/white"
+            android:backgroundTint="@android:color/black"
             android:elevation="0dp"
+            android:layout_margin="2dp"
             android:text="Акаунт"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/white"
             android:textStyle="bold"
             android:typeface="monospace"
-            app:icon="@drawable/ic_account"
             app:iconGravity="textStart"
-            app:iconTint="@android:color/black"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"/>
 
@@ -42,16 +40,15 @@
             style="@style/CustomButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="@android:color/white"
+            android:backgroundTint="@android:color/black"
             android:elevation="0dp"
+            android:layout_margin="2dp"
+
             android:text="Налаштування"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/white"
             android:textStyle="bold"
             android:typeface="monospace"
-            app:icon="@drawable/ic_settings"
             app:iconGravity="textStart"
-            app:iconTint="@android:color/black"
             android:layout_below="@id/nav_account"
             android:layout_centerHorizontal="true"/>
 
