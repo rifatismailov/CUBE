@@ -22,3 +22,5 @@
 ---
 
 📌 **GitHub-репозиторій:** [CUBE](https://github.com/rifatismailov/CUBE)  
+📌 **GitHub-репозиторій:** [SERVER](https://github.com/rifatismailov/server_cube)  
+📌 **GitHub-репозиторій:** [FILE SERVER](https://github.com/rifatismailov/file_server_cube)  
