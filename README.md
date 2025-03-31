@@ -23,10 +23,10 @@
 ## Приклад мессенджера в роботі
 
 ### Вікно чату
-![Вікно чату](https://github.com/rifatismailov/CUBE/main/image_message/chat_window.png)
+![Вікно чату](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A14%3A33.jpg)
 
 ### Надсилання повідомлення
-![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/main/image_message/sending_message.png)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A14%3A43.jpg)
 
 📌 **GitHub-репозиторій:** [CUBE](https://github.com/rifatismailov/CUBE)  
 📌 **GitHub-репозиторій:** [SERVER](https://github.com/rifatismailov/server_cube)  
