@@ -20,6 +20,10 @@
 - 🔄 Простота обміну повідомленнями між клієнтами.
 
 ---
+📌 **GitHub-репозиторій:** [CUBE](https://github.com/rifatismailov/CUBE)  
+📌 **GitHub-репозиторій:** [SERVER](https://github.com/rifatismailov/server_cube)  
+📌 **GitHub-репозиторій:** [FILE SERVER](https://github.com/rifatismailov/file_server_cube)
+
 ## Приклад мессенджера в роботі
 
 ### Вікно чату
@@ -27,7 +31,12 @@
 
 ### Надсилання повідомлення
 ![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A14%3A43.jpg)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A14%3A56.jpg)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A15%3A20.jpg)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A15%3A59.jpg)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A16%3A09.jpg)
+![Надсилання повідомлення](https://github.com/rifatismailov/CUBE/blob/main/image_message/IMAGE%202025-04-01%2000%3A16%3A18.jpg)
 
-📌 **GitHub-репозиторій:** [CUBE](https://github.com/rifatismailov/CUBE)  
-📌 **GitHub-репозиторій:** [SERVER](https://github.com/rifatismailov/server_cube)  
-📌 **GitHub-репозиторій:** [FILE SERVER](https://github.com/rifatismailov/file_server_cube)  
+
+
+
