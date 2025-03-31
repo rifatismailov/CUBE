@@ -395,6 +395,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     private void byMessage(String message) {
         try {
+
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
             if (contactSelector.getContact().equals(envelope.getSenderId())) {

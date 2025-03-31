@@ -92,6 +92,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             if (dataFromActivity1 != null) {
                 // Обробка отриманих даних
                 handleReceivedData(dataFromActivity1);
+                Log.e("MainActivity", "Chat message: " + dataFromActivity1);
+
             }
             String status = intent.getStringExtra(FIELD.STATUS.getFIELD());
             if (status != null) {
@@ -638,6 +640,8 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
     @Override
     public void addNotifier(String messageId, String messageStatus) {
+        Log.e("MainActivity", messageId+ " message: " + messageStatus);
+
         runOnUiThread(() -> {
             for (int i = 0; i < messages.size(); i++) {
                 Message message = messages.get(i);

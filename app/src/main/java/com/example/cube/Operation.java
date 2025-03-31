@@ -46,12 +46,18 @@ public class Operation {
      * @param message Повідомлення у форматі JSON, яке потрібно обробити.
      */
     public void onReceived(String message) {
+        Log.e("MainActivity", "R message: " + message);
+
         try {
             JSONObject object = new JSONObject(message);
             Envelope envelope = new Envelope(object);
             String sender = envelope.toJson().getString(FIELD.SENDER_ID.getFIELD());
             String operation = envelope.toJson().getString(FIELD.OPERATION.getFIELD());
             String receivedMessage = envelope.toJson().getString(FIELD.MESSAGE.getFIELD());
+
+            Log.e("MainActivity", "R message: " + envelope.toJson());
+
+            Log.e("MainActivity", "R message: " + operation);
 
             // Обробка різних операцій на основі отриманого повідомлення
             if (FIELD.HANDSHAKE.getFIELD().equals(operation)) {
@@ -70,6 +76,7 @@ public class Operation {
                 operable.getAvatarORG(envelope); // Обробка запрасованих зображення контакту
             } else {
                 operable.addMessage(message); // Обробка  повідомлення
+
             }
         } catch (JSONException e) {
             Log.e("Operation", "Помилка під час отримання JSON у методі onReceived: " + e);

@@ -408,6 +408,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     public void onListener(String message) {
         if (message != null) {
             try {
+                Log.e("IOService", "Message " + message);
 
                 JSONObject object = new JSONObject(message);
                 Envelope envelope = new Envelope(object);
