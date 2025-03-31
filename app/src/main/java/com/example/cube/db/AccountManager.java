@@ -43,9 +43,9 @@ public class AccountManager {
      */
     public JSONObject getAccount(SecretKey secretKey) {
         if (isTableExists(database, TABLE_ACCOUNT)) {
-            Log.e("DatabaseHelper", "TABLE_ACCOUNT exists");
+            Log.e("AccountManager", "TABLE_ACCOUNT exists");
         } else {
-            Log.e("DatabaseHelper", "TABLE_ACCOUNT does not exist");
+            Log.e("AccountManager", "TABLE_ACCOUNT does not exist");
         }
 
         JSONObject account = null;
@@ -53,20 +53,20 @@ public class AccountManager {
         try {
             cursor = database.query(TABLE_ACCOUNT, new String[]{COLUMN_ENCRYPTED_DATA}, null, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                Log.e("DatabaseHelper", "Found data in TABLE_ACCOUNT");
+                Log.e("AccountManager", "Found data in TABLE_ACCOUNT");
                 do {
                     @SuppressLint("Range") String encryptedData = cursor.getString(cursor.getColumnIndex(COLUMN_ENCRYPTED_DATA));
-                    Log.e("DatabaseHelper", "Encrypted Data retrieved: " + encryptedData);
+                    Log.e("AccountManager", "Encrypted Data retrieved: " + encryptedData);
 
                     // Decrypt the contact data
                     String decryptedJson = Encryption.AES.decryptCBCdb(encryptedData, secretKey);
                     account = new JSONObject(decryptedJson);
                 } while (cursor.moveToNext());
             } else {
-                Log.e("DatabaseHelper", "No data found in TABLE_ACCOUNT");
+                Log.e("AccountManager", "No data found in TABLE_ACCOUNT");
             }
         } catch (Exception e) {
-            Log.e("DatabaseHelper", "account error. " + e);
+            Log.e("AccountManager", "account error. " + e);
             e.printStackTrace();
         } finally {
             if (cursor != null) {
@@ -95,7 +95,7 @@ public class AccountManager {
         try {
             // Convert UserData to JSON and encrypt it
             String encryptedJson = Encryption.AES.encryptCBCdb(jsonObject.toString(), secretKey);
-            Log.e("DatabaseHelper", "Encrypted JSON: " + encryptedJson);
+            Log.e("AccountManager", "Encrypted JSON: " + encryptedJson);
 
             // Prepare data for insertion or update
             ContentValues values = new ContentValues();
@@ -103,18 +103,18 @@ public class AccountManager {
 
             long rowId = db.replace(TABLE_ACCOUNT, null, values);
             if (rowId == -1) {
-                Log.e("DatabaseHelper", "Failed to insert data into TABLE_ACCOUNT.");
+                Log.e("AccountManager", "Failed to insert data into TABLE_ACCOUNT.");
             } else {
-                Log.e("DatabaseHelper", "Data inserted into TABLE_ACCOUNT with row id: " + rowId);
+                Log.e("AccountManager", "Data inserted into TABLE_ACCOUNT with row id: " + rowId);
             }
 
             db.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("DatabaseHelper", "Account creation error: " + e);
+            Log.e("AccountManager", "Account creation error: " + e);
         } finally {
             db.endTransaction();
-            Log.e("DatabaseHelper", "Transaction ended.");
+            Log.e("AccountManager", "Transaction ended.");
         }
     }
 

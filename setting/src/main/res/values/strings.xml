@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SETTING</string>
     <string name="save_setting">Зберегти</string>
+    <string name="cut">Обрізати</string>
 </resources>

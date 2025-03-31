@@ -51,7 +51,10 @@ public class WebSocketClient {
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS) // Підтримка постійного з'єднання
                 .build();
-
+//        OkHttpClient client = new OkHttpClient.Builder()
+//                .retryOnConnectionFailure(true)
+//                .connectTimeout(10, TimeUnit.SECONDS) // Без таймауту для WebSocket
+//                .build();
         Request request = new Request.Builder().url(SERVER_URL).build();
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
@@ -70,16 +73,19 @@ public class WebSocketClient {
                             retryCount = 0; // Скидаємо лічильник невдалих спроб
                             listener.onNotification("connected");
                             listener.sendStatus(textArray[1]);
+                            Log.e("WebSocket", "WebSocket Status "+textArray[1]);
+
                         }
                         /*перевіряємо кількість повідомлень для відправки*/
                         HashMap<String, Envelope> messages = messageManager.getMessagesByOperation("send");
+
                         for (Map.Entry<String, Envelope> entry : messages.entrySet()) {
                             String messageId = entry.getKey();
                             Envelope envelope = entry.getValue();
                             sendMessage(envelope.toJson().toString());
-                            Log.e("WebSocket", "WebSocket envelope "+envelope.toJson());
-
                         }
+                        Log.e("WebSocket", "WebSocket Count "+messageManager.getMessageCountByOperation("send"));
+
                     } else {
                         if (listener != null) {
                             listener.onListener(text); // Передаємо в сервіс у фоновому потоці

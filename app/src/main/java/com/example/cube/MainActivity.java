@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             contactManager.setContacts(contacts);// Зберігаємо контакти у базу даних
             request(getContactToJsonArray());// оновлюємо ключ зєднання
             Toast.makeText(this, "Контакт додано", Toast.LENGTH_SHORT).show();
+            initUserList();
         }
     }
 
@@ -168,6 +169,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         new Permission(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        File externalDir = new File(getExternalFilesDir(null), "key");
+
+        // Створюємо директорію, якщо її не існує
+        if (!externalDir.exists() && !externalDir.mkdirs()) {
+            Log.e("MainActivity", "Не вдалося створити директорію");
+        }
+
+        String filePath = externalDir + "/SecretKey.key";
+        File keyFile = new File(filePath);
+        //FileData.write(KeyGenerator.AES.generateKey(16), filePath);
+        if (!keyFile.exists()) {
+            // Генеруємо новий ключ, якщо файлу немає
+            String key = KeyGenerator.AES.generateKey(16);
+            FileData.write(key, filePath);
+            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
+            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        } else {
+            // Читаємо існуючий ключ
+            String key = FileData.read(filePath);
+            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
+            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
+        }
         soundPlayer = new SoundPlayer();
         contactSelector.setContact("");
         //обнуляємо контакт для відображення кількості повідомлень у списку не унеможливлення передачі до чат активності так як він не запушений
@@ -193,28 +216,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Використання NavigationManager для обробки меню
         navigationManager = new NavigationManager(this);
-        File externalDir = new File(getExternalFilesDir(null), "key");
 
-        // Створюємо директорію, якщо її не існує
-        if (!externalDir.exists() && !externalDir.mkdirs()) {
-            Log.e("MainActivity", "Не вдалося створити директорію");
-        }
-
-        String filePath = externalDir + "/SecretKey.key";
-        File keyFile = new File(filePath);
-        //FileData.write(KeyGenerator.AES.generateKey(16), filePath);
-        if (!keyFile.exists()) {
-            // Генеруємо новий ключ, якщо файлу немає
-            String key = KeyGenerator.AES.generateKey(16);
-            FileData.write(key, filePath);
-            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
-            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
-        } else {
-            // Читаємо існуючий ключ
-            String key = FileData.read(filePath);
-            byte[] keyBytes = KeyGenerator.AES.hexToBytes(key);
-            secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
-        }
 
 //        byte[] keyBytes = "1234567890123456".getBytes();  // Генерація байт ключа
 //        secretKey = new SecretKeySpec(keyBytes, "AES");  // AES-ключ
@@ -387,6 +389,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     /**
      * Метод обробки отриманих повідомлень
+     *
      * @param message повідомлення яке було отримано
      *                а також виконує функцію звукового сповіщення під час збереження повідомлення
      */
@@ -436,10 +439,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             Envelope envelope = new Envelope(new JSONObject(save_message));
             if (checkContact(envelope)) {
-                Log.e("MainActivity", "Save Message " + envelope);
-
                 saveMessage(save_message);
                 notificationMessage(envelope);
+                operation.setMessageStatus(envelope);
             }
 //            else {
 //              //  operation.setMessageStatus(envelope);
@@ -453,8 +455,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             String[] notificationAll = notification.split(":");
             setNotification(notificationAll[0], "");
-            navigationManager.setNotification(notificationAll[0]);
-
+            // navigationManager.setNotification(notificationAll[0]);
         } catch (Exception e) {
             Log.e("MainActivity", "помилка під час отримання інформації про статус з web socket");
         }
@@ -491,6 +492,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
+    /**
+     * Метод відображення останнього непрочитаного повідомлень у списку контактів
+     *
+     * @param envelope саме повідомлення
+     */
     private void notificationMessage(Envelope envelope) {
         try {
             for (int i = 0; i < contactDataList.size(); i++) {
@@ -514,7 +520,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-
+    /**
+     * Метод відображення стану контакту
+     *
+     * @param contact_status стан контакту (Онлайн, оффлайн
+     */
     private void getStatus(String contact_status) {
         try {
             JSONArray jsonArray = new JSONArray(contact_status);
@@ -538,6 +548,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    /**
+     * Метод отриманих у Chat Activity збережених повідомлень
+     */
     private void openSaveMessage() {
         if (!contactSelector.getContact().isEmpty()) {
             operation.openSaveMessage(contactSelector.getContact());
@@ -1099,9 +1112,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
 
     public void sendHandshake(String userId, String receiverId, String operation, String nameKey, String key, String time) {
-
-        String keyMessage = "{\"" + nameKey + "\": \"" + key + "\" }";
-        sendMessageToService(new Envelope(userId, receiverId, operation, keyMessage, "", time).toJson().toString());
+        sendMessageToService(new Envelope.Builder().
+                setSenderId(userId).
+                setReceiverId(receiverId).
+                setOperation(operation).
+                setMessage(String.format("{\"" + nameKey + "\":\"%s\"}", key)).
+                setMessageId("").
+                build().
+                toJson("senderId", "receiverId", "operation", "message", "messageId").
+                toString());
     }
 
     /**
@@ -1191,7 +1210,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void imageNavigation() {
         // Ініціалізація об'єкта ImageExplorer для відображення діалогового вікна для вибору зображення
-        imageExplorer = new ImageExplorer(this, "");
+        imageExplorer = new ImageExplorer(this);
+        //imageExplorer.show(getSupportFragmentManager(), "imageExplorer");
     }
 
     /**
@@ -1446,6 +1466,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void logout() {
         contactManager.deleteAll();
         request(getContactToJsonArray());
+        deleteAll();
         finish();
     }
 

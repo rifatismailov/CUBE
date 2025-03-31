@@ -95,17 +95,23 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
             }
             String status = intent.getStringExtra(FIELD.STATUS.getFIELD());
             if (status != null) {
-                // Обробка отриманих даних
-                binding.imageAccount.updateStatusColor(status);
-                // Встановлюємо початкові значення
-                if (status.equals("00")) {
-                    binding.status.setText("disconnect");
-                }
-                if (status.equals("01")) {
-                    binding.status.setText("offline");
-                }
-                if (status.equals("10")) {
-                    binding.status.setText("online");
+                Log.e("ChatActivity", "status: " + status);
+
+                // Встановлюємо статусу контакту
+
+                switch (status) {
+                    case "disconnect":
+                        binding.imageAccount.updateStatusColor("00");
+                        binding.status.setText("disconnect");
+                        break;
+                    case "died":
+                        binding.status.setText("offline");
+                        binding.imageAccount.updateStatusColor("01");
+                        break;
+                    case "reborn":
+                        binding.status.setText("online");
+                        binding.imageAccount.updateStatusColor("10");
+                        break;
                 }
             }
         }
@@ -149,19 +155,19 @@ public class ChatActivity extends AppCompatActivity implements Folder, Operation
 
         // Обробка даних з bundle
         bundleProcessor();
-
-        // Встановлюємо початкові значення
-        if(receiverStatus!=null) {
-            if (receiverStatus.equals("00")) {
-                binding.status.setText("disconnect");
-            }
-            if (receiverStatus.equals("01")) {
-                binding.status.setText("offline");
-            }
-            if (receiverStatus.equals("10")) {
-                binding.status.setText("online");
-            }
-        }
+//
+//        // Встановлюємо початкові значення
+//        if(receiverStatus!=null) {
+//            if (receiverStatus.equals("00")) {
+//                binding.status.setText("disconnect");
+//            }
+//            if (receiverStatus.equals("01")) {
+//                binding.status.setText("offline");
+//            }
+//            if (receiverStatus.equals("10")) {
+//                binding.status.setText("online");
+//            }
+//        }
         binding.name.setText(receiverName);
 
         if (accountImageUrl != null && !accountImageUrl.isEmpty()) {

@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
@@ -151,7 +152,7 @@ public class ContactCircularImageView extends AppCompatImageView {
             case "01":
                 setStatusColor(0xFFFFFF00); // Yellow
                 break;
-            case "A0111":
+            case "00":
                 setStatusColor(0xFF888888); // Medium gray
                 break;
             default:

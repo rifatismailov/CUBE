@@ -147,6 +147,28 @@ public class MessageServiceManager {
         return count;
     }
 
+    public int getMessageCountExceptByOperation(String operation) {
+        int count = 0;
+        Cursor cursor = null;
+        try {
+            String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES_SERVICE +
+                    " WHERE " + COLUMN_OPERATION + " != ?";
+            cursor = database.rawQuery(query, new String[]{operation});
+
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0); // Тепер коректно отримуємо кількість записів
+            }
+            Log.e("MessageMainManager", "Count result: " + count);
+        } catch (Exception e) {
+            Log.e("MessageMainManager", "Error counting messages: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return count;
+    }
+
 
     /**
      * Метод для отримання повідомлень за контактом

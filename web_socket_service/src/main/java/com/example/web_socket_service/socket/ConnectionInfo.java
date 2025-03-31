@@ -65,9 +65,10 @@ public class ConnectionInfo {
 
     public String getServerAddress() {
         if ("443".equals(port)) {
-            return String.format("wss://%s:%s", ip, port);
+            return String.format("wss://%s:%s/ws", ip, port);
         }
-        return String.format("ws://%s:%s", ip, port);
+        return String.format("ws://%s:%s/ws", ip, port);
+        //"ws://192.168.177.3:8080/ws"
     }
 
     public void setRegistration(String registration) {

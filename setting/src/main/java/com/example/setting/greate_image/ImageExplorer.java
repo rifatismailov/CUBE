@@ -46,11 +46,9 @@ public class ImageExplorer {
      * Ініціалізує контекст і ключ відправника, а також викликає діалог для вибору та обрізки зображення.
      *
      * @param context   Контекст, у якому працює діалог.
-     * @param senderKey Ключ відправника.
      */
-    public ImageExplorer(Context context, String senderKey) {
+    public ImageExplorer(Context context) {
         this.context = context;
-        this.senderKey = senderKey;
         this.imgExplorer = (ImgExplorer) context;
         showDialog();
     }
@@ -74,13 +72,14 @@ public class ImageExplorer {
         }
 
         dialog.show();
-
+        imgExplorer.openImagePicker();
         imageProfile = layout.findViewById(R.id.imageProfile);
         imageAccount = layout.findViewById(R.id.imageAccount);
         btnCrop = layout.findViewById(R.id.btnCrop);
         cropFrame = layout.findViewById(R.id.cropFrame);
 
         imageAccount.setOnClickListener(v -> imgExplorer.openImagePicker());
+        imageProfile.setOnClickListener(v -> imgExplorer.openImagePicker());
 
         cropFrame.setOnTouchListener((v, event) -> {
 
@@ -184,6 +183,7 @@ public class ImageExplorer {
                 }
             }
         });
+
     }
 
     public Bitmap resizeBitmap(Bitmap originalBitmap, float scaleFactor) {

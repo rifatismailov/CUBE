@@ -45,9 +45,6 @@ public class FilePathBuilder {
      * @throws IllegalArgumentException Якщо ім'я файлу порожнє або null.
      */
     public FilePathBuilder setFileName(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            throw new IllegalArgumentException("Ім'я файлу не може бути порожнім");
-        }
         this.fileName = fileName;
         return this;
     }

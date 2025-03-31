@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
@@ -69,7 +70,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     public void onCreate() {
         super.onCreate();
         executorService = Executors.newSingleThreadExecutor();
-        soundPlayer=new SoundPlayer();
+        soundPlayer = new SoundPlayer();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         messageManager = new MessageServiceManager(db);
@@ -181,17 +182,18 @@ public class IOService extends Service implements WebSocketClient.Listener {
             switch (status) {
                 case "update_to_message":
                     messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
-                    Log.e("IOService", "envelope " + envelope.toJson());
+                    Log.e("IOService", "delete message id: " + envelope.getMessageId());
 
                 case "delivered_to_user":
                     sendMessage(envelope.toJson().toString());//не зберігаємо у базу даних
                     messageManager.deleteMessageById(envelope.getMessageId());//видаляємо збережене повідомлення за ID яке прийшло
-                    Log.e("IOService", "envelope Del" + envelope.toJson());
+                    Log.e("IOService", "delete message id: " + envelope.getMessageId());
 
                     break;
                 default:
                     processEnvelope(envelope);
-                    Log.e("IOService", "processEnvelope " + envelope.toJson());
+                    Log.e("IOService", "send message id: " + envelope.getMessageId());
+
 
                     break;
             }
@@ -200,6 +202,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
+
     /**
      * Processes and stores messages unless they are avatars.
      * Some messages are not saved because they can be requested again
@@ -207,22 +210,19 @@ public class IOService extends Service implements WebSocketClient.Listener {
      *
      * @param envelope The message envelope to process.
      */
+
     private void processEnvelope(Envelope envelope) {
-        switch (envelope.getOperation()) {
-            //повідомлення з цими параметрами не зберігаємо бо не ма підтвердження по ним
-            case "AVATAR_ORG":
-            case "AVATAR":
-            case "GET_AVATAR":
-            case "keyExchange":
-            case "handshake":
-                sendMessage(envelope.toJson().toString());
-                break;
-            default:
-                messageManager.setMessage(envelope, "send");
-                sendMessage(envelope.toJson().toString());
-                break;
+        if (IGNORED_OPERATIONS.contains(envelope.getOperation())) {
+            sendMessage(envelope.toJson().toString());
+        } else {
+            messageManager.setMessage(envelope, "send");
+            sendMessage(envelope.toJson().toString());
         }
     }
+
+    private static final Set<String> IGNORED_OPERATIONS = new HashSet<>(Arrays.asList(
+            "AVATAR_ORG", "AVATAR", "GET_AVATAR", "keyExchange", "handshake"
+    ));
 
     /**
      * Sends a message via WebSocket if the connection is active.
@@ -237,6 +237,21 @@ public class IOService extends Service implements WebSocketClient.Listener {
         }
     }
 
+    @NonNull
+    private Notification getNotification(String about, String newMessage) {
+        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
+        notificationLayout.setTextViewText(R.id.notification_title, about);
+        notificationLayout.setTextViewText(R.id.notification_text, newMessage);
+        // Build the notification
+        return new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.chat_message_icon)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setCustomContentView(notificationLayout)
+                .setColor(Color.BLACK) // Задає чорний колір фону іконки
+                .setAutoCancel(true)
+                .build();
+    }
+
     /**
      * Starts the service as a foreground service and displays a notification.
      */
@@ -249,24 +264,13 @@ public class IOService extends Service implements WebSocketClient.Listener {
                 channelName,
                 NotificationManager.IMPORTANCE_LOW
         );
+
         notificationManager = getSystemService(NotificationManager.class);
         if (notificationManager != null) {
             notificationManager.createNotificationChannel(channel);
         }
 
-        // Create custom notification layout
-        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
-        notificationLayout.setTextViewText(R.id.notification_title, "CUBE is running");
-        notificationLayout.setTextViewText(R.id.notification_text, "Server address " + ip);
-
-        // Build the notification
-        Notification notification = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setCustomContentView(notificationLayout)
-                .setAutoCancel(true)
-                .build();
-
+        Notification notification = getNotification("CUBE is running", "Server address " + ip);
         // Move the service to foreground
         startForeground(notificationId, notification);
     }
@@ -278,18 +282,8 @@ public class IOService extends Service implements WebSocketClient.Listener {
      * @param newMessage Notification message
      */
     private void updateNotification(String about, String newMessage) {
-        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
-        notificationLayout.setTextViewText(R.id.notification_title, about);
-        notificationLayout.setTextViewText(R.id.notification_text, newMessage);
-
-        Notification updatedNotification = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setCustomContentView(notificationLayout)
-                .setAutoCancel(true)
-                .build();
-
-        notificationManager.notify(notificationId, updatedNotification);
+        Notification notification = getNotification(about, newMessage);
+        notificationManager.notify(notificationId, notification);
     }
 
     /**
@@ -399,7 +393,7 @@ public class IOService extends Service implements WebSocketClient.Listener {
     @Override
     public void onNotification(@NonNull String message) {
         String[] info = message.split(":");
-        updateNotification("CUBE is running", info[0]);
+        updateNotification("Web Notification", info[0]);
         Intent intent = new Intent("CUBE_RECEIVED_MESSAGE");
         intent.putExtra("notification", message);
         sendBroadcast(intent);
@@ -420,18 +414,17 @@ public class IOService extends Service implements WebSocketClient.Listener {
 
                 returnMessageStatus(envelope);
                 if (connectionInfo.getLife().equals("reborn")) {
-                        addMessage(message);
-                        messageManager.setMessage(envelope);
-                        Log.e("IOService", connectionInfo.getLife() + " JSON message: " + envelope.toJson());
+                    addMessage(message);
+                    messageManager.setMessage(envelope);
 
                 } else {
-                    Log.e("IOService", envelope.getMessageStatus()+" died JSON : " + envelope.toJson());
                     messageManager.setMessage(envelope);
                     // Створюємо множину дозволених статусів
                     Set<String> allowedStatuses = new HashSet<>(Arrays.asList("message", "file"));
 
                     if (allowedStatuses.contains(envelope.getOperation())) {
                         soundPlayer.playNotificationSound(this);
+                        updateNotification(envelope.getSenderId(),envelope.getMessageId());
                     }
 //                    if ("ready".equals(envelope.getMessageStatus())) {
 //                        Envelope saveEnvelope = messageManager.getMessageById(envelope.getMessageId());
@@ -478,12 +471,9 @@ public class IOService extends Service implements WebSocketClient.Listener {
             String messageId = entry.getKey();
             Envelope envelope = entry.getValue();
             saveMessage(envelope.toJson().toString());
-//            if (envelope.getOperation().equals("message") || envelope.getOperation().equals("file")) {
-//                saveMessage(envelope.toJson().toString());
-//            } else {
-//                messageManager.deleteMessageById(messageId);
-//            }
+            Log.e("IOService", "get  Offline Message ID" + messageId);
         }
+        //Log.e("IOService", " Count " + messageManager.getMessageCountExceptByOperation("send"));
     }
 
     /**

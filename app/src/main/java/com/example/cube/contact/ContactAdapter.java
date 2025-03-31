@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,7 +75,17 @@ public class ContactAdapter extends ArrayAdapter<ContactData> {
 
         // Update contact status
         if (contactData.getStatusContact() != null) {
-            image.updateStatusColor(contactData.getStatusContact());
+                switch (contactData.getStatusContact()) {
+                    case "disconnect":
+                        image.updateStatusColor("00");
+                        break;
+                    case "died":
+                        image.updateStatusColor("01");
+                        break;
+                    case "reborn":
+                        image.updateStatusColor("10");
+                        break;
+                }
         }
 
         // Set message type and text
